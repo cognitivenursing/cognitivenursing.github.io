@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUR 213 Rhythm Lab</title>
+<style>
+:root{
+  --bg:#f8f5f3; --surface:#ffffff; --surface2:#fbf8f6; --ink:#1f1a17; --muted:#6b625c; --line:#e6ddd7;
+  --accent:#c8372a; --accent-soft:#fbe9e6; --ok:#1d7a4c; --ok-soft:#e4f3ea; --bad:#b42318; --bad-soft:#fdeceb;
+  --blue:#2457c5; --blue-soft:#e8eefb; --warn:#9a5b00; --warn-soft:#fff3dc;
+  --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 10px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131110; --surface:#1c1a19; --surface2:#222020; --ink:#f1ece8; --muted:#a89e97; --line:#35302d;
+    --accent:#ff6b5b; --accent-soft:#3a1f1b; --ok:#4cc38a; --ok-soft:#15301f; --bad:#ff7b6e; --bad-soft:#3a1c19;
+    --blue:#86a8ff; --blue-soft:#1b2440; --warn:#f2b552; --warn-soft:#33270f; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#131110; --surface:#1c1a19; --surface2:#222020; --ink:#f1ece8; --muted:#a89e97; --line:#35302d;
+    --accent:#ff6b5b; --accent-soft:#3a1f1b; --ok:#4cc38a; --ok-soft:#15301f; --bad:#ff7b6e; --bad-soft:#3a1c19;
+    --blue:#86a8ff; --blue-soft:#1b2440; --warn:#f2b552; --warn-soft:#33270f; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+button{font:inherit;color:inherit}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:5}
+.brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.brand b{font-size:19px;letter-spacing:-.01em}
+.brand b span{color:var(--accent)}
+.brand small{color:var(--muted);font-size:12.5px}
+.tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:600;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:5px 10px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 40px}
+.view[hidden]{display:none}
+.learn{display:grid;grid-template-columns:230px 1fr;gap:20px;align-items:start}
+aside.rlist{position:sticky;top:84px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px;max-height:calc(100vh - 100px);overflow:auto}
+aside.rlist h4{margin:10px 8px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+aside.rlist h4:first-child{margin-top:2px}
+aside.rlist button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:14px}
+aside.rlist button:hover{background:var(--surface2)}
+aside.rlist button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.mselect{display:none;width:100%;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card + .card,.grid2 + .grid2,.card + .grid2,.grid2 + .card{margin-top:16px}
+.card h3{margin:0 0 10px;font-size:15px;letter-spacing:-.005em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:6px}
+.rhead h2{margin:0;font-size:22px;letter-spacing:-.015em}
+.chip{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);color:var(--muted)}
+.cue{margin:4px 0 12px;font-size:15px}
+.cue b{color:var(--accent)}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 8px}
+.tb{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer}
+.tb:hover{border-color:var(--muted)}
+.tb[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.tb.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.stripmeta{font-size:12px;color:var(--muted);margin-left:auto}
+.stripbox{border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+canvas.strip{display:block;width:100%;touch-action:none;cursor:crosshair}
+canvas.strip.nocal{touch-action:auto;cursor:default}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+table.crit{width:100%;border-collapse:collapse;font-size:14px}
+table.crit th,table.crit td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.crit thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+table.crit tbody th{font-weight:600;white-space:nowrap;width:1%}
+table.crit td.ref{color:var(--muted)}
+table.crit tr.abn td.this{background:var(--bad-soft);color:var(--bad);font-weight:600}
+table.crit tr.abn th::after{content:" ≠";color:var(--bad)}
+table.crit tr.diff td{background:var(--warn-soft)}
+.diff-text{margin:12px 0 0;font-size:14.5px}
+.heart{display:flex;gap:14px;align-items:center}
+.heart svg{width:150px;flex:none}
+.heart p{margin:0;font-size:14px}
+svg .reg{fill:var(--surface2);stroke:var(--line);stroke-width:1.5}
+svg .node{fill:var(--muted)}
+svg .path{stroke:var(--muted);stroke-width:2.5;fill:none}
+svg .hot{fill:var(--accent);stroke:var(--accent)}
+svg .reg.hot{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+svg .path.hot{stroke:var(--accent);fill:none;stroke-width:3.5}
+svg text{font-size:9px;fill:var(--muted);font-family:inherit}
+.callout{border-left:4px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:14.5px}
+ul.nlist{margin:0;padding-left:18px}
+ul.nlist li{margin:4px 0;font-size:14.5px}
+details.method{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 16px;margin-bottom:16px}
+details.method summary{cursor:pointer;font-weight:600}
+.steps5{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:12px 0 6px}
+.steps5 div{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}
+.steps5 b{display:block;font-size:14px;margin-bottom:3px}
+.steps5 .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;margin-right:6px}
+.steps5 div.pt{background:var(--accent-soft);border-color:var(--accent)}
+.method p{font-size:13.5px;color:var(--muted);margin:6px 0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.presets button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.presets button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.cmprow{display:flex;gap:10px;align-items:center;margin:4px 0 8px;flex-wrap:wrap}
+.cmprow select{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600}
+.cmprow .tag{font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:2px 8px}
+.tellapart{font-size:15px;border-left:4px solid var(--accent);padding:8px 12px;background:var(--accent-soft);border-radius:0 8px 8px 0;margin:0 0 14px}
+.pfilter{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;font-size:13px;color:var(--muted)}
+.pfilter label{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.score{font-size:13px;color:var(--muted)}
+.score b{color:var(--ink)}
+.stepdots{display:flex;gap:5px;margin:2px 0 10px}
+.stepdots span{height:5px;flex:1;border-radius:3px;background:var(--line)}
+.stepdots span.ok{background:var(--ok)} .stepdots span.no{background:var(--bad)} .stepdots span.cur{background:var(--ink)}
+.cjm{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--blue)}
+.q{font-size:16px;font-weight:600;margin:4px 0 10px}
+.stem{font-size:14.5px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-weight:400}
+.opts{display:grid;gap:7px}
+.opts button{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 12px;text-align:left;cursor:pointer;font-size:14.5px}
+.opts button:hover:not(:disabled){border-color:var(--ink)}
+.opts button:disabled{cursor:default}
+.opts button.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:600}
+.opts button.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.fb{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:14.5px}
+.fb.ok{background:var(--ok-soft)} .fb.no{background:var(--bad-soft)}
+.fb b.v{display:block;margin-bottom:2px}
+.navrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+footer{max-width:1240px;margin:0 auto;padding:0 20px 40px;font-size:12.5px;color:var(--muted)}
+footer details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 16px}
+footer summary{cursor:pointer;font-weight:600;color:var(--ink)}
+footer a{color:var(--blue)}
+@media (max-width:900px){
+  .learn{grid-template-columns:1fr}
+  aside.rlist{display:none}
+  .mselect{display:block}
+  .grid2{grid-template-columns:1fr}
+  .steps5{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:520px){
+  header.top{padding:10px 16px;position:static}
+  .wrap{padding:14px 16px 32px}
+  footer{padding:0 16px 32px}
+  .heart{flex-direction:column;align-items:flex-start}
+  .stripmeta{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>Rhythm <span>Lab</span></b><small>NUR 213 Perfusion · Dysrhythmias</small></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="learn" aria-selected="true">Learn</button>
+    <button role="tab" data-tab="compare" aria-selected="false">Compare</button>
+    <button role="tab" data-tab="practice" aria-selected="false">Practice</button>
+  </nav>
+  <div class="seg" title="Strip display">
+    <button data-skin="paper" aria-pressed="true">ECG paper</button>
+    <button data-skin="monitor" aria-pressed="false">Monitor</button>
+  </div>
+</header>
+
+<div class="wrap">
+<!-- ================= LEARN ================= -->
+<section class="view" id="v-learn">
+  <details class="method" open>
+    <summary>Read any strip the same way, every time</summary>
+    <div class="steps5">
+      <div><b><span class="n">1</span>Rate</b>Count QRS complexes in 6 s × 10. Regular rhythm: 300 ÷ large boxes between R's.</div>
+      <div><b><span class="n">2</span>Rhythm</b>Are R–R intervals equal? Walk the calipers across the strip.</div>
+      <div><b><span class="n">3</span>P waves</b>Present? Upright? One before every QRS? Hidden in T waves?</div>
+      <div><b><span class="n">4</span>PR interval</b>0.12–0.20 s (3–5 small boxes). Same on every beat?</div>
+      <div><b><span class="n">5</span>QRS</b>Narrow (&lt;0.12 s, under 3 small boxes) or wide?</div>
+      <div class="pt"><b>Then: the patient</b>Pulse? BP? LOC? Treat the patient, not the monitor.</div>
+    </div>
+    <p>Grid: 1 small box = 0.04 s · 1 large box = 0.20 s · tick marks along the top edge every 3 s. QT changes with heart rate, so interpret the corrected QT (QTc). A QTc of 500 ms or more raises the risk of torsades.</p>
+  </details>
+
+  <div class="learn">
+    <aside class="rlist" id="rlist" aria-label="Rhythms"></aside>
+    <div>
+      <select class="mselect" id="mselect" aria-label="Choose a rhythm"></select>
+      <div class="card">
+        <div class="rhead"><h2 id="l-name"></h2><span class="chip" id="l-group"></span><span id="l-variant"></span></div>
+        <p class="cue" id="l-cue"></p>
+        <div class="toolbar" id="l-tools"></div>
+        <div class="stripbox"><canvas class="strip" id="l-canvas"></canvas></div>
+        <div class="legend"><span><i style="background:#2457c5"></i>P wave</span><span><i style="background:rgba(232,140,30,.55)"></i>QRS</span><span>┗━┛ PR interval (s)</span><span><i style="background:#c8372a"></i>event label</span><span>Lower trace = pulse (pleth)</span></div>
+        <div class="hint">Drag across the strip to measure with calipers. Turn off <b>Annotate</b> to test yourself before you look.</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>What's different from normal sinus rhythm?</h3>
+          <table class="crit"><thead><tr><th></th><th>NSR</th><th>This rhythm</th></tr></thead><tbody id="l-table"></tbody></table>
+          <p class="diff-text" id="l-diff"></p>
+        </div>
+        <div class="card">
+          <h3>Where's the problem?</h3>
+          <div class="heart"><div id="l-heart"></div><p id="l-site"></p></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Check the patient</h3><div class="callout" id="l-patient"></div></div>
+        <div class="card"><h3>Nursing priorities</h3><ul class="nlist" id="l-nursing"></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section class="view" id="v-compare" hidden>
+  <div class="presets" id="presets"></div>
+  <div class="card">
+    <p class="tellapart" id="c-tell"></p>
+    <div class="cmprow"><span class="tag">A</span><select id="c-a" aria-label="Rhythm A"></select><span class="chip" id="c-a-cue"></span></div>
+    <div class="stripbox"><canvas class="strip" id="c-canvas-a"></canvas></div>
+    <div class="cmprow" style="margin-top:14px"><span class="tag">B</span><select id="c-b" aria-label="Rhythm B"></select><span class="chip" id="c-b-cue"></span></div>
+    <div class="stripbox"><canvas class="strip" id="c-canvas-b"></canvas></div>
+    <div class="toolbar" id="c-tools"></div>
+  </div>
+  <div class="card">
+    <h3>Side by side (rows that differ are shaded)</h3>
+    <table class="crit"><thead><tr><th></th><th id="c-ha">A</th><th id="c-hb">B</th></tr></thead><tbody id="c-table"></tbody></table>
+  </div>
+</section>
+
+<!-- ================= PRACTICE ================= -->
+<section class="view" id="v-practice" hidden>
+  <div class="pfilter" id="pfilter"><span>Practice from:</span></div>
+  <div class="card">
+    <div class="rhead"><h2>Unknown strip</h2><span class="score" id="p-score"></span></div>
+    <div class="toolbar" id="p-tools"></div>
+    <div class="stripbox"><canvas class="strip" id="p-canvas" aria-label="Practice ECG strip, lead II"></canvas></div>
+    <div class="hint">Work it systematically. Use the calipers. The pulse trace is hidden until you finish.</div>
+  </div>
+  <div class="card" id="p-panel"></div>
+</section>
+</div>
+
+<footer>
+  <details>
+    <summary>About this tool: limits, sources, AI disclosure</summary>
+    <p><b>Simulated strips.</b> Every tracing is generated mathematically as an idealized lead II at 25 mm/s and 10 mm/mV. It is not a recording from a patient. Real strips have artifact, baseline wander, lead-to-lead variation, and messier morphology. Use this tool alongside real rhythm strips, not in place of them. The pulse (pleth) trace is a teaching schematic. It is not a quantitative waveform.</p>
+    <p><b>Scope.</b> Interventions are written at the RN level ("prepare," "anticipate," "per order/protocol"). Medication decisions belong to the provider and facility protocol. This tool does not replace BLS/ACLS training.</p>
+    <p><b>Sources checked.</b> AHA 2025 Guidelines for CPR &amp; ECC, adult advanced life support and bradycardia (atropine 1 mg IV every 3–5 min, max 3 mg): <a href="https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/algorithms" target="_blank" rel="noopener">cpr.heart.org algorithms</a>. 2023 ACC/AHA/ACCP/HRS Atrial Fibrillation Guideline (aspirin, alone or with clopidogrel, is not recommended in place of anticoagulation for stroke prevention): <a href="https://www.acc.org/latest-in-cardiology/ten-points-to-remember/2023/11/27/19/46/2023-acc-guideline-for-af-gl-af" target="_blank" rel="noopener">ACC key points</a>.</p>
+    <p><b>AI-assistance disclosure.</b> This tool was built with AI assistance (Claude, Anthropic) from course slides by A. Cooke, MSN, RN, PCCN. Faculty must verify the content against current guidelines and the facility's protocols before using it with students. Version: October 2026.</p>
+  </details>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* ===================== CONTENT ===================== */
+const KEYS=['rate','reg','p','pr','qrs'];
+const KLABEL={rate:'Rate',reg:'Rhythm',p:'P waves',pr:'PR interval',qrs:'QRS'};
+const NSRC={rate:'60–100/min',reg:'Regular',p:'Upright and uniform; one before every QRS',pr:'0.12–0.20 s, constant',qrs:'0.06–0.10 s (narrow)'};
+
+const RH={
+nsr:{name:'Normal Sinus Rhythm',group:'Baseline',crit:NSRC,abn:[],
+ cue:'<b>P before every QRS, a QRS after every P, everything on time.</b>',
+ diff:'This is the reference strip. Every other rhythm is defined by which of these five findings changes.',
+ site:[],siteNote:'The impulse starts in the SA node and follows the normal pathway: atria → AV node → bundle branches → ventricles.',
+ patient:'A normal strip does not prove the patient is perfusing. Always correlate with the patient (see PEA).',
+ nursing:['Record a baseline strip with measured PR, QRS, and QTc','Use this baseline as the comparison for every later strip','Continue monitoring per order'],
+ ans:{rate:1,reg:0,p:0,pr:0,qrs:0},look:['sbrady','stach','first','pea'],
+ scen:{stem:'A 58-year-old man on telemetry for observation after a syncopal episode. BP 128/76, SpO₂ 97% on room air, alert, no symptoms. This is his current strip.',
+  opts:[{t:'Record the strip with measured intervals and continue monitoring',ok:1},{t:'Notify the provider of a new dysrhythmia'},{t:'Apply transcutaneous pacing pads as a precaution'},{t:'Hold his scheduled metoprolol'}],
+  why:'This is NSR with stable vital signs, so no intervention is indicated. Measured baseline intervals let you detect change later, which matters after syncope.'}},
+sbrady:{name:'Sinus Bradycardia',group:'Sinus variations',
+ crit:{rate:'Under 60/min (≈45 here)',reg:'Regular',p:NSRC.p,pr:NSRC.pr,qrs:NSRC.qrs},abn:['rate'],
+ cue:'<b>Normal-looking beats spaced far apart.</b>',
+ diff:'Everything is normal except the rate. The P-QRS-T sequence is the same, with longer gaps between complexes.',
+ site:['sa'],siteNote:'The SA node fires slower than 60/min.',
+ patient:'Perfusion is the problem, not the number. Athletes and sleeping patients may run in the 40s–50s with no symptoms. Look for hypotension, altered LOC, chest pain, signs of shock, or acute heart failure.',
+ nursing:['Assess BP, LOC, SpO₂, and symptoms (dizziness, syncope, chest pain)','Look for causes: beta-blockers, calcium channel blockers, digoxin, hypothermia, hypoxia, increased vagal tone, inferior MI','Symptomatic: call the provider or rapid response team, ensure IV access, give oxygen if hypoxemic','Atropine is first-line. AHA 2025 adult dose: 1 mg IV every 3–5 min, max 3 mg (per order/protocol)','If atropine is ineffective, prepare for transcutaneous pacing. Dopamine or epinephrine infusions are alternatives (per order)'],
+ ans:{rate:0,reg:0,p:0,pr:0,qrs:0},look:['nsr','first','third','pea'],
+ scen:{stem:'HR 42, BP 78/46, the patient is dizzy, pale, and diaphoretic. This is the strip.',
+  opts:[{t:'Call the rapid response team and prepare atropine per order',ok:1},{t:'Have the patient bear down as if having a bowel movement'},{t:'Give the scheduled metoprolol to reduce myocardial oxygen demand'},{t:'Record the strip. Sinus bradycardia is a benign rhythm'}],
+  why:'Bradycardia with hypotension and poor perfusion is unstable. Atropine is first-line (1 mg IV, AHA 2025), with pacing if it fails. Bearing down raises vagal tone, and a beta-blocker would slow the rate further.'}},
+stach:{name:'Sinus Tachycardia',group:'Sinus variations',
+ crit:{rate:'101–150/min (≈125 here)',reg:'Regular',p:NSRC.p,pr:NSRC.pr,qrs:NSRC.qrs},abn:['rate'],
+ cue:'<b>Normal-looking beats close together. Onset is gradual.</b>',
+ diff:'The sequence is normal, just faster. As the rate rises, each T wave moves closer to the next P wave.',
+ site:['sa'],siteNote:'The SA node fires faster than 100/min, almost always in response to something.',
+ patient:'Sinus tachycardia is usually a compensation, not the primary problem. Ask WHY: fever, pain, anxiety, hypovolemia or bleeding, anemia, hypoxia, sepsis, PE, stimulants (e.g., albuterol).',
+ nursing:['Assess for the underlying cause and treat it per orders','Monitor vital signs, I&O, and the trend in rate','Do not try to "slow the rate" with drugs. A compensatory tachycardia may be what is holding up cardiac output','Teach about hydration, rest, and avoiding stimulants when relevant'],
+ ans:{rate:2,reg:0,p:0,pr:0,qrs:0},look:['svt','nsr','flutter','afrvr'],
+ scen:{stem:'Post-op day 2. Temp 38.9 °C, HR 124, BP 108/66, pain 7/10, urine output 20 mL/hr for 2 hours.',
+  opts:[{t:'Assess and treat the causes (fever, pain, volume status) and report findings to the provider',ok:1},{t:'Request IV metoprolol to bring the rate under 100'},{t:'Coach the patient through vagal maneuvers'},{t:'Prepare for synchronized cardioversion'}],
+  why:'Fever, pain, and low urine output (possible hypovolemia) are driving a compensatory tachycardia. Treat the causes. Slowing the rate with a beta-blocker could drop cardiac output in a patient who may be volume-depleted.'}},
+pac:{name:'Premature Atrial Contractions (PACs)',group:'Ectopy (early beats)',
+ crit:{rate:'Depends on the underlying rhythm (≈72 here)',reg:'Regular except the early beat(s)',p:'The early beat has a different-shaped P',pr:'Normal; may differ on the PAC',qrs:'Narrow'},abn:['reg','p'],
+ cue:'<b>Early + narrow + odd-looking P.</b>',
+ diff:'One beat comes early. Its P wave looks different because it started at an irritable atrial site instead of the SA node. The QRS stays narrow because conduction below the atria is normal. A short pause usually follows.',
+ site:['atria'],siteNote:'An irritable focus in the atria fires before the SA node does.',
+ patient:'Usually benign. Frequent PACs can signal atrial irritability (stretch, stimulants, hypoxia) and can precede AF.',
+ nursing:['Monitor frequency and pattern','Assess triggers: caffeine, nicotine, alcohol, stress, sleep loss, hypoxia','Report increasing frequency or runs','Teach about lifestyle contributors'],
+ ans:{rate:1,reg:1,p:1,pr:0,qrs:0},look:['pvc','pjc','afib','nsr'],
+ scen:{stem:'A 34-year-old on telemetry for observation reports occasional "skipped beats." Drinks 5 cups of coffee a day. BP 122/78, no other symptoms.',
+  opts:[{t:'Teach about cutting back on stimulants and continue monitoring',ok:1},{t:'Prepare an amiodarone infusion'},{t:'Apply defibrillator pads'},{t:'Activate the rapid response team'}],
+  why:'Occasional PACs without symptoms are usually benign. The nursing priorities are reducing triggers, teaching, and monitoring for a change in frequency.'}},
+pjc:{name:'Premature Junctional Contractions (PJCs)',group:'Ectopy (early beats)',
+ crit:{rate:'Depends on the underlying rhythm (≈72 here)',reg:'Regular except the early beat(s)',p:'Inverted P just before the QRS on the early beat (or hidden/after it)',pr:'Short (under 0.12 s) on the PJC',qrs:'Narrow'},abn:['reg','p','pr'],
+ cue:'<b>Early + narrow + inverted or missing P.</b>',
+ diff:'The early beat starts in the AV junction. The atria depolarize backward (retrograde), so in lead II the P is inverted with a short PR. It can also be hidden in or after the QRS.',
+ site:['av'],siteNote:'The AV junction fires early. The impulse travels up into the atria and down into the ventricles at the same time.',
+ patient:'Usually benign. Frequent PJCs can occur with digoxin toxicity, ischemia, or stimulants.',
+ nursing:['Monitor frequency','Review digoxin use and levels if ordered, plus electrolytes','Report increasing frequency or symptoms'],
+ ans:{rate:1,reg:1,p:1,pr:0,qrs:0},look:['pac','pvc','nsr','first'],
+ scen:{stem:'A 79-year-old taking digoxin has new frequent PJCs, nausea, and says lights look "yellowish." A dose is due now.',
+  opts:[{t:'Hold the dose, notify the provider, and anticipate a digoxin level and electrolytes',ok:1},{t:'Give the digoxin and recheck the rhythm in an hour'},{t:'Prepare for defibrillation'},{t:'Prepare adenosine for rapid IV push'}],
+  why:'New ectopy with GI and visual symptoms suggests digoxin toxicity. Holding the dose and reporting is within RN scope. A level and potassium guide what happens next.'}},
+pvc:{name:'Premature Ventricular Contractions (PVCs)',group:'Ectopy (early beats)',
+ crit:{rate:'Depends on the underlying rhythm (≈72 here)',reg:'Regular except the early beat(s)',p:'None before the PVC',pr:'Normal on sinus beats; none on the PVC',qrs:'PVC is wide (≥0.12 s) and bizarre, with the T wave opposite the QRS'},abn:['reg','p','qrs'],
+ cue:'<b>Early + wide + no P.</b>',
+ diff:'The early beat starts in the ventricle and spreads cell to cell instead of through the conduction system. It is wide and bizarre, has no P in front, and its T wave points opposite the QRS. A full compensatory pause usually follows because the SA node keeps its schedule.',
+ site:['vent'],siteNote:'An irritable ventricular focus fires early and bypasses the normal conduction system.',
+ patient:'Look at the pulse trace. The PVC makes little or no pulse because the ventricle has not had time to fill. Frequent PVCs cause a pulse deficit.',
+ nursing:['Assess the patient and take an apical-radial pulse','Note frequency and pattern: bigeminy, trigeminy, couplets, runs, multifocal','Check K⁺ and Mg²⁺, oxygenation, and signs of ischemia (12-lead per protocol)','Report PVCs that are new, frequent, multifocal, in couplets or runs, or that fall on the T wave (R-on-T)','Review stimulants and proarrhythmic medications'],
+ ans:{rate:1,reg:1,p:1,pr:0,qrs:2},look:['pac','pjc','vt','nsr'],
+ scen:{stem:'Post-op day 1 with new frequent PVCs. K⁺ 3.1 mEq/L, Mg²⁺ 1.5 mg/dL. Alert, BP 132/80. Furosemide 40 mg IV is due.',
+  opts:[{t:'Notify the provider and anticipate potassium and magnesium replacement',ok:1},{t:'Give the furosemide and recheck electrolytes in the morning'},{t:'Prepare for immediate defibrillation'},{t:'Record the strip. Isolated PVCs need no follow-up'}],
+  why:'Low K⁺ and Mg²⁺ irritate the myocardium and make PVCs and VT more likely. Replacement is the fix. A loop diuretic would drop the potassium further, so clarify it with the provider.'}},
+first:{name:'First-Degree AV Block',group:'AV blocks',
+ crit:{rate:'Usually 60–100 (≈70 here)',reg:'Regular',p:NSRC.p,pr:'Over 0.20 s, constant (≈0.28 here)',qrs:'Narrow'},abn:['pr'],
+ cue:'<b>Long but constant PR. Every P gets a QRS.</b>',
+ diff:'Every P conducts, just slowly. The PR is longer than 0.20 s but the same on every beat. No beats are dropped.',
+ site:['av'],siteNote:'Conduction through the AV node is delayed but never fails.',
+ patient:'Usually no symptoms. What matters is the trend and the cause: AV-nodal blocking drugs (beta-blockers, CCBs, digoxin, amiodarone), inferior MI, hyperkalemia, increased vagal tone.',
+ nursing:['Measure and record the PR on every strip','Review AV-nodal blocking medications and report','Monitor for progression to second- or third-degree block','Teach which symptoms to report (dizziness, fainting)'],
+ ans:{rate:1,reg:0,p:0,pr:1,qrs:0},look:['nsr','mob1','mob2','sbrady'],
+ scen:{stem:'A patient on metoprolol has no symptoms. Today\'s PR is 0.28 s. Yesterday it was 0.22 s. BP 124/70.',
+  opts:[{t:'Report the lengthening PR, review AV-nodal medications, and continue monitoring',ok:1},{t:'Apply pads and begin transcutaneous pacing'},{t:'Give atropine per protocol'},{t:'Activate the rapid response team'}],
+  why:'First-degree block without symptoms needs no emergency treatment. The PR is getting longer, though, so report it and look for a medication cause in case it progresses.'}},
+mob1:{name:'Second-Degree AV Block, Type I (Wenckebach)',group:'AV blocks',
+ crit:{rate:'Usually 60–100 (≈68 here)',reg:'Irregular, grouped beating',p:'Regular P waves; some have no QRS after them',pr:'Lengthens progressively until a P is dropped',qrs:'Usually narrow'},abn:['reg','p','pr'],
+ cue:'<b>Longer, longer, longer, drop. Then it resets.</b>',
+ diff:'The AV node takes longer with each beat. The PR gets longer and longer until one P fails to conduct. After the dropped beat the node recovers and the cycle restarts with the shortest PR.',
+ site:['av'],siteNote:'The block is at the AV node, where conduction fatigues progressively.',
+ patient:'Often transient (medications, vagal tone, inferior MI) and usually without symptoms. Treatment is often not needed. If it causes symptomatic bradycardia, it usually responds to atropine.',
+ nursing:['Assess for symptoms and hypotension','Measure the PR on consecutive beats to confirm it is lengthening','Review AV-nodal blocking medications and report','Treat only if symptomatic: atropine per order, pacing if the patient deteriorates'],
+ ans:{rate:1,reg:2,p:2,pr:2,qrs:0},look:['mob2','first','third','afib'],
+ scen:{stem:'A patient with no symptoms, BP 118/72, alert. The monitor alarms for "irregular rhythm."',
+  opts:[{t:'Continue monitoring, record the strip, report it, and review AV-nodal medications',ok:1},{t:'Prepare for immediate transcutaneous pacing'},{t:'Prepare for synchronized cardioversion'},{t:'Prepare adenosine for rapid IV push'}],
+  why:'Wenckebach without symptoms is usually benign and often caused by medications. Monitoring and reporting are appropriate. Pacing is for symptomatic or deteriorating patients.'}},
+mob2:{name:'Second-Degree AV Block, Type II',group:'AV blocks',
+ crit:{rate:'Often slow (≈72 here)',reg:'Irregular when beats drop',p:'Regular P waves; some have no QRS after them',pr:'Constant on conducted beats, then a sudden drop',qrs:'Narrow here. Often wide, because the block is below the AV node'},abn:['reg','p','pr'],
+ cue:'<b>Constant PR, then a sudden drop with no warning.</b>',
+ diff:'The PR is identical on every conducted beat. Then a P suddenly fails to conduct. The block is usually below the AV node (His-Purkinje system), which makes it unpredictable.',
+ site:['his'],siteNote:'The block is usually below the AV node, in the His bundle or bundle branches.',
+ patient:'Dangerous. It can progress suddenly to complete heart block. Atropine often does not work because the block is below the AV node, so do not let it delay pacing.',
+ nursing:['Assess for decreased cardiac output','Notify the provider promptly and place transcutaneous pacing pads','Prepare for transcutaneous pacing, then transvenous or permanent pacemaker','Hold AV-nodal blocking drugs per provider','Maintain IV access'],
+ ans:{rate:1,reg:2,p:2,pr:3,qrs:0},look:['mob1','third','first','sbrady'],
+ scen:{stem:'A patient says he feels lightheaded. BP 86/50. This is the strip.',
+  opts:[{t:'Place transcutaneous pacing pads and call the rapid response team',ok:1},{t:'Give atropine and reassess in 30 minutes before doing anything else'},{t:'Give the scheduled diltiazem'},{t:'Record the strip and recheck vital signs in 4 hours'}],
+  why:'Type II block with hypotension can deteriorate to complete heart block at any moment. Get the pads on and help on the way. Atropine may be ordered, but it often fails here and must not delay pacing.'}},
+third:{name:'Third-Degree (Complete) AV Block',group:'AV blocks',
+ crit:{rate:'Ventricular under 60 (≈38 here); atrial ≈80',reg:'P–P regular and R–R regular, but unrelated to each other',p:'March through on their own schedule; some hidden in the QRS or T',pr:'None. Varies randomly (AV dissociation)',qrs:'Wide here (ventricular escape). Narrow if the escape is junctional'},abn:['rate','p','pr','qrs'],
+ cue:'<b>P waves march through. PR is random. Slow, wide QRS.</b>',
+ diff:'No atrial impulse reaches the ventricles. The SA node drives the atria and an escape pacemaker drives the ventricles, each on its own schedule. Use the calipers to map the P waves: they march straight through the QRS complexes and T waves.',
+ site:['av','his'],siteNote:'Conduction between the atria and ventricles is completely blocked. A slow escape pacemaker keeps the ventricles going.',
+ patient:'Life-threatening. Cardiac output depends on a slow, unreliable escape rhythm.',
+ nursing:['Call the rapid response team and assess perfusion','Apply pads and prepare for immediate transcutaneous pacing','Atropine may be tried per order but must not delay pacing','Prepare for transvenous and permanent pacemaker','Hold AV-nodal blocking medications per provider'],
+ ans:{rate:0,reg:0,p:3,pr:4,qrs:1},look:['mob2','mob1','sbrady','pea'],
+ scen:{stem:'HR 36, BP 70/40, the patient is newly confused.',
+  opts:[{t:'Activate the rapid response team and prepare for immediate transcutaneous pacing',ok:1},{t:'Coach the patient through vagal maneuvers'},{t:'Prepare for synchronized cardioversion'},{t:'Prepare an amiodarone infusion'}],
+  why:'Complete heart block with hypoperfusion needs pacing now. Vagal maneuvers and amiodarone would slow conduction further. Cardioversion is for tachydysrhythmias.'}},
+afib:{name:'Atrial Fibrillation (controlled rate)',group:'Atrial & supraventricular',
+ crit:{rate:'Varies; controlled if under 100 (≈75 here)',reg:'Irregularly irregular',p:'None. Chaotic fibrillatory baseline',pr:'Not measurable',qrs:'Narrow'},abn:['reg','p','pr'],
+ cue:'<b>No P waves + irregularly irregular.</b>',
+ diff:'The atria quiver chaotically (350–600 impulses/min), so there are no P waves, just a wavy baseline. The AV node lets impulses through at random, so the R–R intervals are irregularly irregular.',
+ site:['atria'],siteNote:'Many atrial foci fire chaotically. The AV node filters them at random.',
+ patient:'Watch the pulse trace: short R–R intervals produce weak pulses (pulse deficit). Losing atrial kick lowers cardiac output, and blood pooling in the atria raises stroke risk.',
+ nursing:['Take an apical-radial pulse for a full minute','Assess for stroke or embolism (BE-FAST, sudden weakness, speech change)','Verify the anticoagulation plan (warfarin INR, DOAC adherence). Aspirin is NOT a substitute for anticoagulation (2023 ACC/AHA/ACCP/HRS)','Monitor for rate changes or conversion','Teach triggers (alcohol, caffeine), bleeding precautions, and adherence'],
+ ans:{rate:1,reg:3,p:5,pr:5,qrs:0},look:['afrvr','flutter','pac','mob1'],
+ scen:{stem:'A 76-year-old with hypertension has new-onset AF. HR 82, BP 130/78. No anticoagulant is ordered. She asks, "Can I just take a baby aspirin instead of a blood thinner?"',
+  opts:[{t:'Clarify the anticoagulation plan with the provider and do a baseline neuro assessment',ok:1},{t:'Tell her a daily aspirin is an acceptable alternative'},{t:'Prepare for immediate defibrillation'},{t:'Prepare adenosine for rapid IV push'}],
+  why:'Her age and hypertension put her at elevated stroke risk. Current guidelines do not recommend aspirin (alone or with clopidogrel) in place of anticoagulation for stroke prevention in AF. The rate is controlled and she is stable.'}},
+afrvr:{name:'Atrial Fibrillation with RVR',group:'Atrial & supraventricular',
+ crit:{rate:'Over 100 (≈170 here)',reg:'Irregularly irregular',p:'None. Chaotic fibrillatory baseline',pr:'Not measurable',qrs:'Narrow'},abn:['rate','reg','p','pr'],
+ cue:'<b>Fast + irregularly irregular + no P waves.</b>',
+ diff:'The atria are as chaotic as in controlled AF, but the AV node lets too many impulses through. The result is fast, irregularly irregular, and narrow. At high rates it can look regular, so measure several R–R intervals with the calipers.',
+ site:['atria'],siteNote:'Chaotic atrial activity, with too many impulses getting through the AV node.',
+ patient:'Short filling time lowers cardiac output. Watch for hypotension, chest pain, heart failure, and altered LOC. An unstable patient needs synchronized cardioversion.',
+ nursing:['Assess hemodynamic stability','Notify the provider and anticipate IV rate control (e.g., diltiazem or metoprolol) per order','If unstable: prepare for synchronized cardioversion with sedation','Verify anticoagulation status, because cardioversion carries embolic risk','Trend HR and BP after each dose'],
+ ans:{rate:3,reg:3,p:5,pr:5,qrs:0},look:['afib','svt','flutter','stach'],
+ scen:{stem:'HR 168, BP 104/68, palpitations, alert and oriented. This is the strip.',
+  opts:[{t:'Notify the provider and anticipate an IV rate-control agent such as diltiazem',ok:1},{t:'Prepare adenosine for rapid IV push'},{t:'Prepare for unsynchronized defibrillation'},{t:'Begin chest compressions'}],
+  why:'AF with RVR in a stable patient is treated with rate control. Adenosine does not convert AF. Defibrillation and CPR are for pulseless rhythms.'}},
+flutter:{name:'Atrial Flutter',group:'Atrial & supraventricular',
+ crit:{rate:'Atrial 250–350 (300 here); ventricular depends on ratio (4:1 → 75)',reg:'Usually regular (fixed ratio); irregular if the ratio varies',p:'Sawtooth flutter (F) waves, best seen in II, III, aVF',pr:'Not measurable',qrs:'Narrow'},abn:['p','pr'],
+ cue:'<b>Sawtooth baseline. Count the F waves per QRS.</b>',
+ diff:'A single re-entry circuit circles the right atrium about 300 times/min and draws a regular sawtooth. The AV node passes only some of the impulses (2:1, 3:1, 4:1).',
+ site:['atria'],siteNote:'One re-entry circuit circles the right atrium. The AV node blocks most of the impulses.',
+ patient:'Watch for 2:1 flutter at a ventricular rate of about 150. It is easily mistaken for sinus tachycardia or SVT. Suspect flutter whenever a regular narrow rhythm sits right at 150. Stroke risk is similar to AF.',
+ nursing:['Monitor rhythm and hemodynamics','Rate control per order (diltiazem, beta-blockers)','If unstable, prepare for synchronized cardioversion. Ablation is highly effective long term','Assess anticoagulation as for AF','Assess for signs of embolism'],
+ ans:{rate:1,reg:0,p:4,pr:5,qrs:0},look:['afib','svt','stach','afrvr'],
+ scen:{stem:'HR 75, BP 126/74, mild fatigue. The provider is at the bedside. A student suggests carotid massage to "see the waves better."',
+  opts:[{t:'Continue monitoring, report, and anticipate rate-control and anticoagulation decisions',ok:1},{t:'Perform carotid sinus massage'},{t:'Prepare for immediate defibrillation'},{t:'Prepare for transcutaneous pacing'}],
+  why:'Flutter with a controlled rate in a stable patient needs monitoring, rate control, and a stroke-risk plan. Carotid massage is outside RN scope.'}},
+svt:{name:'Supraventricular Tachycardia (SVT)',group:'Atrial & supraventricular',
+ crit:{rate:'Usually over 150 (≈185 here)',reg:'Regular',p:'Not visible (hidden in the QRS or T)',pr:'Not measurable',qrs:'Narrow'},abn:['rate','p','pr'],
+ cue:'<b>Very fast, very regular, narrow, no visible P. Sudden onset.</b>',
+ diff:'A re-entry loop, usually in or around the AV node, drives the heart very fast and very regularly. P waves are buried. Unlike sinus tachycardia, it starts and stops abruptly.',
+ site:['av'],siteNote:'Usually a re-entry circuit involving the AV node.',
+ patient:'Assess stability. Hypotension, altered mental status, chest pain, shock, or acute heart failure mean the patient is unstable.',
+ nursing:['Assess stability','Stable: coach vagal maneuvers (e.g., modified Valsalva) with the provider aware. NO carotid massage (outside RN scope)','Adenosine per order: rapid IV push immediately followed by a saline flush (3-way stopcock), in a proximal IV. Warn the patient about brief chest discomfort and flushing. Run a strip during the push','Unstable: prepare for synchronized cardioversion','Monitor rhythm and vital signs after conversion'],
+ ans:{rate:3,reg:0,p:6,pr:5,qrs:0},look:['stach','afrvr','flutter','vt'],
+ scen:{stem:'A 28-year-old with sudden-onset palpitations. HR 190, BP 118/76, alert. The provider is on the unit.',
+  opts:[{t:'With the provider aware, coach a vagal maneuver and prepare adenosine per order',ok:1},{t:'Perform carotid sinus massage'},{t:'Prepare for unsynchronized defibrillation'},{t:'Prepare atropine 1 mg IV'}],
+  why:'Stable narrow-complex SVT is treated with vagal maneuvers first, then adenosine given as a rapid push with a flush. Carotid massage is outside RN scope. Defibrillation is for pulseless rhythms.'}},
+vt:{name:'Ventricular Tachycardia (monomorphic)',group:'Ventricular',
+ variants:[{key:'pulse',label:'Pulse present'},{key:'nopulse',label:'Pulseless'}],
+ crit:{rate:'Usually over 150 (≈170 here)',reg:'Regular',p:'None visible',pr:'Not measurable',qrs:'Wide (≥0.12 s), bizarre, all alike'},abn:['rate','p','pr','qrs'],
+ cue:'<b>Fast, regular, wide, all alike.</b>',
+ diff:'A ventricular focus takes over and produces a run of wide, bizarre, identical (monomorphic) complexes with no P waves in front. Three or more PVCs in a row is VT.',
+ site:['vent'],siteNote:'A ventricular focus fires rapidly and takes over the heart.',
+ patient:'The monitor cannot tell you whether there is a pulse, so check one. Toggle Pulse present / Pulseless above: the ECG is the same and the patient is completely different.',
+ nursing:['Check responsiveness, pulse, and BP immediately','Pulseless: call a code, start CPR, defibrillate as soon as possible, then epinephrine and amiodarone or lidocaine per ACLS','Pulse but unstable: prepare for synchronized cardioversion (sedate if possible)','Pulse and stable: 12-lead ECG, provider or expert consult, antiarrhythmic per order','Check K⁺ and Mg²⁺. Keep the crash cart and defibrillator at the bedside'],
+ ans:{rate:3,reg:0,p:6,pr:5,qrs:1},look:['svt','tdp','vf','pvc'],
+ scen:{pulse:{stem:'HR 180, BP 72/40. The patient is confused and diaphoretic but has a weak carotid pulse.',
+  opts:[{t:'Call the rapid response team and prepare for synchronized cardioversion',ok:1},{t:'Begin chest compressions'},{t:'Prepare for unsynchronized defibrillation'},{t:'Have the patient cough forcefully and recheck in 15 minutes'}],
+  why:'VT with a pulse and signs of instability (hypotension, altered mentation) needs synchronized cardioversion. CPR and defibrillation are for pulseless VT.'},
+  nopulse:{stem:'You find the patient unresponsive, not breathing normally, with no carotid pulse.',
+  opts:[{t:'Call a code, start CPR, and defibrillate as soon as the defibrillator arrives',ok:1},{t:'Prepare for synchronized cardioversion'},{t:'Give amiodarone IV push before anything else'},{t:'Check the lead placement before acting'}],
+  why:'Pulseless VT is a shockable arrest rhythm. High-quality CPR and early defibrillation come first. Medications come after shocks per ACLS.'}}},
+tdp:{name:'Torsades de Pointes (polymorphic VT)',group:'Ventricular',
+ crit:{rate:'Over 200 (≈230 here)',reg:'Irregular',p:'None',pr:'None',qrs:'Wide, with amplitude and axis constantly changing ("twisting")'},abn:['rate','reg','p','pr','qrs'],
+ cue:'<b>Wide, fast, twisting amplitude. Look back for a long QT.</b>',
+ diff:'Polymorphic VT linked to a prolonged QT. The QRS amplitude grows and shrinks, as if the complexes were twisting around the baseline.',
+ site:['vent'],siteNote:'Ventricular. Triggered by delayed repolarization (long QT).',
+ patient:'Often pulseless, or it degenerates into VF.',
+ nursing:['Pulseless: CPR and defibrillation. Synchronization is unreliable with polymorphic complexes','IV magnesium sulfate per order','Identify and stop QT-prolonging drugs (e.g., some antiarrhythmics, ondansetron, haloperidol, macrolides and fluoroquinolones, methadone)','Correct K⁺ and Mg²⁺','Prevention: measure and trend QTc. Report a QTc of 500 ms or more, or a large increase'],
+ ans:{rate:3,reg:null,p:6,pr:5,qrs:1},look:['vf','vt','afrvr','svt'],
+ scen:{stem:'A patient receiving IV azithromycin and ondansetron had a QTc of 560 ms this morning. She is now unresponsive with no pulse.',
+  opts:[{t:'Call a code, start CPR, defibrillate, and anticipate IV magnesium',ok:1},{t:'Prepare for synchronized cardioversion'},{t:'Give magnesium IV push and wait for it to work before starting CPR'},{t:'Give the next scheduled ondansetron dose for nausea'}],
+  why:'Pulseless torsades is treated like VF: CPR and defibrillation. Magnesium is the drug of choice but never delays CPR or shocks. Both of her drugs prolong the QT.'}},
+vf:{name:'Ventricular Fibrillation',group:'Ventricular',
+ crit:{rate:'Cannot be counted',reg:'Chaotic',p:'None',pr:'None',qrs:'None. Irregular waves of varying size'},abn:['rate','reg','p','pr','qrs'],
+ cue:'<b>Chaos, in an unresponsive, pulseless patient.</b>',
+ diff:'There is no organized electrical activity, only chaotic, irregular waves of varying size. No QRS means no cardiac output.',
+ site:['vent'],siteNote:'Many ventricular foci fire chaotically. The ventricles quiver instead of contracting.',
+ patient:'If the patient is awake and talking, it is artifact. Check the leads. VF is always pulseless.',
+ nursing:['Call a code and start high-quality CPR immediately','Defibrillate as soon as a defibrillator is available. This is the definitive treatment','Resume CPR right after each shock. Rhythm check every 2 min; rotate compressors every 2 min','Epinephrine and amiodarone or lidocaine per ACLS','Establish IV/IO access and airway. Document times'],
+ ans:{rate:4,reg:4,p:7,pr:5,qrs:3},look:['tdp','asys','vt','afib'],
+ scen:{stem:'The monitor shows this rhythm. The patient is unresponsive with no pulse.',
+  opts:[{t:'Start CPR and defibrillate as soon as possible',ok:1},{t:'Give epinephrine first, then defibrillate'},{t:'Prepare for synchronized cardioversion'},{t:'Prepare for transcutaneous pacing'}],
+  why:'Defibrillation is the definitive treatment for VF, and survival falls with every minute it is delayed. Synchronization needs a QRS to sync to, and VF has none.'}},
+pea:{name:'Pulseless Electrical Activity (PEA)',group:'Pulseless arrest',
+ crit:{rate:'Any. Organized complexes (≈50 here)',reg:'Usually regular',p:'May be present',pr:'May be normal',qrs:'Narrow or wide; organized'},abn:[],
+ cue:'<b>Organized rhythm + no pulse.</b>',
+ diff:'The strip shows an organized rhythm that can look like NSR, but the heart is not producing a pulse. The electrical system works. The pump does not, or there is no volume, or something is blocking flow.',
+ site:[],siteNote:'The electrical pathway may be intact. The problem is mechanical: pump failure, volume loss, or obstruction (H\'s and T\'s).',
+ patient:'You cannot diagnose PEA from the monitor, only by checking the patient. Note the flat pulse trace. None of the five ECG rows are flagged, which is the point.',
+ nursing:['Call a code and start CPR immediately','Epinephrine as soon as possible per ACLS','Do NOT defibrillate. PEA is nonshockable','Search for and treat reversible causes (H\'s and T\'s). This is the definitive treatment','Continue high-quality compressions with minimal interruptions'],
+ ans:{rate:0,reg:0,p:0,pr:0,qrs:0},look:['nsr','sbrady','asys','first'],
+ scen:{stem:'The monitor shows this organized rhythm at 50/min. The patient is unresponsive with no carotid pulse.',
+  opts:[{t:'Start CPR, anticipate epinephrine, and help search for reversible causes',ok:1},{t:'Defibrillate immediately'},{t:'Prepare for synchronized cardioversion'},{t:'The rhythm is organized. Recheck the pulse in 5 minutes'}],
+  why:'PEA is a nonshockable arrest. Give CPR and epinephrine, and find and fix the cause (hypovolemia, hypoxia, acidosis, K⁺, tamponade, tension pneumothorax, thrombosis, toxins).'}},
+asys:{name:'Asystole',group:'Pulseless arrest',
+ crit:{rate:'None',reg:'None',p:'None (occasionally P waves only)',pr:'None',qrs:'None'},abn:['rate','reg','p','pr','qrs'],
+ cue:'<b>Flat line. Confirm it is real.</b>',
+ diff:'There is no ventricular electrical activity, only a flat or nearly flat line.',
+ site:[],siteNote:'No pacemaker site is producing ventricular activity.',
+ patient:'Before calling it asystole, confirm: the patient is unresponsive and pulseless, the leads are attached, the gain is up, and a second lead agrees (fine VF can look flat in one lead).',
+ nursing:['Confirm (leads, gain, second lead) while starting CPR','CPR and epinephrine as soon as possible','Do NOT shock. Asystole is nonshockable','Search for H\'s and T\'s','Transcutaneous pacing is not recommended for asystole','Support the family. Termination decisions follow the code leader and facility policy'],
+ ans:{rate:4,reg:4,p:7,pr:5,qrs:3},look:['vf','pea','third','sbrady'],
+ scen:{stem:'The monitor shows a flat line. The patient is unresponsive with no pulse, and the leads are attached.',
+  opts:[{t:'Start CPR and anticipate epinephrine as soon as possible',ok:1},{t:'Defibrillate at maximum energy'},{t:'Give atropine 1 mg IV push'},{t:'Begin transcutaneous pacing'}],
+  why:'Asystole is nonshockable. Treat it with CPR and epinephrine while searching for reversible causes. Atropine was removed from the arrest algorithm in 2010, and pacing does not help asystole.'}}
+};
+const GROUPS=[['Baseline',['nsr']],['Sinus variations',['sbrady','stach']],['Ectopy (early beats)',['pac','pjc','pvc']],['AV blocks',['first','mob1','mob2','third']],['Atrial & supraventricular',['afib','afrvr','flutter','svt']],['Ventricular',['vt','tdp','vf']],['Pulseless arrest',['pea','asys']]];
+const PRESETS=[
+ ['mob1','mob2','Both drop beats. Measure the PR on the beats before the drop. If it lengthens, it is Type I (Wenckebach). If it stays constant, it is Type II, the dangerous one: prepare for pacing.'],
+ ['mob2','third','Mobitz II: the PR is constant on conducted beats, so some P waves DO conduct. Third degree: no P conducts. The PR varies randomly and the P waves march through the QRS complexes.'],
+ ['afib','flutter','Look at the baseline between QRS complexes. Chaotic and irregular means AF. A uniform sawtooth means flutter. AF R–R intervals are irregularly irregular; flutter is usually regular.'],
+ ['stach','svt','Sinus tach: usually under 150, visible P waves, gradual onset, driven by a cause. SVT: often over 150, P waves hidden, abrupt onset, very regular.'],
+ ['nsr','pea','The monitor can look the same. The difference is the patient: no pulse means PEA. Look at the pulse trace, and always check a pulse.'],
+ ['pac','pvc','Both are early. PAC: narrow QRS with an abnormal P in front. PVC: wide, bizarre QRS with no P and a T wave opposite the QRS.'],
+ ['afib','afrvr','Same rhythm, different ventricular rate. The rate, and how well the patient tolerates it, drives the urgency and the treatment.'],
+ ['vt','vf','VT: organized, uniform, wide complexes. VF: chaotic, with no identifiable QRS. Pulseless VT and VF are both shockable.'],
+ ['nsr','first','The only difference is the PR. It is long (over 0.20 s) but constant. Measure it. You cannot eyeball it.']
+];
+const OPTS={
+ rate:['Under 60','60–100','101–150','Over 150','Cannot be counted (no organized QRS)'],
+ reg:['Regular','Regular except for early beat(s)','Irregular with a repeating pattern (grouped beats)','Irregularly irregular','No organized rhythm'],
+ p:['Upright and uniform, one before every QRS','Normal P before sinus beats; the early beat has an abnormal P or none','Every QRS has a P, but some P waves have no QRS after them','P waves march regularly with no relationship to the QRS','Sawtooth flutter (F) waves','No P waves; chaotic fibrillatory baseline','No discernible P waves','No organized electrical activity'],
+ pr:['0.12–0.20 s and constant','Over 0.20 s and constant','Progressively lengthens until a beat drops','Constant on conducted beats, with sudden drops','Varies; no true PR (AV dissociation)','Not measurable'],
+ qrs:['Narrow (under 0.12 s)','Wide (0.12 s or more) on every beat','Narrow, except the early wide beat(s)','No QRS complexes']
+};
+const QTXT={rate:'Ventricular rate (count QRS complexes in 6 s × 10)',reg:'Rhythm: are the R–R intervals regular?',p:'P waves',pr:'PR interval',qrs:'QRS width'};
+const TIPS={rate:'Count the QRS complexes in the 6-second strip and multiply by 10. The ticks along the top edge mark 3-second intervals.',reg:'Use the calipers: set them on one R–R interval and walk them across the strip.',p:'Look in front of every QRS, and look inside the T waves for hidden P waves.',pr:'Measure from the start of the P to the start of the QRS on several beats. Normal is 0.12–0.20 s (3–5 small boxes).',qrs:'Measure from the first deflection to the end of the S wave. Wide means 0.12 s (3 small boxes) or more.'};
+
+/* ===================== WAVEFORM ENGINE ===================== */
+const DUR=120, FS=500, N=DUR*FS, PI2=Math.PI*2;
+const g=(t,c,s,a)=>{const d=(t-c)/s;return a*Math.exp(-0.5*d*d)};
+const g2=(t,c,s1,s2,a)=>{const s=t<c?s1:s2,d=(t-c)/s;return a*Math.exp(-0.5*d*d)};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const jit=(x,p)=>x*(1+rnd(-p,p));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function addShape(arr,center,half,fn){const i0=Math.max(0,Math.floor((center-half)*FS)),i1=Math.min(N-1,Math.ceil((center+half)*FS));for(let i=i0;i<=i1;i++)arr[i]+=fn(i/FS-center);}
+
+function planSinus(T,rate,pr,ect){
+  const A=60/rate;let p=0.25,n=0;
+  while(p<DUR-1.2){
+    n++;const rr=jit(A,0.015);
+    if(ect&&n%5===0&&T.beats.length){
+      const pq=T.beats[T.beats.length-1].q;
+      if(ect==='pac'){const ep=pq-pr+0.01+0.6*A;T.P.push({t:ep,kind:'abn',pr:0.15});T.beats.push({q:ep+0.14,kind:'narrow',label:'PAC'});p=ep+A;continue;}
+      if(ect==='pjc'){const q=pq+0.6*A;T.P.push({t:q-0.07,kind:'inv'});T.beats.push({q,kind:'narrow',label:'PJC'});p=q-pr+0.01+A;continue;}
+      if(ect==='pvc'){const q=pq+0.55*A;T.beats.push({q,kind:'wide',label:'PVC',perf:0.6});T.P.push({t:p,kind:'n',hidden:true});p+=rr;continue;}
+    }
+    T.P.push({t:p,kind:'n',pr});T.beats.push({q:p+pr-0.01,kind:'narrow'});p+=rr;
+  }
+}
+function buildTrack(id,variant){
+  const T={id,variant,ecg:new Float32Array(N),pleth:new Float32Array(N),P:[],beats:[],F:[],band:null,noPulse:false};
+  let bg=null;
+  switch(id){
+    case 'nsr':planSinus(T,75,0.16);break;
+    case 'sbrady':planSinus(T,45,0.16);break;
+    case 'stach':planSinus(T,125,0.14);break;
+    case 'first':planSinus(T,70,0.28);break;
+    case 'pac':case 'pjc':case 'pvc':planSinus(T,72,0.16,id);break;
+    case 'pea':planSinus(T,50,0.18);T.noPulse=true;T.band='Organized rhythm, but NO pulse';break;
+    case 'mob1':{const A=60/90,PR=[0.16,0.25,0.31];let p=0.25,k=0;while(p<DUR-1){if(k<3){T.P.push({t:p,kind:'n',pr:PR[k]});T.beats.push({q:p+PR[k]-0.01,kind:'narrow'});}else T.P.push({t:p,kind:'n',drop:true});k=(k+1)%4;p+=jit(A,0.008);}break;}
+    case 'mob2':{const A=60/96;let p=0.25,k=0;while(p<DUR-1){if(k<3){T.P.push({t:p,kind:'n',pr:0.18});T.beats.push({q:p+0.17,kind:'narrow'});}else T.P.push({t:p,kind:'n',drop:true});k=(k+1)%4;p+=jit(A,0.008);}break;}
+    case 'third':{let p=0.2;while(p<DUR-0.3){T.P.push({t:p,kind:'n',diss:true});p+=jit(0.75,0.01);}let q=0.62;while(q<DUR-0.5){T.beats.push({q,kind:'wide'});q+=jit(60/38,0.01);}break;}
+    case 'afib':case 'afrvr':{const [a,b]=id==='afib'?[0.55,1.1]:[0.27,0.44];let q=0.4;while(q<DUR-0.5){T.beats.push({q,kind:'narrow'});q+=rnd(a,b);}bg='af';T.band='Fibrillatory baseline, no P waves';break;}
+    case 'flutter':{for(let f=0.05;f<DUR;f+=0.2)T.F.push(f+0.15);for(let q=0.31;q<DUR-0.5;q+=0.8)T.beats.push({q,kind:'narrow',tAmp:0.12});bg='fl';break;}
+    case 'svt':{let q=0.3;while(q<DUR-0.5){T.beats.push({q,kind:'narrow'});q+=jit(60/185,0.004);}break;}
+    case 'vt':{let q=0.3;while(q<DUR-0.5){T.beats.push({q,kind:'vt',perf:0.45});q+=jit(60/170,0.004);}T.noPulse=(variant==='nopulse');break;}
+    case 'tdp':bg='tdp';T.noPulse=true;T.band='Polymorphic: amplitude twists around the baseline';break;
+    case 'vf':bg='vf';T.noPulse=true;T.band='Chaotic, no identifiable QRS';break;
+    case 'asys':bg='asys';T.noPulse=true;T.band='Flat line: check leads, gain, and a second lead';break;
+  }
+  const e=T.ecg,pl=T.pleth;
+  for(const P of T.P){
+    const fn=P.kind==='abn'?(d=>g(d,0,0.016,0.21)):P.kind==='inv'?(d=>g(d,0,0.02,-0.13)):(d=>g(d,0,0.022,0.15));
+    addShape(e,P.t,0.1,fn);
+  }
+  const B=T.beats;
+  for(let i=0;i<B.length;i++){
+    const b=B[i],rrP=i>0?b.q-B[i-1].q:(B[1]?B[1].q-b.q:0.8);
+    if(b.kind==='narrow'){
+      const qt=Math.min(0.46,0.4*Math.cbrt(Math.max(rrP,0.3))),tp=-0.04+qt-0.09,ta=b.tAmp||0.28;
+      addShape(e,b.q,0.1,d=>g(d,-0.03,0.009,-0.08)+g(d,0,0.012,1.15)+g(d,0.03,0.01,-0.25));
+      addShape(e,b.q,0.7,d=>g2(d,tp,0.065,0.045,ta));
+    }else if(b.kind==='wide'){
+      addShape(e,b.q,0.25,d=>g(d,-0.03,0.025,0.3)+g(d,0.04,0.03,1.0)+g(d,0.11,0.025,-0.3));
+      addShape(e,b.q,0.8,d=>g2(d,0.34,0.08,0.06,-0.4));
+    }else if(b.kind==='vt'){
+      addShape(e,b.q,0.3,d=>g(d,0,0.04,1.15)+g(d,0.1,0.035,-0.35));
+      addShape(e,b.q,0.4,d=>g2(d,0.2,0.05,0.04,-0.45));
+    }
+    if(!T.noPulse){
+      const amp=(b.perf||1)*clamp((rrP-0.15)/0.45,0.12,1);
+      addShape(pl,b.q+0.22,0.8,d=>g2(d,0,0.06,0.16,amp)+g(d,0.3,0.05,0.12*amp));
+    }
+  }
+  const ph=[rnd(0,6),rnd(0,6),rnd(0,6),rnd(0,6)];
+  for(let i=0;i<N;i++){
+    const t=i/FS;let v=0.025*Math.sin(PI2*0.17*t)+(Math.random()-0.5)*0.012;
+    if(bg==='af')v+=(0.045*Math.sin(PI2*5.7*t+ph[0])+0.035*Math.sin(PI2*7.3*t+ph[1])+0.03*Math.sin(PI2*4.6*t+ph[2]))*(0.7+0.3*Math.sin(PI2*0.37*t));
+    else if(bg==='fl'){const f=(((t-0.05)/0.2)%1+1)%1;v+=(f<0.75?0.1-0.32*(f/0.75):-0.22+0.32*((f-0.75)/0.25))+0.06;}
+    else if(bg==='vf'){const env=0.65+0.35*Math.sin(PI2*0.21*t);v+=env*(0.38*Math.sin(PI2*4.1*t+ph[0])+0.26*Math.sin(PI2*5.3*t+ph[1])+0.18*Math.sin(PI2*6.4*t+ph[2])+0.14*Math.sin(PI2*3.3*t+ph[3]));}
+    else if(bg==='tdp'){const env=Math.sin(Math.PI*t/1.7);v+=0.85*env*Math.sin(PI2*3.85*t)+0.15*Math.abs(env)*Math.sin(PI2*7.7*t+0.8);}
+    else if(bg==='asys')v*=0.6;
+    e[i]+=v;pl[i]+=(Math.random()-0.5)*0.01;
+  }
+  return T;
+}
+
+/* ===================== STRIP RENDERER ===================== */
+const SKINS={
+ paper:{bg:'#fffafa',minor:'#f5d3d3',major:'#e6a3a3',trace:'#161616',plBg:'#f6f3f1',pl:'#2457c5',P:'#2457c5',qrs:'rgba(232,140,30,.17)',lab:'#c8372a',text:'#5a504b',tick:'#8a2a20',pill:'rgba(255,255,255,.85)'},
+ monitor:{bg:'#050807',minor:'#0c1a14',major:'#15301f',trace:'#3dff8e',plBg:'#060a0f',pl:'#49c2ff',P:'#ffd24a',qrs:'rgba(255,255,255,.08)',lab:'#ff7a6b',text:'#9fb3a8',tick:'#3dff8e',pill:'rgba(0,0,0,.6)'}
+};
+let SKIN='paper';
+const STRIPS=[];
+class Strip{
+  constructor(canvas){
+    this.c=canvas;this.ctx=canvas.getContext('2d');this.track=null;this.t0=0.2;this.mode='static';this.tau=0;
+    this.annotate=true;this.calOn=true;this.cal=null;this.showPleth=true;this.drag=false;this.onchange=null;
+    STRIPS.push(this);
+    const ro=new ResizeObserver(()=>this.draw());ro.observe(canvas.parentElement);
+    const tOf=ev=>{const r=this.c.getBoundingClientRect();return this.t0+clamp((ev.clientX-r.left)/r.width,0,1)*6;};
+    canvas.addEventListener('pointerdown',ev=>{if(!this.calOn||this.mode!=='static')return;this.drag=true;const t=tOf(ev);this.cal={a:t,b:t};canvas.setPointerCapture(ev.pointerId);this.draw();});
+    canvas.addEventListener('pointermove',ev=>{if(!this.drag)return;this.cal.b=tOf(ev);this.draw();});
+    const up=()=>{if(!this.drag)return;this.drag=false;if(Math.abs(this.cal.b-this.cal.a)<0.02)this.cal=null;this.draw();};
+    canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+  }
+  setTrack(T){this.track=T;this.t0=0.2;this.cal=null;if(this.mode==='sweep')this.tau=this.t0+6;this.draw();}
+  setCal(on){this.calOn=on;this.c.classList.toggle('nocal',!on);if(!on)this.cal=null;this.draw();}
+  play(on){if(on){this.mode='sweep';this.tau=this.t0+6;this.cal=null;}else{this.mode='static';this.t0=clamp(this.tau-6,0.1,DUR-7);}this.draw();}
+  next(){if(this.mode!=='static')return;this.t0+=6;if(this.t0>DUR-7)this.t0=0.2;this.cal=null;this.draw();}
+  draw(){
+    const T=this.track;if(!T)return;
+    const sk=SKINS[SKIN],c=this.c,ctx=this.ctx,dpr=window.devicePixelRatio||1;
+    const W=c.parentElement.clientWidth;if(!W)return;
+    const mm=W/150,ecgH=34*mm,gap=1.2*mm,plH=this.showPleth?13*mm:0,H=Math.round(ecgH+(this.showPleth?gap+plH:0));
+    if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);c.style.height=H+'px';}
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle=sk.bg;ctx.fillRect(0,0,W,H);
+    // grid
+    ctx.lineWidth=1;
+    for(let i=0;i<=150;i++){if(i%5===0)continue;const x=Math.round(i*mm)+.5;ctx.strokeStyle=sk.minor;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ecgH);ctx.stroke();}
+    for(let j=0;j<=34;j++){if(j%5===0)continue;const y=Math.round(j*mm)+.5;ctx.strokeStyle=sk.minor;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.strokeStyle=sk.major;
+    for(let i=0;i<=150;i+=5){const x=Math.round(i*mm)+.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ecgH);ctx.stroke();}
+    for(let j=0;j<=34;j+=5){const y=Math.round(j*mm)+.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // 3-second ticks
+    ctx.strokeStyle=sk.tick;ctx.lineWidth=2;
+    [0,75,150].forEach(m=>{const x=clamp(m*mm,1,W-1);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,2.2*mm);ctx.stroke();});
+    const y0=22*mm,k=10*mm,yE=v=>y0-v*k;
+    const fs=Math.max(10,Math.min(13,2.7*mm));
+    // annotations underlay
+    const ann=this.annotate&&this.mode==='static',t0=this.t0,X=s=>(s-t0)/6*W,inW=s=>s>t0-0.15&&s<t0+6.15;
+    if(ann){
+      ctx.fillStyle=sk.qrs;
+      for(const b of T.beats){if(!inW(b.q))continue;const [a,z]=b.kind==='narrow'?[-0.045,0.05]:b.kind==='wide'?[-0.07,0.14]:[-0.08,0.13];ctx.fillRect(X(b.q+a),6*mm,X(b.q+z)-X(b.q+a),ecgH-9*mm);}
+    }
+    // trace
+    ctx.strokeStyle=sk.trace;ctx.lineWidth=Math.max(1.3,0.32*mm);ctx.lineJoin='round';
+    const path=(arr,ts,te,xOf,yOf)=>{ctx.beginPath();let first=true;const i0=Math.ceil(ts*FS),i1=Math.floor(te*FS);for(let i=i0;i<=i1;i++){const idx=((i%N)+N)%N,x=xOf(i/FS),y=yOf(arr[idx]);if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);}ctx.stroke();};
+    const plTop=ecgH+gap,yP=v=>plTop+plH*(0.88-0.72*v);
+    if(this.showPleth){ctx.fillStyle=sk.plBg;ctx.fillRect(0,plTop,W,plH);}
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W,ecgH);ctx.clip();
+    if(this.mode==='static'){path(T.ecg,t0,t0+6,X,yE);}
+    else{const tau=this.tau,base=Math.floor(tau/6)*6,gapS=0.12;
+      path(T.ecg,base,tau,s=>(s-base)/6*W,yE);
+      if(tau-6+gapS<base)path(T.ecg,tau-6+gapS,base,s=>(s-base+6)/6*W,yE);
+      const hx=(tau-base)/6*W,hi=((Math.floor(tau*FS)%N)+N)%N;ctx.fillStyle=sk.trace;ctx.beginPath();ctx.arc(hx,yE(T.ecg[hi]),Math.max(2,0.6*mm),0,PI2);ctx.fill();}
+    ctx.restore();
+    if(this.showPleth){
+      ctx.save();ctx.beginPath();ctx.rect(0,plTop,W,plH);ctx.clip();
+      ctx.strokeStyle=sk.pl;ctx.lineWidth=Math.max(1.3,0.3*mm);
+      if(this.mode==='static')path(T.pleth,t0,t0+6,X,yP);
+      else{const tau=this.tau,base=Math.floor(tau/6)*6;path(T.pleth,base,tau,s=>(s-base)/6*W,yP);if(tau-6+0.12<base)path(T.pleth,tau-6+0.12,base,s=>(s-base+6)/6*W,yP);}
+      ctx.font=`600 ${fs-1}px system-ui,sans-serif`;ctx.fillStyle=sk.text;ctx.textBaseline='top';ctx.fillText('PULSE (pleth)',4,plTop+3);
+      if(T.noPulse){ctx.fillStyle=sk.lab;ctx.font=`700 ${fs+1}px system-ui,sans-serif`;ctx.textBaseline='middle';ctx.textAlign='center';ctx.fillText('NO PULSE',W/2,plTop+plH/2);ctx.textAlign='left';}
+      ctx.restore();
+    }
+    // annotation overlay
+    if(ann){
+      ctx.textBaseline='alphabetic';ctx.textAlign='center';
+      const showPR=W>=420;
+      for(const P of T.P){
+        if(!inW(P.t)||P.hidden)continue;
+        const x=X(P.t);
+        ctx.fillStyle=P.drop?sk.lab:sk.P;ctx.font=`700 ${fs}px system-ui,sans-serif`;
+        ctx.fillText('P',x,y0-2.6*mm);
+        if(P.drop){ctx.font=`600 ${fs-1}px system-ui,sans-serif`;ctx.fillText('no QRS',x,4.6*mm);}
+        if(P.pr){
+          const xa=X(P.t-0.05),xb=X(P.t-0.05+P.pr),yb=y0+5.5*mm;
+          ctx.strokeStyle=sk.P;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xa,yb-1.2*mm);ctx.lineTo(xa,yb);ctx.lineTo(xb,yb);ctx.lineTo(xb,yb-1.2*mm);ctx.stroke();
+          if(showPR){ctx.fillStyle=sk.P;ctx.font=`600 ${fs-1.5}px system-ui,sans-serif`;ctx.fillText(P.pr.toFixed(2),(xa+xb)/2,yb+2.6*mm);}
+        }
+      }
+      ctx.fillStyle=sk.lab;ctx.font=`700 ${fs}px system-ui,sans-serif`;
+      for(const b of T.beats){if(b.label&&inW(b.q))ctx.fillText(b.label,X(b.q),4.6*mm);}
+      ctx.fillStyle=sk.P;ctx.font=`700 ${fs-1}px system-ui,sans-serif`;
+      for(const f of T.F){if(inW(f))ctx.fillText('F',X(f),y0+5.2*mm);}
+      ctx.textAlign='left';
+      if(T.band){ctx.font=`600 ${fs}px system-ui,sans-serif`;const w=ctx.measureText(T.band).width;ctx.fillStyle=sk.pill;ctx.fillRect(3*mm,3*mm,w+12,fs+8);ctx.fillStyle=sk.lab;ctx.textBaseline='middle';ctx.fillText(T.band,3*mm+6,3*mm+(fs+8)/2);ctx.textBaseline='alphabetic';}
+    }
+    // calipers
+    if(this.cal&&this.mode==='static'){
+      const {a,b}=this.cal,xa=X(a),xb=X(b),dt=Math.abs(b-a);
+      ctx.strokeStyle=SKIN==='paper'?'#0b5d3b':'#ffffff';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+      [xa,xb].forEach(x=>{ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();});ctx.setLineDash([]);
+      if(dt>=0.02){
+        const txt=`${dt.toFixed(2)} s · ${(dt/0.04).toFixed(1)} small boxes · if R–R: ${Math.round(60/dt)}/min`;
+        ctx.font=`600 ${fs}px system-ui,sans-serif`;const w=ctx.measureText(txt).width+14;
+        let lx=clamp((xa+xb)/2-w/2,2,W-w-2);const ly=7*mm;
+        ctx.fillStyle=SKIN==='paper'?'#0b5d3b':'#ffffff';ctx.fillRect(lx,ly,w,fs+9);
+        ctx.fillStyle=SKIN==='paper'?'#ffffff':'#000000';ctx.textBaseline='middle';ctx.fillText(txt,lx+7,ly+(fs+9)/2);ctx.textBaseline='alphabetic';
+      }
+    }
+  }
+}
+let last=null;
+function loop(ts){const dt=last?Math.min(0.1,(ts-last)/1000):0;last=ts;for(const s of STRIPS)if(s.mode==='sweep'&&s.c.offsetParent){s.tau+=dt;if(s.tau>DUR-1)s.tau=6.2;s.draw();}requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+function toolbar(el,strip,opts={}){
+  el.innerHTML='';
+  const mk=(label,fn,pressed)=>{const b=document.createElement('button');b.className='tb';b.type='button';b.textContent=label;if(pressed!==undefined)b.setAttribute('aria-pressed',pressed);b.onclick=()=>fn(b);el.appendChild(b);return b;};
+  const strips=opts.strips||[strip];
+  const play=mk('▶ Live monitor',b=>{const on=strips[0].mode!=='sweep';strips.forEach(s=>s.play(on));b.textContent=on?'❚❚ Pause to measure':'▶ Live monitor';b.classList.toggle('primary',on);});
+  mk('Next 6 s →',()=>strips.forEach(s=>s.next()));
+  let annB=null;
+  if(!opts.noAnnotate){annB=mk('Annotate',b=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);strips.forEach(s=>{s.annotate=on;s.draw();});},strips[0].annotate);}
+  mk('Calipers',b=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);strips.forEach(s=>s.setCal(on));},strips[0].calOn);
+  const meta=document.createElement('span');meta.className='stripmeta';meta.textContent='Lead II · 25 mm/s · 10 mm/mV · 6-s window';el.appendChild(meta);
+  return {play,annB,reset(){strips.forEach(s=>{if(s.mode==='sweep')s.play(false);});play.textContent='▶ Live monitor';play.classList.remove('primary');}};
+}
+
+/* ===================== HEART DIAGRAM ===================== */
+function heartSVG(sites){
+  const h=k=>sites.includes(k)?' hot':'';
+  return `<svg viewBox="0 0 200 175" role="img" aria-label="Conduction system diagram">
+  <path class="reg${h('atria')}" d="M30,72 C26,40 52,22 80,30 L100,40 L120,30 C150,22 176,40 170,72 Z"/>
+  <path class="reg${h('vent')}" d="M30,78 L170,78 C168,115 140,148 100,168 C60,148 32,115 30,78 Z"/>
+  <circle class="node${h('sa')}" cx="52" cy="42" r="6"/>
+  <path class="path${h('atria')}" d="M58,45 Q80,60 95,82"/>
+  <circle class="node${h('av')}" cx="100" cy="85" r="6"/>
+  <path class="path${h('his')}" d="M100,91 L100,112 M100,112 Q85,128 70,148 M100,112 Q115,128 130,148"/>
+  <text x="38" y="30">SA node</text><text x="108" y="80">AV node</text><text x="106" y="106">His / bundles</text>
+  <text x="76" y="62">Atria</text><text x="78" y="138">Ventricles</text>
+  </svg>`;
+}
+
+/* ===================== LEARN ===================== */
+const $=s=>document.querySelector(s);
+const learnStrip=new Strip($('#l-canvas'));
+const lTools=toolbar($('#l-tools'),learnStrip);
+let learnId='nsr',learnVar=null;
+(function buildList(){
+  const L=$('#rlist'),M=$('#mselect');
+  GROUPS.forEach(([g,ids])=>{
+    const h=document.createElement('h4');h.textContent=g;L.appendChild(h);
+    const og=document.createElement('optgroup');og.label=g;
+    ids.forEach(id=>{const b=document.createElement('button');b.type='button';b.textContent=RH[id].name;b.dataset.id=id;b.onclick=()=>showLearn(id);L.appendChild(b);
+      const o=document.createElement('option');o.value=id;o.textContent=RH[id].name;og.appendChild(o);});
+    M.appendChild(og);
+  });
+  M.onchange=()=>showLearn(M.value);
+})();
+function critRows(R,ref){
+  return KEYS.map(k=>`<tr class="${R.abn.includes(k)?'abn':''}"><th>${KLABEL[k]}</th><td class="ref">${ref[k]}</td><td class="this">${R.crit[k]}</td></tr>`).join('');
+}
+function showLearn(id,variant){
+  learnId=id;const R=RH[id];learnVar=R.variants?(variant||R.variants[0].key):null;
+  lTools.reset();
+  learnStrip.setTrack(buildTrack(id,learnVar));
+  learnStrip.c.setAttribute('aria-label',R.name+', simulated lead II strip');
+  $('#l-name').textContent=R.name;$('#l-group').textContent=R.group;$('#l-cue').innerHTML=R.cue;
+  const v=$('#l-variant');v.innerHTML='';
+  if(R.variants){const seg=document.createElement('span');seg.className='seg';R.variants.forEach(x=>{const b=document.createElement('button');b.type='button';b.textContent=x.label;b.setAttribute('aria-pressed',x.key===learnVar);b.onclick=()=>showLearn(id,x.key);seg.appendChild(b);});v.appendChild(seg);}
+  $('#l-table').innerHTML=critRows(R,NSRC);
+  $('#l-diff').textContent=R.diff;
+  $('#l-heart').innerHTML=heartSVG(R.site);$('#l-site').textContent=R.siteNote;
+  $('#l-patient').textContent=R.patient;
+  $('#l-nursing').innerHTML=R.nursing.map(n=>`<li>${n}</li>`).join('');
+  document.querySelectorAll('#rlist button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  $('#mselect').value=id;
+}
+
+/* ===================== COMPARE ===================== */
+const cA=new Strip($('#c-canvas-a')),cB=new Strip($('#c-canvas-b'));
+const cTools=toolbar($('#c-tools'),cA,{strips:[cA,cB]});
+(function(){
+  const fill=sel=>GROUPS.forEach(([g,ids])=>{const og=document.createElement('optgroup');og.label=g;ids.forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=RH[id].name;og.appendChild(o);});sel.appendChild(og);});
+  fill($('#c-a'));fill($('#c-b'));
+  const P=$('#presets');
+  PRESETS.forEach(([a,b])=>{const btn=document.createElement('button');btn.type='button';btn.textContent=`${short(a)} vs ${short(b)}`;btn.dataset.pair=a+'|'+b;btn.onclick=()=>showCompare(a,b);P.appendChild(btn);});
+  $('#c-a').onchange=()=>showCompare($('#c-a').value,$('#c-b').value);
+  $('#c-b').onchange=()=>showCompare($('#c-a').value,$('#c-b').value);
+})();
+function short(id){return {nsr:'NSR',sbrady:'Sinus brady',stach:'Sinus tach',pac:'PAC',pjc:'PJC',pvc:'PVC',first:'1st-degree',mob1:'Mobitz I',mob2:'Mobitz II',third:'3rd-degree',afib:'AF',afrvr:'AF with RVR',flutter:'Flutter',svt:'SVT',vt:'VT',tdp:'Torsades',vf:'VF',pea:'PEA',asys:'Asystole'}[id];}
+function showCompare(a,b){
+  cTools.reset();
+  $('#c-a').value=a;$('#c-b').value=b;
+  cA.setTrack(buildTrack(a,RH[a].variants?RH[a].variants[0].key:null));
+  cB.setTrack(buildTrack(b,RH[b].variants?RH[b].variants[0].key:null));
+  $('#c-a-cue').innerHTML=RH[a].cue.replace(/<[^>]+>/g,'');$('#c-b-cue').innerHTML=RH[b].cue.replace(/<[^>]+>/g,'');
+  $('#c-ha').textContent='A: '+short(a);$('#c-hb').textContent='B: '+short(b);
+  $('#c-table').innerHTML=KEYS.map(k=>`<tr class="${RH[a].crit[k]!==RH[b].crit[k]?'diff':''}"><th>${KLABEL[k]}</th><td>${RH[a].crit[k]}</td><td>${RH[b].crit[k]}</td></tr>`).join('')+
+    `<tr><th>Pulse</th><td>${RH[a].variants?'Check: may be present or absent':(['pea','vf','asys','tdp'].includes(a)?'Absent':'Present')}</td><td>${RH[b].variants?'Check: may be present or absent':(['pea','vf','asys','tdp'].includes(b)?'Absent':'Present')}</td></tr>`;
+  const p=PRESETS.find(x=>(x[0]===a&&x[1]===b)||(x[0]===b&&x[1]===a));
+  $('#c-tell').innerHTML='<b>How to tell them apart:</b> '+(p?p[2]:'Compare the shaded rows below, then check the patient.');
+  document.querySelectorAll('#presets button').forEach(x=>x.classList.toggle('on',x.dataset.pair===a+'|'+b));
+}
+
+/* ===================== PRACTICE ===================== */
+const pStrip=new Strip($('#p-canvas'));pStrip.annotate=false;pStrip.showPleth=false;
+const pTools=toolbar($('#p-tools'),pStrip,{noAnnotate:true});
+const PS={groups:new Set(GROUPS.map(g=>g[0])),cur:null,variant:null,steps:[],i:0,firstTry:0,answered:0,lastId:null,results:[]};
+(function(){
+  const F=$('#pfilter');
+  GROUPS.forEach(([g])=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" checked> ${g}`;const cb=l.querySelector('input');cb.onchange=()=>{cb.checked?PS.groups.add(g):PS.groups.delete(g);if(!PS.groups.size){cb.checked=true;PS.groups.add(g);}};F.appendChild(l);});
+})();
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function newPractice(){
+  pTools.reset();
+  const pool=GROUPS.filter(g=>PS.groups.has(g[0])).flatMap(g=>g[1]).filter(id=>id!==PS.lastId||GROUPS.filter(g=>PS.groups.has(g[0])).flatMap(g=>g[1]).length===1);
+  const id=pool[Math.floor(Math.random()*pool.length)];PS.lastId=id;
+  const R=RH[id];PS.cur=id;PS.variant=R.variants?R.variants[Math.floor(Math.random()*2)].key:null;
+  pStrip.annotate=false;pStrip.showPleth=false;
+  pStrip.setTrack(buildTrack(id,PS.variant));
+  const steps=[];
+  KEYS.forEach(k=>{const a=R.ans[k];if(a===null||a===undefined)return;steps.push({cj:'Recognize cues',q:QTXT[k],opts:OPTS[k].map((t,i)=>({t,ok:Array.isArray(a)?a.includes(i):a===i})),why:`<b>This strip:</b> ${R.crit[k]}. ${TIPS[k]}`});});
+  const names=shuffle([id,...shuffle(R.look).slice(0,3)]);
+  steps.push({cj:'Analyze cues · Prioritize hypotheses',q:'Interpret the rhythm',opts:names.map(n=>({t:RH[n].name,ok:n===id})),why:`${R.cue} ${R.diff}`});
+  const sc=R.scen[PS.variant]||R.scen;
+  steps.push({cj:'Generate solutions · Take action',q:'What is the nurse\'s priority action?',stem:sc.stem,opts:shuffle(sc.opts).map(o=>({t:o.t,ok:!!o.ok})),why:sc.why});
+  PS.steps=steps;PS.i=0;PS.results=[];
+  renderStep();
+}
+function renderStep(){
+  const s=PS.steps[PS.i],P=$('#p-panel');
+  const dots=PS.steps.map((_,j)=>`<span class="${j<PS.i?(PS.results[j]?'ok':'no'):j===PS.i?'cur':''}"></span>`).join('');
+  P.innerHTML=`<div class="stepdots">${dots}</div><div class="cjm">${s.cj} · Step ${PS.i+1} of ${PS.steps.length}</div><div class="q">${s.q}</div>${s.stem?`<div class="stem">${s.stem}</div>`:''}<div class="opts"></div><div class="fbwrap"></div><div class="navrow"></div>`;
+  const O=P.querySelector('.opts');
+  s.opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.textContent=o.t;b.onclick=()=>answer(o,b);O.appendChild(b);});
+}
+function answer(o,btn){
+  const s=PS.steps[PS.i],P=$('#p-panel');
+  P.querySelectorAll('.opts button').forEach((b,j)=>{b.disabled=true;if(s.opts[j].ok)b.classList.add('right');});
+  if(!o.ok)btn.classList.add('wrong');
+  PS.results[PS.i]=!!o.ok;PS.answered++;if(o.ok)PS.firstTry++;
+  updScore();
+  P.querySelector('.fbwrap').innerHTML=`<div class="fb ${o.ok?'ok':'no'}"><b class="v">${o.ok?'Correct.':'Not quite.'}</b>${s.why}</div>`;
+  const nav=P.querySelector('.navrow'),last=PS.i===PS.steps.length-1;
+  const nb=document.createElement('button');nb.type='button';nb.className='tb primary';nb.textContent=last?'Reveal the full strip':'Next step →';
+  nb.onclick=()=>{if(last)finish();else{PS.i++;renderStep();}};nav.appendChild(nb);nb.focus();
+}
+function finish(){
+  const R=RH[PS.cur],P=$('#p-panel'),n=PS.results.filter(Boolean).length;
+  pStrip.annotate=true;pStrip.showPleth=true;pStrip.draw();
+  P.innerHTML=`<div class="stepdots">${PS.results.map(r=>`<span class="${r?'ok':'no'}"></span>`).join('')}</div>
+  <div class="cjm">Evaluate outcomes</div><div class="q">${R.name}${PS.variant?` (${PS.variant==='pulse'?'with a pulse':'pulseless'})`:''}: ${n} of ${PS.steps.length} correct</div>
+  <p class="cue">${R.cue}</p><p style="margin:0 0 6px;font-size:14.5px">The strip is now annotated and the pulse trace is visible. Check your measurements against the labels.</p>
+  <div class="navrow"><button type="button" class="tb primary" id="p-new">New strip →</button><button type="button" class="tb" id="p-study">Study ${short(PS.cur)} in Learn</button></div>`;
+  $('#p-new').onclick=newPractice;
+  $('#p-study').onclick=()=>{setTab('learn');showLearn(PS.cur,PS.variant);window.scrollTo({top:0,behavior:'smooth'});};
+}
+function updScore(){$('#p-score').innerHTML=PS.answered?`Session: <b>${PS.firstTry}/${PS.answered}</b> steps correct`:'';}
+
+/* ===================== TABS / SKIN ===================== */
+function setTab(t){
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  ['learn','compare','practice'].forEach(v=>$('#v-'+v).hidden=v!==t);
+  if(t==='compare'&&!cA.track)showCompare('mob1','mob2');
+  if(t==='practice'&&!PS.cur)newPractice();
+  requestAnimationFrame(()=>STRIPS.forEach(s=>s.draw()));
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+document.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{SKIN=b.dataset.skin;document.querySelectorAll('[data-skin]').forEach(x=>x.setAttribute('aria-pressed',x===b));STRIPS.forEach(s=>s.draw());});
+if(window.innerWidth<700)document.querySelector('details.method').open=false;
+showLearn('nsr');
+window.__RH=RH;window.__showLearn=showLearn;window.__setTab=setTab;window.__showCompare=showCompare;
+})();
+</script>
+</body>
+</html>

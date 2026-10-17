@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dysrhythmia Med Simulator</title>
+<style>
+:root{
+  --bg:#f6f4f2; --surface:#fff; --surface2:#faf8f6; --ink:#1d1916; --muted:#6a615b; --line:#e5ddd7;
+  --accent:#c8372a; --accent-soft:#fbe9e6; --ok:#1d7a4c; --ok-soft:#e4f3ea; --bad:#b42318; --bad-soft:#fdeceb;
+  --warn:#9a5b00; --warn-soft:#fff3dc; --blue:#2457c5; --blue-soft:#e8eefb; --radius:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121110; --surface:#1b1918; --surface2:#222020; --ink:#f1ece8; --muted:#a69c95; --line:#35302d;
+    --accent:#ff6b5b; --accent-soft:#3a1f1b; --ok:#4cc38a; --ok-soft:#15301f; --bad:#ff7b6e; --bad-soft:#3a1c19;
+    --warn:#f2b552; --warn-soft:#33270f; --blue:#86a8ff; --blue-soft:#1b2440;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#121110; --surface:#1b1918; --surface2:#222020; --ink:#f1ece8; --muted:#a69c95; --line:#35302d;
+    --accent:#ff6b5b; --accent-soft:#3a1f1b; --ok:#4cc38a; --ok-soft:#15301f; --bad:#ff7b6e; --bad-soft:#3a1c19;
+    --warn:#f2b552; --warn-soft:#33270f; --blue:#86a8ff; --blue-soft:#1b2440;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+button{font:inherit;color:inherit}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{margin-right:auto;line-height:1.15}
+.brand b{font-size:19px;letter-spacing:-.01em}.brand b span{color:var(--accent)}
+.brand small{display:block;color:var(--muted);font-size:12.5px}
+.tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:600;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 20px 40px}
+[hidden]{display:none!important}
+.cases{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:thin}
+.cases button{flex:none;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;cursor:pointer;min-width:150px}
+.cases button small{display:block;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+.cases button b{font-size:14px}
+.cases button.on{border-color:var(--accent);background:var(--accent-soft)}
+.cases button.on b{color:var(--accent)}
+.cases button .done{color:var(--ok);font-size:12px}
+.pt{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.pt .nm{grid-column:1/-1;font-size:17px;font-weight:700;margin-bottom:2px}
+.pt dt{color:var(--muted);font-weight:600}
+.pt dd{margin:0}
+.monitor{background:#050807;border-radius:14px;padding:10px;display:grid;grid-template-columns:1fr 190px;gap:10px;border:1px solid #1d2a24}
+.mon-left{min-width:0}
+.mon-tag{display:flex;justify-content:space-between;color:#7fa892;font:600 11.5px/1 ui-monospace,Menlo,Consolas,monospace;padding:2px 4px 6px}
+canvas#mon{display:block;width:100%;border-radius:6px}
+.vitals{display:grid;gap:8px;align-content:start}
+.vit{background:#0b1110;border:1px solid #17241f;border-radius:8px;padding:6px 10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.vit small{display:block;font-size:11px;font-weight:700;letter-spacing:.06em}
+.vit b{font-size:30px;line-height:1.05;font-weight:600}
+.vit .u{font-size:11px;opacity:.7;margin-left:3px}
+.vit.hr{color:#3dff8e}.vit.bp{color:#ff6d6d}.vit.sp{color:#49c2ff}.vit.pu{color:#e8e2d0}
+.vit.pu b{font-size:17px}
+.status{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 0 0;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.status .lab{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.clock{margin-left:auto;font:600 13px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-top:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card h3{margin:0 0 8px;font-size:15px}
+.cj{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--blue)}
+.prompt{font-size:16.5px;font-weight:600;margin:4px 0 12px}
+.opts{display:grid;gap:8px}
+.opts button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;font-size:14.5px;display:flex;gap:10px;align-items:flex-start}
+.opts button:hover:not(:disabled){border-color:var(--ink)}
+.opts button:disabled{cursor:default;opacity:.55}
+.opts button.chosen{opacity:1;border-width:2px}
+.opts .k{flex:none;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:5px;padding:2px 6px;margin-top:2px;background:var(--surface2);border:1px solid var(--line);color:var(--muted)}
+.opts .k.med{background:var(--blue-soft);color:var(--blue);border-color:transparent}
+.opts .k.elec{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.watch{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--surface2);border:1px dashed var(--line);font-size:14px;color:var(--muted)}
+.fb{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:14.5px}
+.fb.best{background:var(--ok-soft)} .fb.ok{background:var(--blue-soft)} .fb.wrong{background:var(--warn-soft)} .fb.harm{background:var(--bad-soft)}
+.fb .v{display:block;font-weight:800;margin-bottom:4px}
+.fb.best .v{color:var(--ok)} .fb.ok .v{color:var(--blue)} .fb.wrong .v{color:var(--warn)} .fb.harm .v{color:var(--bad)}
+.fb .mech{margin-top:8px;padding-top:8px;border-top:1px solid rgba(127,127,127,.25)}
+.fb .mech b{font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:14px;font-weight:600}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.log{list-style:none;margin:0;padding:0;max-height:430px;overflow:auto;font-size:13.5px}
+.log li{display:grid;grid-template-columns:52px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.log time{font:600 12px ui-monospace,Menlo,Consolas,monospace;color:var(--muted);padding-top:1px}
+.log li.act span{font-weight:700}
+.log li.phys span{color:var(--blue)}
+.log li.bad span{color:var(--bad)}
+.log li.good span{color:var(--ok)}
+.drugs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.drug h3{margin:0;font-size:17px}
+.drug .cls{color:var(--muted);font-size:13px;margin-bottom:8px}
+.drug .use{font-size:13px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;margin-bottom:8px}
+.drug h4{margin:10px 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.drug ul{margin:0;padding-left:18px;font-size:14px}
+.drug li{margin:2px 0}
+.drug .no li{color:var(--bad)}
+.drug .dose{font-size:13.5px}
+.dfilter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.dfilter button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.dfilter button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.hintbtn{margin:0 0 10px}
+.hint{background:var(--warn-soft);border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:9px 12px;font-size:14.5px;margin:0 0 12px}
+.pbar{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.pbar .sf{color:var(--bad);font-weight:700}
+.pbar .btn{margin-left:auto;padding:4px 10px;font-size:13px}
+.pmodes{display:grid;gap:10px;margin-top:8px}
+.pmode{text-align:left;border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:14px;cursor:pointer;display:grid;gap:4px}
+.pmode:hover{border-color:var(--accent)}
+.pmode b{font-size:16px}.pmode span{font-size:14px;color:var(--muted)}.pmode small{font-size:12.5px;color:var(--blue);font-weight:600}
+.opts button.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:600;opacity:1}
+.opts button.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);opacity:1}
+table.deb{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+table.deb th,table.deb td{text-align:left;vertical-align:top;padding:7px 6px;border-bottom:1px solid var(--line)}
+table.deb th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+table.deb .res{white-space:nowrap;font-weight:700}
+table.deb tr.best .res{color:var(--ok)} table.deb tr.ok .res{color:var(--blue)} table.deb tr.wrong .res{color:var(--warn)} table.deb tr.harm .res{color:var(--bad)}
+table.deb .bst{margin-top:4px;color:var(--ok);font-size:13px}
+.bigscore{font-size:46px;font-weight:800;letter-spacing:-.02em;margin:4px 0 10px}
+.bigscore small{display:block;font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
+.nlist{margin:0 0 8px;padding-left:18px;font-size:14px}
+.muted{color:var(--muted);font-size:13.5px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);vertical-align:2px}
+footer{max-width:1280px;margin:0 auto;padding:0 20px 40px;font-size:12.5px;color:var(--muted)}
+footer details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 16px}
+footer summary{cursor:pointer;font-weight:600;color:var(--ink)}
+footer a{color:var(--blue)}
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .monitor{grid-template-columns:1fr}
+  .vitals{grid-template-columns:repeat(4,1fr)}
+  .vit b{font-size:22px}
+}
+@media (max-width:520px){
+  header.top{padding:10px 16px}
+  .wrap{padding:14px 16px 30px} footer{padding:0 16px 30px}
+  .vitals{grid-template-columns:repeat(2,1fr)}
+  .pt{grid-template-columns:1fr}
+  .pt dt{margin-top:4px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>Med <span>Response</span> Sim</b><small>NUR 213 Perfusion · Antidysrhythmic &amp; ACLS medications</small></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="learn" aria-selected="true">Learn</button>
+    <button role="tab" data-tab="practice" aria-selected="false">Practice</button>
+    <button role="tab" data-tab="drugs" aria-selected="false">Drug cards</button>
+  </nav>
+</header>
+
+<div class="wrap">
+<section id="v-sim">
+  <div class="cases" id="cases" aria-label="Cases"></div>
+  <div class="pbar" id="pbar" hidden></div>
+  <div class="pt" id="pt"></div>
+  <div class="monitor">
+    <div class="mon-left">
+      <div class="mon-tag"><span>II  ×1  25 mm/s</span><span id="mon-rhythm"></span></div>
+      <canvas id="mon" aria-label="Bedside monitor showing a live ECG and pulse oximeter waveform"></canvas>
+    </div>
+    <div class="vitals">
+      <div class="vit hr"><small>HR</small><b id="v-hr">--</b><span class="u">/min</span></div>
+      <div class="vit bp"><small>ART BP</small><b id="v-bp">--</b><span class="u" id="v-map"></span></div>
+      <div class="vit sp"><small>SpO₂</small><b id="v-sp">--</b><span class="u">%</span></div>
+      <div class="vit pu"><small>PULSE</small><b id="v-pu">--</b></div>
+    </div>
+  </div>
+  <div class="status"><span class="lab">Patient</span><span id="st"></span><span class="clock" id="clock">00:00</span></div>
+  <div class="grid">
+    <div class="card" id="decision"></div>
+    <div class="card"><h3>What happened (event log)</h3><ul class="log" id="log"></ul></div>
+  </div>
+</section>
+
+<section id="v-drugs" hidden>
+  <div class="dfilter" id="dfilter"></div>
+  <div class="drugs" id="drugs"></div>
+</section>
+</div>
+
+<footer>
+  <details>
+    <summary>About this tool: limits, sources, AI disclosure</summary>
+    <p><b>Simulation, not physiology software.</b> Rhythms and vital-sign responses are scripted teaching approximations. Real responses vary in timing and size, and drug effects are compressed in time (the log notes when time is skipped). The ECG is an idealized lead II. Use the tool to practice reasoning, not to predict how a real patient will respond.</p>
+    <p><b>Scope.</b> Every medication action assumes a provider order or an approved protocol. The RN decisions here are assessing, recognizing, holding and clarifying, administering safely, and escalating. Doses follow AHA 2025 ACLS where it specifies them. Always follow the facility's protocols.</p>
+    <p><b>Sources checked (October 2026).</b> AHA 2025 Guidelines for CPR &amp; ECC, adult ALS, including the <a href="https://cpr.heart.org/-/media/CPR-Files/CPR-Guidelines-Files/2025-Accessible/Algorithm-ACLS-Tachyarrhythmia-LngDscrp-250726-Ed.pdf?sc_lang=en" target="_blank" rel="noopener">tachyarrhythmia algorithm</a> and the bradycardia and cardiac arrest recommendations (magnesium not routine in arrest; amiodarone or lidocaine for refractory VF/pVT; no verapamil/diltiazem for wide-complex tachycardia; avoid CCBs and IV beta-blockers in decompensated HF with LV systolic dysfunction; avoid AV-nodal blockers and IV amiodarone in pre-excited AF). 2023 ACC/AHA/ACCP/HRS AF guideline (DOACs preferred over warfarin except with mechanical valves or mitral stenosis; aspirin is not a substitute for anticoagulation). Modified Valsalva conversion rate from the REVERT trial (Appelboam et al., Lancet 2015).</p>
+    <p><b>AI-assistance disclosure.</b> Built with AI assistance (Claude, Anthropic) from course materials by A. Cooke, MSN, RN, PCCN. Faculty must verify content against current guidelines and facility policy before using it with students.</p>
+  </details>
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================
+   LIVE MONITOR ENGINE
+   ============================================================ */
+const FS=250, WIN=6, NB=FS*WIN, PI2=Math.PI*2;
+const g=(t,c,s,a)=>{const d=(t-c)/s;return a*Math.exp(-0.5*d*d)};
+const g2=(t,c,s1,s2,a)=>{const s=t<c?s1:s2,d=(t-c)/s;return a*Math.exp(-0.5*d*d)};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const S={t:0,events:[],segs:[{t:0,mode:'asys',vfAmp:1}],nextP:0,nextQ:0,lastQ:-5,lastIdx:-1,ecg:new Float32Array(NB),pl:new Float32Array(NB),shocks:[],ramps:{}};
+let H={mode:'asys'};
+const V={sys:0,dia:0,spo2:0},VT={sys:0,dia:0,spo2:0,tau:3};
+const NOPULSE=['vf','tdp','asys'];
+function val(k,t){const r=S.ramps[k];if(!r)return H[k];if(t>=r.t1)return r.v1;if(t<=r.t0)return r.v0;return r.v0+(r.v1-r.v0)*(t-r.t0)/(r.t1-r.t0);}
+function setHeart(h){
+  const t=S.t,prev=H.mode,ramp=h.ramp||0;
+  const newMode=h.mode&&h.mode!==prev;
+  ['rate','atr','vent'].forEach(k=>{
+    if(h[k]===undefined)return;
+    if(ramp&&!newMode&&H[k]!==undefined){S.ramps[k]={v0:val(k,t),v1:h[k],t0:t,t1:t+ramp};}
+    else delete S.ramps[k];
+  });
+  const nh=Object.assign({},newMode?{}:H,h);delete nh.ramp;
+  if(newMode&&nh.pulse===undefined)nh.pulse=true;
+  H=nh;
+  if(newMode||h.reset){
+    S.events=S.events.filter(e=>e.t<=t||e.type==='shock');
+    S.nextP=Math.max(t+0.08,S.lastQ+0.32);S.nextQ=Math.max(t+0.08,S.lastQ+0.3);
+    if(H.mode==='third'){S.nextP=t+0.1;S.nextQ=Math.max(t+0.5,S.lastQ+0.6);}
+    S.segs.push({t,mode:H.mode,vfAmp:H.vfAmp||1});
+  }else if(h.vfAmp){S.segs.push({t,mode:H.mode,vfAmp:h.vfAmp});}
+}
+function setVitals(v,instant){Object.assign(VT,{tau:3},v);if(instant){V.sys=VT.sys;V.dia=VT.dia;V.spo2=VT.spo2;}}
+function pulsePresent(){
+  if(NOPULSE.includes(H.mode))return false;
+  if(H.pulse===false)return false;
+  if(H.mode==='paced'&&!H.capture)return false;
+  return S.t-S.lastQ<3;
+}
+function addQ(t,kind){
+  const rr=t-S.lastQ;S.lastQ=t;
+  let amp=0;
+  if(H.pulse!==false){amp=(kind==='vt'?0.45:1)*clamp((rr-0.15)/0.45,0.12,1)*clamp(VT.sys/120,0.22,1.1);}
+  S.events.push({t,type:'Q',kind,amp,lqt:!!H.longQT,rr});
+}
+function schedule(tEnd){
+  let guard=0;
+  while(guard++<200){
+    const m=H.mode;
+    if(m==='sinus'){if(S.nextP>tEnd)break;const p=S.nextP;S.events.push({t:p,type:'P'});addQ(p+(H.pr||0.16)-0.01,H.qrs||'narrow');S.nextP+=60/val('rate',p)*(1+rnd(-0.012,0.012));}
+    else if(m==='third'){let did=false;
+      if(S.nextP<=tEnd){S.events.push({t:S.nextP,type:'P'});S.nextP+=60/val('atr',S.nextP)*(1+rnd(-0.01,0.01));did=true;}
+      if(S.nextQ<=tEnd){addQ(S.nextQ,H.qrs||'wide');S.nextQ+=60/val('vent',S.nextQ)*(1+rnd(-0.01,0.01));did=true;}
+      if(!did)break;}
+    else if(m==='af'||m==='svt'||m==='vt'){if(S.nextQ>tEnd)break;addQ(S.nextQ,m==='vt'?'vt':'narrow');const mean=60/val('rate',S.nextQ);S.nextQ+=m==='af'?rnd(mean*0.62,mean*1.38):mean*(1+rnd(-0.004,0.004));}
+    else if(m==='paced'){if(S.nextQ>tEnd)break;S.events.push({t:S.nextQ,type:'spike'});if(H.capture)addQ(S.nextQ+0.04,'paced');else S.lastQ=S.lastQ;S.nextQ+=60/val('rate',S.nextQ);}
+    else break;
+  }
+}
+function segAt(t){let s=S.segs[0];for(const x of S.segs){if(x.t<=t)s=x;else break;}return s;}
+const ph=[rnd(0,6),rnd(0,6),rnd(0,6),rnd(0,6)];
+function sample(t){
+  let v=0.02*Math.sin(PI2*0.17*t)+(Math.random()-0.5)*0.012,p=(Math.random()-0.5)*0.01;
+  const sg=segAt(t);
+  if(sg.mode==='af')v+=(0.045*Math.sin(PI2*5.7*t+ph[0])+0.035*Math.sin(PI2*7.3*t+ph[1])+0.03*Math.sin(PI2*4.6*t+ph[2]))*(0.7+0.3*Math.sin(PI2*0.37*t));
+  else if(sg.mode==='vf'){const a=sg.vfAmp||1,env=0.6+0.4*Math.sin(PI2*0.21*t);v+=a*env*(0.34*Math.sin(PI2*4.1*t+ph[0])+0.24*Math.sin(PI2*5.3*t+ph[1])+0.17*Math.sin(PI2*6.4*t+ph[2])+0.12*Math.sin(PI2*3.3*t+ph[3]));}
+  else if(sg.mode==='tdp'){const env=Math.sin(Math.PI*t/1.7);v+=0.85*env*Math.sin(PI2*3.85*t)+0.15*Math.abs(env)*Math.sin(PI2*7.7*t+0.8);}
+  else if(sg.mode==='asys')v*=0.5;
+  for(const e of S.events){
+    const d=t-e.t;if(d<-0.35||d>1.1)continue;
+    if(e.type==='P')v+=g(d,0,0.022,0.15);
+    else if(e.type==='spike'){if(Math.abs(d)<0.006)v+=1.5;}
+    else if(e.type==='shock'){if(d>=0&&d<0.6)v+=(d<0.016?3:-2.2*Math.exp(-d/0.09));}
+    else if(e.type==='Q'){
+      if(e.kind==='narrow'){
+        const qt=Math.min(0.46,0.4*Math.cbrt(Math.max(e.rr||0.8,0.3)))+(e.lqt?0.2:0),tp=-0.04+qt-0.09;
+        v+=g(d,-0.03,0.009,-0.08)+g(d,0,0.012,1.15)+g(d,0.03,0.01,-0.25)+g2(d,tp,e.lqt?0.11:0.065,e.lqt?0.08:0.045,e.lqt?0.22:0.28);
+      }else if(e.kind==='wide'||e.kind==='paced'){
+        v+=g(d,-0.03,0.025,0.3)+g(d,0.04,0.03,1.0)+g(d,0.11,0.025,-0.3)+g2(d,0.34,0.08,0.06,-0.4);
+      }else if(e.kind==='vt'){
+        v+=g(d,0,0.04,1.15)+g(d,0.1,0.035,-0.35)+g2(d,0.2,0.05,0.04,-0.45);
+      }
+      if(e.amp>0)p+=g2(d,0.22,0.06,0.16,e.amp)+g(d,0.52,0.05,0.12*e.amp);
+    }
+  }
+  return [v,p];
+}
+function shock(){const t=S.t+0.05;S.events.push({t,type:'shock'});S.shocks.push(t);}
+
+const cv=document.getElementById('mon'),ctx=cv.getContext('2d');
+function draw(){
+  const W=cv.parentElement.clientWidth;if(!W)return;
+  const dpr=window.devicePixelRatio||1,eH=Math.round(clamp(W*0.24,150,240)),pH=Math.round(eH*0.36),H2=eH+pH;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H2*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H2*dpr);cv.style.height=H2+'px';}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#050807';ctx.fillRect(0,0,W,H2);
+  ctx.strokeStyle='#0d1c15';ctx.lineWidth=1;
+  for(let s=0;s<=WIN;s+=0.2){const x=Math.round(s/WIN*W)+.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,eH);ctx.stroke();}
+  for(let y=0;y<=eH;y+=eH/8){ctx.beginPath();ctx.moveTo(0,Math.round(y)+.5);ctx.lineTo(W,Math.round(y)+.5);ctx.stroke();}
+  ctx.fillStyle='#071017';ctx.fillRect(0,eH,W,pH);
+  const head=Math.floor(S.t*FS),hi=((head%NB)+NB)%NB,gap=Math.round(0.14*FS);
+  const y0=eH*0.62,k=eH*0.36;
+  const trace=(buf,yf,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineJoin='round';ctx.beginPath();let pen=false;
+    for(let i=0;i<NB;i++){const ahead=((i-hi)%NB+NB)%NB;if(ahead>0&&ahead<=gap){pen=false;continue;}
+      if(head-((hi-i+NB)%NB)<0){pen=false;continue;}
+      const x=i/NB*W,y=yf(buf[i]);if(!pen){ctx.moveTo(x,y);pen=true;}else ctx.lineTo(x,y);}
+    ctx.stroke();};
+  ctx.save();ctx.beginPath();ctx.rect(0,0,W,eH);ctx.clip();
+  trace(S.ecg,v=>y0-v*k,'#3dff8e');ctx.restore();
+  ctx.save();ctx.beginPath();ctx.rect(0,eH,W,pH);ctx.clip();
+  trace(S.pl,v=>eH+pH*(0.88-0.72*v),'#49c2ff');ctx.restore();
+  ctx.font='600 11px ui-monospace,Menlo,monospace';ctx.fillStyle='#4f8fb3';ctx.fillText('PLETH',6,eH+14);
+  ctx.fillStyle='#ffd24a';ctx.font='700 13px system-ui,sans-serif';
+  S.shocks=S.shocks.filter(t=>S.t-t<WIN-0.2);
+  for(const t of S.shocks){if(t>S.t)continue;const x=((Math.floor(t*FS)%NB)/NB)*W;ctx.fillText('⚡ SHOCK',clamp(x+4,2,W-70),16);}
+  const hx=hi/NB*W;ctx.fillStyle='#3dff8e';ctx.beginPath();ctx.arc(hx,y0-S.ecg[hi]*k,3,0,PI2);ctx.fill();
+}
+const $=s=>document.querySelector(s);
+let lastTs=null,lastVit=0;
+function frame(ts){
+  const dt=lastTs?Math.min(0.1,(ts-lastTs)/1000):0;lastTs=ts;
+  S.t+=dt;schedule(S.t+0.8);
+  const end=Math.floor(S.t*FS);
+  for(let i=Math.max(S.lastIdx+1,end-NB+1);i<=end;i++){const [e,p]=sample(i/FS);S.ecg[i%NB]=e;S.pl[i%NB]=p;}
+  S.lastIdx=end;
+  if(S.events.length>300)S.events=S.events.filter(e=>e.t>S.t-2.5);
+  if(S.segs.length>20)S.segs=S.segs.slice(-10);
+  const f=1-Math.exp(-dt/VT.tau);V.sys+=(VT.sys-V.sys)*f;V.dia+=(VT.dia-V.dia)*f;V.spo2+=(VT.spo2-V.spo2)*f;
+  draw();
+  if(ts-lastVit>400){lastVit=ts;updVitals();}
+  requestAnimationFrame(frame);
+}
+function hrNow(){
+  if(NOPULSE.includes(H.mode))return null;
+  const qs=S.events.filter(e=>e.type==='Q'&&e.t<=S.t).map(e=>e.t).sort((a,b)=>a-b);
+  if(!qs.length||S.t-qs[qs.length-1]>3)return 0;
+  const n=Math.min(4,qs.length-1);if(n<1)return null;
+  return Math.round(60/((qs[qs.length-1]-qs[qs.length-1-n])/n));
+}
+function updVitals(){
+  const hr=hrNow(),pp=pulsePresent();
+  $('#v-hr').textContent=hr===null?'---':hr===0?'0':hr;
+  if(pp){$('#v-bp').textContent=`${Math.round(V.sys)}/${Math.round(V.dia)}`;$('#v-map').textContent=`(${Math.round((V.sys+2*V.dia)/3)})`;$('#v-sp').textContent=Math.round(V.spo2);}
+  else{$('#v-bp').textContent='---';$('#v-map').textContent='';$('#v-sp').textContent='---';}
+  $('#v-pu').textContent=pp?'Present':'ABSENT';$('#v-pu').style.color=pp?'':'#ff6d6d';
+  const m=S.t/1;$('#clock').textContent=`sim ${String(Math.floor(m/60)).padStart(2,'0')}:${String(Math.floor(m%60)).padStart(2,'0')}`;
+}
+requestAnimationFrame(frame);
+
+/* ============================================================
+   CASES
+   ============================================================ */
+const CASES=[
+{id:'brady',tag:'Bradycardia',title:'Too slow, and it shows',
+ pt:{nm:'Mr. H., 68',hx:'Admitted with pneumonia. Hypertension.',meds:'Metoprolol tartrate 50 mg PO BID (morning dose given 2 h ago).',labs:'K⁺ 4.2, glucose 128.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Recognize cues · Analyze cues',rhythm:'Sinus bradycardia',state:{heart:{mode:'sinus',rate:40,pr:0.18},vit:{sys:78,dia:46,spo2:95},status:'Pale, diaphoretic, dizzy when he sat up. Alert but slow to answer.'},
+  prompt:'Is he stable or unstable, and what do you do first?',
+  opts:[
+   {k:'call',t:'Unstable: get him flat, call the rapid response team, confirm IV access, and anticipate atropine',q:'best',next:'n2',
+    fb:'Bradycardia with hypotension and altered mentation is unstable. Escalate, support perfusion, and get first-line treatment ready.',
+    mech:'Cardiac output = HR × stroke volume. At 40/min, stroke volume can\'t compensate, so BP and brain perfusion fall.',
+    script:[{at:1,log:'Rapid response activated. IV patent. Patient supine.',cls:'act'}]},
+   {k:'assess',t:'Recheck the BP in 15 minutes. Bradycardia is expected with metoprolol',q:'harm',
+    fb:'An expected cause doesn\'t make it safe. He has hypotension and altered mentation now, and waiting lets him get worse.',
+    mech:'The beta-blocker effect is still peaking (about 2 h after the dose), so the rate keeps falling.',
+    script:[{at:1,clock:'+15 min',log:'15 minutes later…',cls:'act'},{at:2,heart:{rate:33,ramp:4},vit:{sys:64,dia:38,spo2:92,tau:4},status:'Confused, mottled knees, barely rousable.',log:'HR 33, BP 64/38. Now responds only to voice.',cls:'bad'}]},
+   {k:'med',t:'Give a 1 L NS bolus and recheck in an hour',q:'wrong',
+    fb:'Fluids won\'t fix a rate problem, and an hour is far too long to wait in an unstable patient.',
+    mech:'Preload is not the limiting factor here. Rate is.',
+    script:[{at:2,clock:'+20 min',vit:{sys:82,dia:48,tau:6},log:'Small rise in BP. HR unchanged at 40. Still symptomatic.',cls:'bad'}]}
+  ]},
+ n2:{cj:'Take action',rhythm:'Sinus bradycardia',state:{heart:{mode:'sinus',rate:40,pr:0.18},vit:{sys:78,dia:46,spo2:95},status:'Pale, diaphoretic, dizzy. Rapid response nurse at the bedside.'},
+  prompt:'The provider orders atropine. Which administration is correct?',
+  opts:[
+   {k:'med',t:'Atropine 1 mg IV push; may repeat every 3–5 min to a max of 3 mg. Pads ready in case it fails',q:'best',next:'n3',
+    fb:'That is the AHA 2025 adult dose. Keep pacing ready because atropine doesn\'t always work.',
+    mech:'Atropine blocks muscarinic (vagal) receptors on the SA and AV nodes. Removing the vagal "brake" speeds SA firing and AV conduction.',
+    script:[{at:0.5,log:'Atropine 1 mg IV given.',cls:'act'},{at:3,log:'Vagal blockade reaches the SA node…',cls:'phys'},{at:4,heart:{rate:66,ramp:7},vit:{sys:104,dia:64,spo2:96,tau:6}},{at:10,status:'Color improving, answering promptly, "I feel better."',log:'HR 66, BP 104/64. Perfusion restored.',cls:'good'}]},
+   {k:'med',t:'Atropine 0.5 mg IV push',q:'wrong',
+    fb:'This is an outdated, low dose. AHA adult guidance has used 1 mg since 2020 (reaffirmed in 2025).',
+    mech:'A smaller dose gives incomplete vagal blockade, so the response is partial.',
+    script:[{at:0.5,log:'Atropine 0.5 mg IV given.',cls:'act'},{at:4,heart:{rate:47,ramp:6},vit:{sys:84,dia:50,tau:6}},{at:10,log:'HR 47, BP 84/50. Still symptomatic.',cls:'bad'}]},
+   {k:'med',t:'He\'s lying flat now, so give the scheduled noon metoprolol to "stay on schedule"',q:'harm',
+    fb:'A beta-blocker in symptomatic bradycardia makes it worse. Hold it and clarify with the provider.',
+    mech:'Beta-1 blockade further lowers SA node automaticity and AV conduction.',
+    script:[{at:0.5,log:'Metoprolol given.',cls:'act'},{at:3,heart:{rate:31,ramp:6},vit:{sys:62,dia:36,spo2:91,tau:5},status:'Unresponsive to voice, weak thready pulse.'},{at:9,log:'HR 31, BP 62/36. Patient deteriorating.',cls:'bad'}]}
+  ]},
+ n3:{cj:'Evaluate outcomes',rhythm:'Sinus rhythm',state:{heart:{mode:'sinus',rate:66,pr:0.18},vit:{sys:104,dia:64,spo2:96},status:'Alert, color improved.'},
+  prompt:'HR 66, BP 104/64. What is the priority now?',
+  opts:[
+   {k:'assess',t:'Report the response, hold the next metoprolol dose pending provider review, keep pads nearby, and watch for recurrence as atropine wears off',q:'best',end:true,
+    fb:'Atropine is temporary. The cause (beta-blockade) is still there, so the plan has to change.',mech:'Atropine\'s effect lasts on the order of an hour or less. Metoprolol tartrate lasts much longer.'},
+   {k:'med',t:'Give more atropine to push the HR above 80',q:'wrong',
+    fb:'Treat perfusion, not a number. Extra atropine raises myocardial O₂ demand and can trigger ischemia or tachydysrhythmias.',mech:'Higher HR means more myocardial O₂ consumption and less diastolic coronary filling time.'},
+   {k:'assess',t:'Discontinue telemetry because the problem is solved',q:'harm',fb:'The cause is unchanged and the drug will wear off. He needs continued monitoring.',mech:'Bradycardia can recur as the vagolytic effect fades.'}
+  ]}
+ }},
+{id:'chb',tag:'Complete heart block',title:'Atropine doesn\'t reach this block',
+ pt:{nm:'Ms. R., 74',hx:'Syncope at home. Hypertension, CKD stage 3.',meds:'Amlodipine, atorvastatin.',labs:'K⁺ 4.9, troponin pending.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Analyze cues · Take action',rhythm:'Third-degree AV block, ventricular escape',state:{heart:{mode:'third',atr:80,vent:34,qrs:'wide'},vit:{sys:72,dia:40,spo2:93},status:'New confusion, cool and clammy. Pads are being placed.'},
+  prompt:'The provider orders atropine 1 mg IV while the pads go on. How do you proceed?',
+  opts:[
+   {k:'med',t:'Give atropine as ordered, and keep setting up the pacer without waiting for a response',q:'best',next:'n2',
+    fb:'Atropine may be tried, but in complete heart block with a wide escape rhythm it often fails, so it must not delay pacing.',
+    mech:'Watch the monitor: the P waves speed up (atropine sped up the SA node) but the QRS rate doesn\'t change. The block is below the AV node, where vagal tone has little effect.',
+    script:[{at:0.5,log:'Atropine 1 mg IV given.',cls:'act'},{at:3,heart:{atr:112,ramp:6}},{at:9,log:'Atrial rate 80 → 112. Ventricular rate still 34. No P waves conduct.',cls:'phys'}]},
+   {k:'med',t:'Give atropine, then wait 15 minutes to see if it works before pacing',q:'harm',
+    fb:'Waiting on a drug that is unlikely to work in an infranodal block wastes the time this patient doesn\'t have.',
+    mech:'The escape pacemaker is slow and unreliable. It can slow further or stop.',
+    script:[{at:0.5,log:'Atropine given. Waiting…',cls:'act'},{at:2,clock:'+15 min',heart:{atr:110,vent:26,ramp:5},vit:{sys:58,dia:32,spo2:89,tau:5},status:'Unresponsive to voice. Weak femoral pulse.',log:'Escape rate slowing (26/min). BP 58/32.',cls:'bad'}]},
+   {k:'med',t:'Give amiodarone 150 mg IV to "stabilize the rhythm"',q:'harm',
+    fb:'An antiarrhythmic suppresses the escape pacemaker that is keeping her alive.',
+    mech:'Amiodarone slows conduction and automaticity, including in the ventricular escape focus.',
+    script:[{at:0.5,log:'Amiodarone started.',cls:'act'},{at:3,heart:{vent:22,ramp:6},vit:{sys:50,dia:28,spo2:87,tau:5},status:'Unresponsive.'},{at:9,log:'Escape rate 22/min. BP 50/28.',cls:'bad'}]}
+  ]},
+ n2:{cj:'Take action',rhythm:'Third-degree AV block',state:{heart:{mode:'third',atr:112,vent:34,qrs:'wide'},vit:{sys:72,dia:40,spo2:93},status:'Confused, cool and clammy. Pads on.'},
+  prompt:'Atropine had no effect on the ventricular rate. Next?',
+  opts:[
+   {k:'elec',t:'Start transcutaneous pacing (rate 70), increase mA until capture, give analgesia/sedation per order, confirm a femoral pulse at the paced rate',q:'best',next:'n3',
+    fb:'Pacing is the definitive bridge. Electrical capture (spike → wide QRS) is not enough: you need mechanical capture, meaning a pulse at the paced rate.',
+    mech:'Watch: at first the spikes have no QRS after them (no capture). As the mA rises, every spike captures with a wide QRS, and the pleth shows a pulse with each beat.',
+    script:[{at:0.5,heart:{mode:'paced',rate:70,capture:false},log:'Pacer on, rate 70. Spikes without capture: no QRS after the spikes.',cls:'phys'},{at:5,heart:{mode:'paced',rate:70,capture:true,pulse:true,reset:true},vit:{sys:98,dia:58,spo2:96,tau:5},log:'mA increased. Electrical capture: every spike followed by a wide QRS.',cls:'phys'},{at:9,status:'More alert, grimacing with each pacer impulse.',log:'Femoral pulse palpable at 70: mechanical capture. BP 98/58.',cls:'good'}]},
+   {k:'med',t:'Start an epinephrine infusion per order',q:'ok',
+    fb:'An epinephrine (or dopamine) infusion is a reasonable bridge, but here it only nudges the escape rate up. Pacing remains the definitive move.',
+    mech:'β1 stimulation speeds the escape focus slightly and raises contractility.',
+    script:[{at:0.5,log:'Epinephrine infusion started.',cls:'act'},{at:3,heart:{vent:44,ramp:7},vit:{sys:84,dia:48,tau:6}},{at:10,log:'Escape rate 44, BP 84/48. Still hypoperfused.',cls:'bad'}]},
+   {k:'med',t:'Give a second dose of atropine',q:'wrong',fb:'Repeating a drug that has already failed for this mechanism just delays pacing.',mech:'The block is infranodal. More vagal blockade can\'t open it.',
+    script:[{at:0.5,log:'Atropine 1 mg repeated.',cls:'act'},{at:8,log:'No change in ventricular rate.',cls:'bad'}]}
+  ]},
+ n3:{cj:'Evaluate outcomes',rhythm:'Ventricular paced (transcutaneous)',state:{heart:{mode:'paced',rate:70,capture:true},vit:{sys:98,dia:58,spo2:96},status:'More alert, uncomfortable with pacing.'},
+  prompt:'Paced at 70 with capture. What do you prioritize?',
+  opts:[
+   {k:'assess',t:'Continuous check of capture and pulse, pain/sedation, skin under the pads; prepare for transvenous pacing',q:'best',end:true,fb:'Transcutaneous pacing is a painful, temporary bridge. Capture can be lost, so watch both the strip and the pulse.',mech:'Pad position, body habitus, and acidosis or ischemia all affect the capture threshold.'},
+   {k:'elec',t:'Turn the pacer off since the BP is better',q:'harm',fb:'The underlying rhythm hasn\'t changed. Stopping pacing returns her to a rate of 34.',mech:'The BP is better because of the pacer.',
+    script:[{at:0.5,heart:{mode:'third',atr:100,vent:34,qrs:'wide'},vit:{sys:70,dia:40,tau:4},log:'Pacer off: back to complete heart block at 34.',cls:'bad'}]}
+  ]}
+ }},
+{id:'svt',tag:'SVT',title:'Adenosine: watch the pause',
+ pt:{nm:'Ms. T., 26',hx:'Sudden palpitations while studying. No cardiac history.',meds:'None. Two energy drinks today.',labs:'Pending.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Analyze cues · Take action',rhythm:'Regular narrow-complex tachycardia',state:{heart:{mode:'svt',rate:188},vit:{sys:112,dia:70,spo2:98},status:'Anxious, "my heart is racing." Alert, skin warm, no chest pain.'},
+  prompt:'Stable or unstable? What is the first intervention?',
+  opts:[
+   {k:'assess',t:'Stable: with the provider aware and a strip recording, coach a modified Valsalva (strain 15 s, then lie flat with legs raised)',q:'best',next:'n2',
+    fb:'Vagal maneuvers come first for stable regular SVT. They often fail (about 43% converted with the modified technique in the REVERT trial), and that is fine: the next step is adenosine.',
+    mech:'Straining followed by a surge of venous return triggers a vagal reflex that briefly slows AV-node conduction and can break the re-entry loop.',
+    script:[{at:0.5,log:'Modified Valsalva performed.',cls:'act'},{at:3,heart:{rate:176,ramp:2}},{at:6,heart:{rate:188,ramp:2}},{at:8,log:'Brief slowing, then back to 188. No conversion.',cls:'phys'}]},
+   {k:'assess',t:'Perform carotid sinus massage',q:'wrong',fb:'Carotid massage is a provider procedure, not an RN intervention. It carries stroke risk in patients with carotid disease.',mech:'—'},
+   {k:'elec',t:'Prepare for synchronized cardioversion now',q:'wrong',fb:'She is stable. Cardioversion (with sedation) is for an unstable patient or when drugs fail.',mech:'—'},
+   {k:'elec',t:'Defibrillate',q:'harm',fb:'Unsynchronized shocks are for pulseless VT/VF. A shock landing on the T wave of a conscious patient can induce VF.',mech:'—'}
+  ]},
+ n2:{cj:'Take action',rhythm:'Regular narrow-complex tachycardia',state:{heart:{mode:'svt',rate:188},vit:{sys:112,dia:70,spo2:98},status:'Still racing. Anxious.'},
+  prompt:'The provider orders adenosine 6 mg IV. How do you give it?',
+  opts:[
+   {k:'med',t:'Antecubital IV: 6 mg rapid push, then immediately a 20 mL NS rapid flush (stopcock), arm raised, strip running. Warn her about brief chest pressure',q:'best',next:'n3',
+    fb:'Correct technique. AHA 2025: 6 mg rapid push with a flush, then 12 mg if needed.',
+    mech:'Adenosine briefly blocks the AV node (A1 receptors), which interrupts the re-entry circuit. Expect a few seconds of asystole before sinus rhythm returns. It\'s expected and short because the half-life is under 10 seconds.',
+    script:[{at:0.5,log:'Adenosine 6 mg rapid push + flush.',cls:'act'},{at:3,log:'Drug reaches the AV node…',cls:'phys'},{at:3.5,heart:{mode:'asys'},status:'"Something\'s sitting on my chest!" Flushed.'},{at:7.3,heart:{mode:'sinus',rate:92,pr:0.15},vit:{sys:118,dia:74,tau:3},log:'Pause of about 4 s (expected), then sinus rhythm at 92.',cls:'good'},{at:10,status:'"It stopped. I feel normal."'}]},
+   {k:'med',t:'Hand vein, push slowly over 1–2 minutes to reduce side effects',q:'wrong',
+    fb:'A slow or distal push gets metabolized before an effective concentration reaches the heart. Nothing happens.',
+    mech:'Red blood cells and endothelium clear adenosine in seconds, so it has to arrive at the AV node as a bolus.',
+    script:[{at:0.5,log:'Adenosine pushed slowly via hand IV.',cls:'act'},{at:8,log:'No effect. Still 188.',cls:'bad'}]},
+   {k:'med',t:'Give 12 mg as the first dose because 6 mg rarely works',q:'wrong',fb:'The guideline sequence is 6 mg first, then 12 mg if needed. Follow the order and the protocol.',mech:'—'}
+  ]},
+ n3:{cj:'Evaluate outcomes',rhythm:'Sinus rhythm',state:{heart:{mode:'sinus',rate:92,pr:0.15},vit:{sys:118,dia:74,spo2:99},status:'Relieved, comfortable.'},
+  prompt:'She is in sinus rhythm at 92. Next?',
+  opts:[
+   {k:'assess',t:'12-lead ECG, vital signs, report; teach the modified Valsalva for recurrence and discuss stimulant (energy drink) intake',q:'best',end:true,fb:'Document the conversion strip, look for pre-excitation on the 12-lead, and teach.',mech:'A short PR with a delta wave on the post-conversion ECG would point to WPW, which changes future drug choices.'},
+   {k:'med',t:'Give 12 mg adenosine "to make sure it stays away"',q:'wrong',fb:'Adenosine has no lasting effect and is only for an active SVT.',mech:'Half-life under 10 seconds.'}
+  ]}
+ }},
+{id:'afrvr',tag:'AF with RVR',title:'Rate control, not conversion',
+ pt:{nm:'Mr. K., 71',hx:'POD 2, hip arthroplasty. Echo last year: EF 60%. No known WPW.',meds:'Enoxaparin prophylaxis, oxycodone PRN.',labs:'K⁺ 3.9, Mg²⁺ 2.0, Hgb 10.8.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Generate solutions · Take action',rhythm:'Atrial fibrillation with RVR',state:{heart:{mode:'af',rate:158},vit:{sys:118,dia:74,spo2:95},status:'Palpitations, mildly short of breath, alert. Lungs clear.'},
+  prompt:'The provider orders diltiazem 0.25 mg/kg IV. What do you do?',
+  opts:[
+   {k:'med',t:'Check BP and HR, confirm no HFrEF or pre-excitation, then give it IV over 2 minutes and recheck BP',q:'best',next:'n2',
+    fb:'You confirmed the conditions that make diltiazem safe before giving it.',
+    mech:'Diltiazem blocks L-type calcium channels in the AV node, so fewer atrial impulses get through. The ventricular rate falls, but the atria are still fibrillating. It is rate control, not a cure.',
+    script:[{at:0.5,log:'Diltiazem given IV over 2 min.',cls:'act'},{at:2,clock:'+10 min',heart:{rate:98,ramp:8},vit:{sys:108,dia:68,tau:7}},{at:10,status:'"Palpitations easing."',log:'Ventricular rate 158 → about 98. Still irregularly irregular. BP 108/68.',cls:'good'}]},
+   {k:'med',t:'Give it as a rapid IV push, like adenosine',q:'harm',fb:'A rapid push of diltiazem causes abrupt vasodilation and hypotension. Give it over 2 minutes.',mech:'Calcium-channel blockade in vascular smooth muscle drops SVR fast.',
+    script:[{at:0.5,log:'Diltiazem rapid push.',cls:'act'},{at:2,heart:{rate:112,ramp:5},vit:{sys:80,dia:46,tau:3},status:'Lightheaded, nauseated.'},{at:7,log:'BP 80/46.',cls:'bad'}]},
+   {k:'med',t:'Ask for adenosine instead. It works for fast narrow rhythms',q:'wrong',
+    fb:'Adenosine is for regular narrow-complex tachycardia. It doesn\'t convert AF. At most it briefly unmasks the fibrillatory baseline (diagnostic only).',
+    mech:'Watch: the AV node is blocked for a few seconds, the QRS complexes stop, and the chaotic baseline shows through. Then the RVR returns.',
+    script:[{at:0.5,log:'Adenosine 6 mg given.',cls:'act'},{at:3.5,heart:{rate:28,ramp:0.5}},{at:7,heart:{rate:158,ramp:1.5}},{at:9,log:'Brief pause shows f-waves, then back to 158.',cls:'bad'}]}
+  ]},
+ n2:{cj:'Evaluate outcomes',rhythm:'Atrial fibrillation, controlled',state:{heart:{mode:'af',rate:98},vit:{sys:108,dia:68,spo2:96},status:'Comfortable.'},
+  prompt:'He asks whether they will "shock him back to normal." What is the key safety question before any cardioversion?',
+  opts:[
+   {k:'assess',t:'How long has he been in AF, and is he therapeutically anticoagulated (or has a TEE ruled out clot)?',q:'best',end:true,fb:'Converting AF can dislodge a left atrial clot. Duration and anticoagulation status decide whether cardioversion is safe now.',mech:'When organized atrial contraction returns, a thrombus that formed during AF can embolize, often to the brain.'},
+   {k:'assess',t:'Whether he is NPO',q:'ok',fb:'NPO status matters for sedation, but the stroke-risk question comes first.',mech:'—'},
+   {k:'assess',t:'Whether he can take aspirin instead of an anticoagulant afterward',q:'wrong',fb:'The 2023 ACC/AHA/ACCP/HRS AF guideline does not recommend aspirin as a substitute for anticoagulation.',mech:'—'}
+  ]}
+ }},
+{id:'afhf',tag:'AF + HFrEF',title:'Read the chart before the protocol',
+ pt:{nm:'Ms. D., 66',hx:'HFrEF, EF 20% (echo 3 months ago). Admitted for AF with RVR.',meds:'Carvedilol, sacubitril/valsartan, spironolactone, apixaban (adherent).',labs:'K⁺ 4.4, Mg²⁺ 2.1, BNP elevated.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Analyze cues · Take action',rhythm:'Atrial fibrillation with RVR',state:{heart:{mode:'af',rate:150},vit:{sys:104,dia:66,spo2:94},status:'Alert, mildly short of breath, crackles at both bases. No chest pain.'},
+  prompt:'The unit\'s AF order set includes "diltiazem 0.25 mg/kg IV for HR >120." What do you do?',
+  opts:[
+   {k:'call',t:'Hold the diltiazem and call the provider: EF 20%, and nondihydropyridine CCBs are harmful in HFrEF',q:'best',next:'n2',
+    fb:'You caught it. AHA 2025 and the HF guidelines classify CCBs (and IV beta-blockers in decompensated HF with LV systolic dysfunction) as harmful. A protocol doesn\'t override the patient in front of you.',
+    mech:'Diltiazem is a negative inotrope. A ventricle with an EF of 20% can\'t absorb a further drop in contractility.',
+    script:[{at:1,log:'Diltiazem held. Provider notified with SBAR.',cls:'act'}]},
+   {k:'med',t:'Give the diltiazem. It is in the order set',q:'harm',
+    fb:'The rate fell, and so did her cardiac output. This is the cascade the guidelines warn about.',
+    mech:'The rate came down, but stroke volume fell with contractility, so BP dropped and pulmonary congestion worsened.',
+    script:[{at:0.5,log:'Diltiazem given per order set.',cls:'act'},{at:2,clock:'+10 min',heart:{rate:118,ramp:5},vit:{sys:78,dia:46,spo2:88,tau:5}},{at:8,status:'Short of breath, crackles halfway up, cool clammy skin.',log:'BP 78/46, SpO₂ 88%. Worsening heart failure.',cls:'bad'}]},
+   {k:'med',t:'Give an extra dose of her oral carvedilol now',q:'wrong',fb:'Changing a beta-blocker during decompensation needs a provider decision, and an oral dose won\'t control the rate acutely anyway.',mech:'—'}
+  ]},
+ n2:{cj:'Take action',rhythm:'Atrial fibrillation with RVR',state:{heart:{mode:'af',rate:150},vit:{sys:104,dia:66,spo2:94},status:'Alert, mildly dyspneic.'},
+  prompt:'The provider orders amiodarone 150 mg IV. How do you give it safely?',
+  opts:[
+   {k:'med',t:'Infuse over 10 minutes on a pump (in-line filter, non-PVC tubing per policy); monitor BP and HR; confirm anticoagulation, since amiodarone may convert the rhythm',q:'best',end:true,
+    fb:'Correct. Amiodarone can slow the rate and sometimes restore sinus rhythm. Her apixaban adherence matters because conversion carries embolic risk.',
+    mech:'Amiodarone acts on several channels (K⁺, Na⁺, Ca²⁺, β). It slows AV conduction with less negative inotropy than CCBs. Watch for hypotension and bradycardia.',
+    script:[{at:0.5,log:'Amiodarone 150 mg over 10 min started.',cls:'act'},{at:2,clock:'+10 min',heart:{rate:108,ramp:7},vit:{sys:102,dia:64,spo2:95,tau:6}},{at:9,log:'Rate 150 → about 108. BP stable.',cls:'good'},{at:12,heart:{mode:'sinus',rate:88,pr:0.18},log:'Converted to sinus rhythm at 88.',cls:'good'}]},
+   {k:'med',t:'Give it as an IV push over 1 minute to work faster',q:'harm',fb:'A rapid amiodarone bolus in a perfusing patient causes hypotension and bradycardia. The 150 mg dose runs over 10 minutes.',mech:'The vasodilating vehicle and channel effects all hit at once.',
+    script:[{at:0.5,log:'Amiodarone pushed.',cls:'act'},{at:2,heart:{rate:72,ramp:4},vit:{sys:70,dia:40,tau:3}},{at:7,log:'BP 70/40.',cls:'bad'}]}
+  ]}
+ }},
+{id:'vt',tag:'Stable VT',title:'Wide, fast, and talking',
+ pt:{nm:'Mr. B., 61',hx:'Prior anterior MI, EF 35%.',meds:'Metoprolol succinate, lisinopril, atorvastatin, aspirin.',labs:'K⁺ 3.4, Mg²⁺ 1.7.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Analyze cues · Take action',rhythm:'Monomorphic wide-complex tachycardia',state:{heart:{mode:'vt',rate:168},vit:{sys:108,dia:68,spo2:96},status:'Alert, palpitations, mildly lightheaded. Pads on. No chest pain.'},
+  prompt:'Regular, wide, about 170, with a pulse and a normal mental status. What do you anticipate?',
+  opts:[
+   {k:'med',t:'12-lead ECG, pads on, provider/expert consult, and amiodarone 150 mg IV over 10 min per order',q:'best',next:'n2',
+    fb:'This is stable wide-complex tachycardia. Treat it as VT: an antiarrhythmic infusion (amiodarone or procainamide per AHA 2025), with cardioversion ready.',
+    mech:'Amiodarone prolongs refractoriness in ventricular tissue, which can break the re-entry circuit that drives monomorphic VT.',
+    script:[{at:0.5,log:'Amiodarone 150 mg over 10 min started.',cls:'act'},{at:2,clock:'+8 min',log:'Infusing…',cls:'phys'},{at:5,heart:{mode:'sinus',rate:84,pr:0.18},vit:{sys:122,dia:76,tau:4},log:'Converted to sinus rhythm at 84.',cls:'good'},{at:8,status:'"That feels much better."'}]},
+   {k:'med',t:'Give diltiazem to slow the rate. It could be SVT with aberrancy',q:'harm',
+    fb:'AHA 2025 classifies verapamil/diltiazem for wide-complex tachycardia as harmful. If the rhythm is VT, the vasodilation and negative inotropy can collapse the patient.',
+    mech:'VT doesn\'t depend on the AV node, so the drug doesn\'t slow it. It only lowers BP and contractility. Watch him lose his pulse.',
+    script:[{at:0.5,log:'Diltiazem given.',cls:'act'},{at:2,vit:{sys:74,dia:40,tau:3},status:'Grey, confused.'},{at:6,heart:{pulse:false},status:'Unresponsive. No pulse.',log:'Pulseless VT.',cls:'bad'},{at:10,heart:{mode:'vf',vfAmp:1},log:'Degenerated to VF. Call a code.',cls:'bad'}]},
+   {k:'med',t:'Adenosine 6 mg rapid push',q:'ok',
+    fb:'For a stable, regular, monomorphic wide-complex rhythm, AHA 2025 says adenosine may be considered. Here it does nothing, which itself supports VT. Move on to an antiarrhythmic.',
+    mech:'VT doesn\'t use the AV node, so blocking the node doesn\'t affect it.',
+    script:[{at:0.5,log:'Adenosine 6 mg rapid push.',cls:'act'},{at:8,log:'No change.',cls:'phys'}]},
+   {k:'elec',t:'Unsynchronized defibrillation',q:'harm',fb:'He has a pulse. If he becomes unstable, use synchronized cardioversion with sedation. Unsynchronized shocks are for pulseless VT/VF.',mech:'An unsynchronized shock can land on the T wave and cause VF.'}
+  ]},
+ n2:{cj:'Evaluate outcomes',rhythm:'Sinus rhythm',state:{heart:{mode:'sinus',rate:84,pr:0.18},vit:{sys:122,dia:76,spo2:97},status:'Comfortable.'},
+  prompt:'He converted. What now?',
+  opts:[
+   {k:'assess',t:'Repeat 12-lead, start the maintenance infusion per order, replace K⁺ and Mg²⁺ per order, monitor BP, HR, and QTc',q:'best',end:true,fb:'His K⁺ of 3.4 and Mg²⁺ of 1.7 both lower the threshold for VT. Correct them.',mech:'—'},
+   {k:'assess',t:'Remove the pads now that he\'s converted',q:'wrong',fb:'Recurrence is common in the first hours. Keep the pads on.',mech:'—'}
+  ]}
+ }},
+{id:'tdp',tag:'Torsades',title:'The QT warned you',
+ pt:{nm:'Ms. L., 47',hx:'Pneumonia, day 3. Nausea.',meds:'IV azithromycin daily; ondansetron 4 mg IV q6h PRN (given 4 times in 24 h).',labs:'K⁺ 3.2, Mg²⁺ 1.4. QTc 580 ms on this morning\'s ECG.'},
+ start:'n0',
+ nodes:{
+ n0:{cj:'Recognize cues',rhythm:'Sinus rhythm, prolonged QT',state:{heart:{mode:'sinus',rate:82,pr:0.16,longQT:true},vit:{sys:124,dia:76,spo2:96},status:'Nauseated, asking for her ondansetron.'},
+  prompt:'She asks for her PRN ondansetron. What do you do?',
+  opts:[
+   {k:'call',t:'Hold the ondansetron (and question the azithromycin), and notify the provider: QTc 580, K⁺ 3.2, Mg²⁺ 1.4',q:'best',next:'n1',
+    fb:'Exactly. A QTc of 500 ms or more, two QT-prolonging drugs, and low K⁺ and Mg²⁺ add up to high torsades risk.',
+    mech:'Delayed repolarization lets early afterdepolarizations fire during the T wave, which is the trigger for torsades.',
+    script:[{at:1,log:'Ondansetron held. Provider notified. Replacement ordered.',cls:'act'},{at:2,clock:'+25 min',log:'25 minutes later, before replacement is infused…',cls:'act'},{at:3,heart:{mode:'tdp'},status:'Collapses. Unresponsive, no pulse.',log:'Torsades de pointes.',cls:'bad'}]},
+   {k:'med',t:'Give the ondansetron. Nausea is distressing',q:'harm',
+    fb:'A third QT-prolonging dose on a QTc of 580 with low K⁺ and Mg²⁺ is a classic setup for torsades.',
+    mech:'Watch the twisting polymorphic VT.',
+    script:[{at:0.5,log:'Ondansetron 4 mg IV given.',cls:'act'},{at:4,heart:{mode:'tdp'},status:'Collapses. Unresponsive, no pulse.',log:'Torsades de pointes.',cls:'bad'}],next:'n1',nextOnHarm:true}
+  ]},
+ n1:{cj:'Take action',rhythm:'Polymorphic VT (torsades)',state:{heart:{mode:'tdp'},vit:{sys:124,dia:76,spo2:96},status:'Unresponsive, no pulse.'},
+  prompt:'She is unresponsive and pulseless in torsades. First action?',
+  opts:[
+   {k:'elec',t:'Call a code, start CPR, and defibrillate (unsynchronized)',q:'best',next:'n2',
+    fb:'Pulseless torsades is treated like VF. Polymorphic complexes are too irregular for the defibrillator to sync to.',
+    mech:'A shock depolarizes the whole myocardium at once, letting the SA node take back control.',
+    script:[{at:0.5,log:'Code called. CPR started. Pads on.',cls:'act'},{at:3,shock:true,log:'Shock delivered.',cls:'act'},{at:3.1,heart:{mode:'asys'}},{at:5,heart:{mode:'sinus',rate:96,pr:0.16,longQT:true},vit:{sys:104,dia:62,spo2:93,tau:4},status:'Pulse present, starting to breathe.',log:'Sinus rhythm with a pulse (ROSC). QT still long.',cls:'good'}]},
+   {k:'med',t:'Give magnesium 2 g IV and wait for it to work before starting CPR',q:'harm',fb:'Magnesium is the drug for torsades, but it never comes before CPR and defibrillation in a pulseless patient.',mech:'No flow, no drug delivery. Without compressions the magnesium goes nowhere.',
+    script:[{at:0.5,log:'Magnesium given. Waiting…',cls:'act'},{at:6,heart:{mode:'vf',vfAmp:0.8},log:'Degenerating to VF. Still no CPR.',cls:'bad'}]},
+   {k:'elec',t:'Synchronized cardioversion',q:'wrong',fb:'The machine can\'t reliably find an R wave in polymorphic VT, so it may never fire. Use unsynchronized defibrillation.',mech:'—',
+    script:[{at:0.5,log:'Sync mode on. Device searching for an R wave… no shock delivered.',cls:'bad'}]}
+  ]},
+ n2:{cj:'Take action · Evaluate outcomes',rhythm:'Sinus rhythm, prolonged QT',state:{heart:{mode:'sinus',rate:96,pr:0.16,longQT:true},vit:{sys:104,dia:62,spo2:93},status:'Pulse present, drowsy.'},
+  prompt:'ROSC, but the QT is still long. What prevents a recurrence?',
+  opts:[
+   {k:'med',t:'Magnesium sulfate IV per order, potassium replacement per order, and keep all QT-prolonging drugs on hold',q:'best',end:true,fb:'Magnesium stabilizes the membrane even when the serum Mg²⁺ is normal. Correct K⁺ and remove the triggers.',mech:'Magnesium suppresses the early afterdepolarizations that trigger torsades.',
+    script:[{at:0.5,log:'Magnesium and potassium replacement started. QT-prolonging drugs held.',cls:'act'}]},
+   {k:'med',t:'Amiodarone 150 mg IV to prevent more VT',q:'harm',fb:'Amiodarone prolongs the QT further. It\'s the wrong drug for QT-related torsades.',mech:'Potassium-channel (class III) block lengthens repolarization.',
+    script:[{at:0.5,log:'Amiodarone started.',cls:'act'},{at:5,heart:{mode:'tdp'},status:'Unresponsive, no pulse.',log:'Torsades recurs.',cls:'bad'}]}
+  ]}
+ }},
+{id:'vf',tag:'VF arrest',title:'What goes in, and when',
+ pt:{nm:'Mr. P., 58',hx:'Found unresponsive in bed on telemetry. Admitted for chest pain rule-out.',meds:'Aspirin, heparin infusion.',labs:'Troponin rising.'},
+ start:'n1',
+ nodes:{
+ n1:{cj:'Take action',rhythm:'Ventricular fibrillation',state:{heart:{mode:'vf',vfAmp:1},vit:{sys:120,dia:70,spo2:95},status:'Unresponsive, not breathing normally, no pulse.'},
+  prompt:'First action?',
+  opts:[
+   {k:'elec',t:'Call a code, start high-quality CPR, and defibrillate as soon as the pads are on',q:'best',next:'n2',
+    fb:'Early defibrillation is the definitive treatment for VF.',mech:'Here the first shock doesn\'t convert, which is common. Resume CPR immediately after every shock.',
+    script:[{at:0.5,log:'Code called. CPR started.',cls:'act'},{at:3,shock:true,log:'Shock 1.',cls:'act'},{at:5,log:'CPR resumed immediately. Two-minute cycle…',cls:'act'},{at:6,clock:'+2 min',shock:true,log:'Rhythm check: VF. Shock 2.',cls:'act'},{at:8,log:'Still VF after 2 shocks. CPR continues.',cls:'phys'}]},
+   {k:'med',t:'Give epinephrine 1 mg IV first, then shock',q:'wrong',fb:'In shockable rhythms, AHA 2025 gives epinephrine after the initial defibrillation attempts fail. The shock comes first.',mech:'Every minute without defibrillation lowers survival.',
+    script:[{at:0.5,log:'Epinephrine given. No shock yet.',cls:'bad'}]},
+   {k:'elec',t:'Synchronized cardioversion',q:'wrong',fb:'VF has no R wave to sync to, so the device won\'t fire.',mech:'—',script:[{at:0.5,log:'Sync mode: searching… no shock delivered.',cls:'bad'}]}
+  ]},
+ n2:{cj:'Take action',rhythm:'Ventricular fibrillation',state:{heart:{mode:'vf',vfAmp:1},vit:{sys:120,dia:70,spo2:95},status:'CPR in progress. IV access established.'},
+  prompt:'VF persists after 2 shocks, CPR is ongoing, and IV access is in. Now?',
+  opts:[
+   {k:'med',t:'Epinephrine 1 mg IV, repeated every 3–5 minutes; continue CPR',q:'best',next:'n3',
+    fb:'Correct timing for a shockable rhythm (AHA 2025). Epinephrine is the only vasopressor in the arrest algorithm.',
+    mech:'Alpha-1 vasoconstriction raises aortic diastolic pressure during compressions, which raises coronary perfusion pressure. VF often coarsens.',
+    script:[{at:0.5,log:'Epinephrine 1 mg IV.',cls:'act'},{at:3,heart:{vfAmp:1.4},log:'VF coarsens.',cls:'phys'},{at:5,clock:'+2 min',shock:true,log:'Shock 3. Still VF.',cls:'act'}]},
+   {k:'med',t:'Magnesium 2 g IV for refractory VF',q:'wrong',fb:'AHA 2025: do not give magnesium routinely during arrest (no benefit). Use it only for torsades or known low Mg.',mech:'—'},
+   {k:'med',t:'Atropine 1 mg IV',q:'wrong',fb:'Atropine has no role in VF. It was removed from the arrest algorithm in 2010.',mech:'—'}
+  ]},
+ n3:{cj:'Take action',rhythm:'Ventricular fibrillation',state:{heart:{mode:'vf',vfAmp:1.4},vit:{sys:120,dia:70,spo2:95},status:'CPR in progress.'},
+  prompt:'Still VF after the third shock. Next?',
+  opts:[
+   {k:'med',t:'Amiodarone 300 mg IV bolus (or lidocaine per protocol), continue CPR, shock at the next check',q:'best',end:true,
+    fb:'AHA 2025: amiodarone or lidocaine may be considered for refractory VF/pVT. Neither is preferred. Follow your protocol.',
+    mech:'The antiarrhythmic raises the fibrillation threshold, so the next shock is more likely to hold.',
+    script:[{at:0.5,log:'Amiodarone 300 mg IV.',cls:'act'},{at:3,clock:'+2 min',shock:true,log:'Shock 4.',cls:'act'},{at:3.15,heart:{mode:'asys'}},{at:4.5,heart:{mode:'sinus',rate:104,pr:0.16},vit:{sys:92,dia:56,spo2:91,tau:4},status:'Pulse present. ETCO₂ jumped to 42.',log:'ROSC: sinus tachycardia with a pulse.',cls:'good'}]},
+   {k:'assess',t:'Stop CPR for a full pulse check after each drug',q:'wrong',fb:'Pauses cut coronary perfusion. Rhythm and pulse checks happen only every 2 minutes, and briefly.',mech:'Coronary perfusion pressure drops within seconds of stopping compressions.'}
+  ]}
+ }}
+];
+
+/* ============================================================
+   CASE RUNNER (Learn + Practice)
+   ============================================================ */
+const KLAB={med:'Med',elec:'Electrical',call:'Escalate',assess:'Assess'};
+const QLAB={best:'Best action',ok:'Acceptable, but not the best',wrong:'Not the priority',harm:'Harmful'};
+const PTS={best:2,ok:1,wrong:0,harm:0};
+const HINTS={
+ brady:{n1:'Look past the heart rate to perfusion: BP 78/46, diaphoresis, slowed responses. The AHA instability criteria are hypotension, acutely altered mental status, signs of shock, ischemic chest discomfort, and acute heart failure. How many does he meet?',
+        n2:'What is the current AHA adult atropine dose? And which drug on his med list is still acting right now?',
+        n3:'Atropine wears off in well under an hour. Metoprolol tartrate lasts much longer. What actually caused this episode?'},
+ chb:{n1:'Where is the block: at the AV node or below it? Look at the width of the escape QRS. Atropine works on vagally innervated tissue (SA and AV nodes).',
+      n2:'Atropine changed the atrial rate but not the ventricular rate. What does that tell you? Which intervention bypasses the conduction system entirely?',
+      n3:'Electrical capture and mechanical capture are not the same thing. What can go wrong with a transcutaneous pacer over the next hour?'},
+ svt:{n1:'Run the instability criteria. Is the rhythm regular? What is the least invasive first step for a stable regular narrow-complex tachycardia, and what is outside RN scope?',
+      n2:'Adenosine\'s half-life is under 10 seconds. What does that mean for IV site, push speed, and flush?',
+      n3:'What could the post-conversion 12-lead show that changes future drug choices? (Think short PR and delta wave.)'},
+ afrvr:{n1:'Before any AV-nodal blocker, three things make diltiazem unsafe: poor pump function, an accessory pathway, and low BP. And how fast is IV diltiazem given?',
+        n2:'What forms in the left atrium during AF, and what happens to it when organized atrial contraction returns?'},
+ afhf:{n1:'Read the history line before the order set. What does an EF of 20% mean for a drug that lowers contractility?',
+       n2:'How fast is amiodarone given to a patient with a pulse? If the rhythm converts, which home medication suddenly matters?'},
+ vt:{n1:'Wide + regular + fast = VT until proven otherwise. He is stable. Which drug class does AHA 2025 label harmful for wide-complex tachycardia?',
+     n2:'Look at his labs. What lowers the threshold for VT to recur?'},
+ tdp:{n0:'Add up the risk factors: the QTc value, the number of QT-prolonging drugs, the K⁺, and the Mg²⁺.',
+      n1:'No pulse. What comes before any drug in a pulseless rhythm? Can a defibrillator sync to polymorphic complexes?',
+      n2:'Which drug suppresses the trigger for torsades? Which antiarrhythmic would make the QT even longer?'},
+ vf:{n1:'Shockable or nonshockable? What single intervention is most time-sensitive?',
+     n2:'AHA 2025: in shockable rhythms, when does epinephrine go in? Which drugs are not routine in arrest?',
+     n3:'Which antiarrhythmics are options for refractory VF/pVT? When are compressions allowed to pause?'}
+};
+const R={mode:'learn',c:null,node:null,timers:[],done:new Set(),t0:0,learnCase:'brady'};
+const P={kind:null,queue:[],qi:0,score:0,max:0,safety:[],caseRows:[],clipQ:0,clip:null,missed:[]};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function log(text,cls,clock){
+  const li=document.createElement('li');li.className=cls||'';
+  const s=Math.max(0,S.t-R.t0);li.innerHTML=`<time>${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}</time><span>${clock?`<em>(${clock})</em> `:''}${text}</span>`;
+  const L=$('#log');L.appendChild(li);L.scrollTop=L.scrollHeight;
+}
+function clearTimers(){R.timers.forEach(clearTimeout);R.timers=[];}
+function applyState(st){H={mode:'__none'};S.ramps={};setHeart(Object.assign({},st.heart));setVitals(st.vit,true);$('#st').textContent=st.status;}
+function rhythmLabel(t){$('#mon-rhythm').textContent=R.mode==='learn'?t:'';}
+const RM={sinus:'Sinus rhythm',asys:'Asystole',vf:'Ventricular fibrillation',tdp:'Torsades de pointes',paced:'Paced rhythm',af:'Atrial fibrillation',third:'Third-degree AV block',vt:'Ventricular tachycardia',svt:'SVT'};
+function runScript(sc,done){
+  const dur=sc.length?Math.max(...sc.map(s=>s.at))+1.2:0.3;
+  sc.forEach(s=>R.timers.push(setTimeout(()=>{
+    if(s.shock)shock();
+    if(s.heart)setHeart(s.heart);
+    if(s.vit)setVitals(s.vit);
+    if(s.status)$('#st').textContent=s.status;
+    if(s.heart&&s.heart.mode&&RM[s.heart.mode])rhythmLabel(RM[s.heart.mode]);
+    if(s.log)log(s.log,s.cls,s.clock);
+  },s.at*1000)));
+  R.timers.push(setTimeout(done,dur*1000));
+  return dur;
+}
+function mkBtn(parent,label,fn,primary){const b=document.createElement('button');b.type='button';b.className='btn'+(primary?' primary':'');b.textContent=label;b.onclick=fn;parent.appendChild(b);return b;}
+function buildCaseBar(){
+  const C=$('#cases');C.innerHTML='';
+  CASES.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.dataset.id=c.id;
+    b.innerHTML=`<small>Case ${i+1} · ${c.tag}${R.done.has(c.id)?' <span class="done">✓</span>':''}</small><b>${c.title}</b>`;
+    b.classList.toggle('on',R.c&&R.c.id===c.id);b.onclick=()=>startCase(c.id);C.appendChild(b);});
+}
+function showPatient(p,extra){
+  $('#pt').innerHTML=`<div class="nm">${extra?`<span class="chip">${extra}</span> `:''}${p.nm}</div><dt>History</dt><dd>${p.hx}</dd><dt>Meds</dt><dd>${p.meds}</dd><dt>Labs</dt><dd>${p.labs}</dd>`;
+}
+function startCase(id){
+  clearTimers();R.c=CASES.find(c=>c.id===id);
+  if(R.mode==='learn'){R.learnCase=id;buildCaseBar();showPatient(R.c.pt);}
+  else showPatient(R.c.pt,`Case ${P.qi+1} of ${P.queue.length}`);
+  $('#log').innerHTML='';R.t0=S.t;P.caseRows=[];
+  enterNode(R.c.start,true);
+}
+function enterNode(nid,apply){
+  clearTimers();R.node=nid;const n=R.c.nodes[nid];
+  if(apply)applyState(n.state);
+  rhythmLabel(n.rhythm);
+  const D=$('#decision'),learn=R.mode==='learn';
+  const hint=learn&&HINTS[R.c.id]&&HINTS[R.c.id][nid];
+  D.innerHTML=`<div class="cj">${learn?n.cj:'Practice · decide'}</div><div class="prompt">${n.prompt}</div>${hint?`<button type="button" class="btn hintbtn">💡 Think it through</button><div class="hint" hidden>${hint}</div>`:''}<div class="opts"></div><div class="out"></div>`;
+  if(hint){const hb=D.querySelector('.hintbtn'),hd=D.querySelector('.hint');hb.onclick=()=>{hd.hidden=!hd.hidden;hb.textContent=hd.hidden?'💡 Think it through':'Hide hint';};}
+  const O=D.querySelector('.opts');
+  (learn?n.opts:shuffle(n.opts)).forEach(o=>{const b=document.createElement('button');b.type='button';
+    b.innerHTML=`<span class="k ${o.k==='med'?'med':o.k==='elec'?'elec':''}">${KLAB[o.k]}</span><span>${o.t}</span>`;
+    b.onclick=()=>choose(o,b);O.appendChild(b);});
+}
+function choose(o,btn){
+  const D=$('#decision'),n=R.c.nodes[R.node],best=n.opts.find(x=>x.q==='best');
+  D.querySelectorAll('.opts button').forEach(b=>b.disabled=true);btn.classList.add('chosen');
+  const hb=D.querySelector('.hintbtn');if(hb)hb.disabled=true;
+  const out=D.querySelector('.out');
+  log(o.t,'act');
+  if(R.mode==='practice'){P.score+=PTS[o.q];P.max+=2;P.caseRows.push({p:n.prompt,c:o.t,q:o.q,b:best.t});if(o.q==='harm')P.safety.push({case:R.c,c:o.t});updPbar();}
+  if((o.script||[]).length)out.innerHTML='<div class="watch">▶ Watch the monitor and the vital signs…</div>';
+  runScript(o.script||[],()=>{
+    const mech=o.mech&&o.mech!=='—'?`<div class="mech"><b>What happened physiologically</b><br>${o.mech}</div>`:'';
+    const bestLine=(R.mode==='practice'&&o.q!=='best')?`<div class="mech"><b>Best action</b><br>${best.t}. ${best.fb}</div>`:'';
+    out.innerHTML=`<div class="fb ${o.q}"><span class="v">${QLAB[o.q]}${R.mode==='practice'?` · +${PTS[o.q]}`:''}</span>${o.fb}${mech}${bestLine}</div><div class="nav"></div>`;
+    const nav=out.querySelector('.nav');
+    if(R.mode==='learn'){
+      if(o.end&&o.q==='best'){R.done.add(R.c.id);buildCaseBar();log('Case complete.','good');
+        const idx=CASES.indexOf(R.c);if(idx<CASES.length-1)mkBtn(nav,'Next case →',()=>startCase(CASES[idx+1].id),true);}
+      else if(o.next&&(o.q==='best'||o.nextOnHarm))mkBtn(nav,'Continue →',()=>enterNode(o.next,false),true);
+      mkBtn(nav,o.q==='best'?'Rewind and explore the other options':'↺ Rewind and choose again',()=>{log('— Rewind —','');enterNode(R.node,true);},o.q!=='best');
+    }else{
+      if(o.q==='best'){
+        if(o.next)mkBtn(nav,'Continue →',()=>enterNode(o.next,false),true);
+        else mkBtn(nav,'Finish case →',caseDebrief,true);
+      }else{
+        if(best.next)mkBtn(nav,'Continue on the correct path →',()=>{log('The team corrects course: '+best.t,'act');enterNode(best.next,true);},true);
+        else mkBtn(nav,'Finish case →',caseDebrief,true);
+      }
+    }
+  });
+}
+
+/* ---------- Practice: shell ---------- */
+function updPbar(){
+  const pb=$('#pbar');
+  if(P.kind==='cases')pb.innerHTML=`<b>Case challenge</b><span>Case ${Math.min(P.qi+1,P.queue.length)} of ${P.queue.length}</span><span>Score <b>${P.score}/${P.max}</b></span>${P.safety.length?`<span class="sf">⚠ ${P.safety.length} safety error${P.safety.length>1?'s':''}</span>`:''}<button type="button" class="btn" id="pquit">Quit to menu</button>`;
+  else if(P.kind==='clips')pb.innerHTML=`<b>What just happened?</b><span>Clip ${Math.min(P.qi+1,P.queue.length)} of ${P.queue.length}</span><span>Score <b>${P.score}/${P.max}</b></span><button type="button" class="btn" id="pquit">Quit to menu</button>`;
+  else pb.innerHTML='<b>Practice</b><span>Choose a mode below. No hints, no rewinds. Your first answer counts.</span>';
+  const q=$('#pquit');if(q)q.onclick=practiceHome;
+}
+function bestScore(k,v){try{const key='medsim_best_'+k;if(v!==undefined){const old=+localStorage.getItem(key)||0;if(v>old)localStorage.setItem(key,v);}return +localStorage.getItem(key)||0;}catch(e){return 0;}}
+function practiceHome(){
+  clearTimers();P.kind=null;updPbar();
+  $('#pt').innerHTML=`<div class="nm">Practice mode</div><dt>How it works</dt><dd>Same monitor, no hints, no rewind, options shuffled. Wrong choices still play out on the monitor, then the case continues on the correct path so you see the whole scenario. A debrief follows each case.</dd>`;
+  applyState({heart:{mode:'sinus',rate:72,pr:0.16},vit:{sys:122,dia:76,spo2:98},status:'Waiting for the next patient…'});
+  rhythmLabel('');$('#log').innerHTML='';R.t0=S.t;
+  const D=$('#decision');
+  const bc=bestScore('cases'),bk=bestScore('clips');
+  D.innerHTML=`<div class="cj">Choose a practice mode</div>
+  <div class="pmodes">
+   <button type="button" class="pmode" id="pm-cases"><b>Case challenge</b><span>All 8 cases in random order. Every decision is scored: best = 2, acceptable = 1. Harmful choices are logged as safety errors.</span><small>${bc?`Your best: ${bc}%`:'Not attempted yet'}</small></button>
+   <button type="button" class="pmode" id="pm-clips"><b>What just happened?</b><span>${CLIPS.length} monitor clips. A drug or intervention is given and not named. Identify it from the response on the monitor, then decide what comes next.</span><small>${bk?`Your best: ${bk}%`:'Not attempted yet'}</small></button>
+  </div>`;
+  $('#pm-cases').onclick=()=>{Object.assign(P,{kind:'cases',queue:shuffle(CASES.map(c=>c.id)),qi:0,score:0,max:0,safety:[]});updPbar();startCase(P.queue[0]);};
+  $('#pm-clips').onclick=()=>{Object.assign(P,{kind:'clips',queue:shuffle(CLIPS.map((_,i)=>i)),qi:0,score:0,max:0,missed:[]});updPbar();startClip();};
+}
+function caseDebrief(){
+  clearTimers();
+  const D=$('#decision'),rows=P.caseRows,last=P.qi>=P.queue.length-1;
+  const lab={best:'✓ Best',ok:'~ Acceptable',wrong:'✗ Not the priority',harm:'⚠ Harmful'};
+  D.innerHTML=`<div class="cj">Debrief · ${R.c.tag}</div><div class="prompt">${R.c.title}</div>
+  <table class="deb"><thead><tr><th>Decision</th><th>You chose</th><th>Result</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.q}"><td>${r.p}</td><td>${r.c}${r.q!=='best'?`<div class="bst"><b>Best:</b> ${r.b}</div>`:''}</td><td class="res">${lab[r.q]}</td></tr>`).join('')}</tbody></table><div class="nav"></div>`;
+  const nav=D.querySelector('.nav');
+  mkBtn(nav,last?'See final results →':'Next case →',()=>{P.qi++;updPbar();if(last)finalCases();else startCase(P.queue[P.qi]);},true);
+}
+function finalCases(){
+  const pct=P.max?Math.round(100*P.score/P.max):0;bestScore('cases',pct);updPbar();
+  const D=$('#decision');
+  const uniq=[...new Map(P.safety.map(s=>[s.case.id,s.case])).values()];
+  D.innerHTML=`<div class="cj">Case challenge complete</div><div class="bigscore">${pct}%<small>${P.score} of ${P.max} points</small></div>
+  ${P.safety.length?`<h3>Safety errors (${P.safety.length})</h3><ul class="nlist">${P.safety.map(s=>`<li><b>${s.case.tag}:</b> ${s.c}</li>`).join('')}</ul><p class="muted">Review these cases in Learn, where you can rewind each decision and watch every option play out.</p><div class="nav" id="revnav"></div>`:'<p>No harmful choices. 👏</p>'}
+  <div class="nav"></div>`;
+  const rv=$('#revnav');if(rv)uniq.forEach(c=>mkBtn(rv,'Review: '+c.tag,()=>{setTab('learn');startCase(c.id);}));
+  const nav=D.querySelectorAll('.nav');const n2=nav[nav.length-1];
+  mkBtn(n2,'Try again',()=>{practiceHome();$('#pm-cases').click();},true);mkBtn(n2,'Practice menu',practiceHome);
+}
+
+/* ---------- Practice: "What just happened?" clips ---------- */
+const CLIPS=[
+ {ctx:'26-year-old with sudden palpitations. Alert, BP 112/70.',state:{heart:{mode:'svt',rate:188},vit:{sys:112,dia:70,spo2:98},status:'Anxious, palpitations.'},
+  script:[{at:0.3,log:'Medication X given IV.',cls:'act'},{at:3.5,heart:{mode:'asys'},status:'"Something\'s sitting on my chest!"'},{at:7.3,heart:{mode:'sinus',rate:92,pr:0.15},vit:{sys:118,dia:74}}],
+  qs:[{q:'Which medication was most likely given?',o:[['Adenosine',1],['Diltiazem'],['Amiodarone'],['Atropine']],why:'Termination within seconds, with a brief pause and transient chest pressure, is adenosine\'s signature (AV-node block, half-life under 10 s). Diltiazem and amiodarone act over minutes.'},
+      {q:'The ~4-second pause before sinus rhythm is:',o:[['Expected and self-limited',1],['An adverse reaction that requires CPR'],['Pacemaker failure'],['A disconnected lead']],why:'A transient pause or asystole is expected after adenosine. It resolves in seconds as the drug is metabolized. Keep the strip running and reassure the patient.'}]},
+ {ctx:'68-year-old on metoprolol. HR 40, BP 78/46, diaphoretic.',state:{heart:{mode:'sinus',rate:40,pr:0.18},vit:{sys:78,dia:46,spo2:95},status:'Pale, dizzy, slow to answer.'},
+  script:[{at:0.3,log:'Medication X given IV.',cls:'act'},{at:3,heart:{rate:66,ramp:7},vit:{sys:104,dia:64,tau:6}},{at:9,status:'Alert, color improving.'}],
+  qs:[{q:'Which medication was most likely given?',o:[['Atropine',1],['Adenosine'],['Metoprolol'],['Magnesium sulfate']],why:'A sinus rate rising over about a minute with better BP fits vagal blockade at the SA node: atropine (1 mg IV, AHA 2025).'},
+      {q:'Ninety minutes later the HR is drifting back to 48. The most likely reason:',o:[['Atropine is short-acting, and the cause (beta-blockade) is still present',1],['Atropine causes rebound bradycardia'],['The monitor is miscounting'],['Tolerance develops after one dose']],why:'Atropine treats the symptom briefly. The metoprolol is still on board, so expect recurrence: hold the next dose pending provider review and keep pacing available.'}]},
+ {ctx:'71-year-old, POD 2. New AF with RVR, BP 118/74, EF 60%.',state:{heart:{mode:'af',rate:158},vit:{sys:118,dia:74,spo2:95},status:'Palpitations, alert.'},
+  script:[{at:0.3,log:'Medication X given IV over 2 min.',cls:'act'},{at:1.5,clock:'+10 min',heart:{rate:96,ramp:8},vit:{sys:108,dia:68,tau:7}}],
+  qs:[{q:'Which medication was most likely given?',o:[['Diltiazem',1],['Adenosine'],['Atropine'],['Epinephrine']],why:'A gradual fall in ventricular rate with a modest BP drop, and no conversion, fits AV-nodal calcium-channel blockade (diltiazem, given over 2 minutes).'},
+      {q:'Is the patient still in atrial fibrillation?',o:[['Yes. Rate controlled, but still irregularly irregular with no P waves',1],['No. Converted to sinus rhythm'],['No. Now in atrial flutter'],['Can\'t tell without a 12-lead']],why:'Rate control isn\'t rhythm control. The R–R intervals are still irregularly irregular over a fibrillatory baseline. Next: recheck BP and confirm the anticoagulation plan.'}]},
+ {ctx:'74-year-old, syncope. Third-degree AV block, escape rate 34, BP 72/40.',state:{heart:{mode:'third',atr:80,vent:34,qrs:'wide'},vit:{sys:72,dia:40,spo2:93},status:'Confused, clammy.'},
+  script:[{at:0.3,log:'Medication X given IV.',cls:'act'},{at:3,heart:{atr:112,ramp:6}}],
+  qs:[{q:'Which medication was most likely given?',o:[['Atropine',1],['Adenosine'],['Diltiazem'],['Amiodarone']],why:'Only the P-wave rate rose: the SA node responded to vagal blockade (atropine). None of the extra P waves conducted.'},
+      {q:'What does this response tell you?',o:[['The block is below the AV node. Pace without delay',1],['The dose was too low. Give 3 mg at once'],['The rhythm is improving. Wait and reassess'],['The patient converted to sinus rhythm']],why:'Infranodal (wide-escape) complete block doesn\'t respond to atropine. Transcutaneous pacing is the bridge. Atropine must never delay it.'}]},
+ {ctx:'61-year-old, prior MI. Regular wide-complex tachycardia at 168, BP 108/68, alert.',state:{heart:{mode:'vt',rate:168},vit:{sys:108,dia:68,spo2:96},status:'Alert, palpitations.'},
+  script:[{at:0.3,log:'Medication X given IV.',cls:'act'},{at:2,vit:{sys:72,dia:40,tau:3},status:'Grey, confused.'},{at:6,heart:{pulse:false},status:'Unresponsive. No pulse.'},{at:9,heart:{mode:'vf',vfAmp:1}}],
+  qs:[{q:'Which drug class most plausibly caused this collapse?',o:[['Nondihydropyridine calcium channel blocker (diltiazem/verapamil)',1],['Class III antiarrhythmic infused over 10 minutes'],['Magnesium sulfate'],['Anticholinergic']],why:'AHA 2025 labels verapamil/diltiazem for wide-complex tachycardia harmful. VT doesn\'t depend on the AV node, so the drug only drops BP and contractility.'},
+      {q:'What do you do now?',o:[['Call a code, start CPR, defibrillate',1],['Synchronized cardioversion'],['Give adenosine'],['Recheck the BP with a manual cuff']],why:'VF is a shockable arrest rhythm: CPR and defibrillation immediately.'}]},
+ {ctx:'AF with RVR at 158. Stable.',state:{heart:{mode:'af',rate:158},vit:{sys:118,dia:74,spo2:95},status:'Palpitations.'},
+  script:[{at:0.3,log:'Medication X given as a rapid IV push.',cls:'act'},{at:3.5,heart:{rate:26,ramp:0.5}},{at:7.5,heart:{rate:158,ramp:1.5}}],
+  qs:[{q:'Which medication was most likely given?',o:[['Adenosine',1],['Diltiazem'],['Digoxin'],['Metoprolol']],why:'A few seconds of near-complete AV block, then a return to the same rate, is adenosine. It doesn\'t treat AF.'},
+      {q:'What did the pause reveal?',o:[['A chaotic fibrillatory baseline. AF, unmasked but not treated',1],['Conversion to sinus rhythm'],['Asystole requiring CPR'],['Sawtooth flutter waves']],why:'With the QRS complexes briefly gone, the underlying atrial activity is easier to see. Here it is fibrillation. The diagnosis is now clear, and the treatment is rate control, not more adenosine.'}]},
+ {ctx:'VF arrest. CPR in progress. Two shocks given. IV access in place.',state:{heart:{mode:'vf',vfAmp:0.6},vit:{sys:120,dia:70,spo2:95},status:'CPR in progress.'},
+  script:[{at:0.3,log:'Medication X given IV, flushed. CPR continues.',cls:'act'},{at:3,heart:{vfAmp:1.4}}],
+  qs:[{q:'Which medication was most likely given?',o:[['Epinephrine 1 mg',1],['Magnesium 2 g'],['Atropine 1 mg'],['Adenosine 6 mg']],why:'During CPR, epinephrine\'s α-1 vasoconstriction raises coronary perfusion pressure, and VF often coarsens. AHA 2025 gives it after the initial shocks fail in shockable rhythms.'},
+      {q:'What happens at the next rhythm check?',o:[['Defibrillate if still VF, then resume CPR right away',1],['Synchronized cardioversion'],['Stop CPR for a 30-second pulse check'],['Give magnesium for refractory VF']],why:'Shock, then resume compressions immediately. Magnesium is not routine in arrest (AHA 2025). Pulse and rhythm checks are brief.'}]},
+ {ctx:'47-year-old on IV azithromycin. QTc 580 ms, K⁺ 3.2, Mg²⁺ 1.4. Nauseated.',state:{heart:{mode:'sinus',rate:82,pr:0.16,longQT:true},vit:{sys:124,dia:76,spo2:96},status:'Nauseated.'},
+  script:[{at:0.3,log:'PRN medication X given IV for nausea.',cls:'act'},{at:4,heart:{mode:'tdp'},status:'Collapses. Unresponsive, no pulse.'}],
+  qs:[{q:'Which medication most likely triggered this?',o:[['Ondansetron',1],['Magnesium sulfate'],['Potassium chloride'],['Atropine']],why:'Ondansetron prolongs the QT. Added to azithromycin, a QTc of 580, and low K⁺ and Mg²⁺, it set up torsades de pointes.'},
+      {q:'First action?',o:[['Call a code, CPR, unsynchronized defibrillation',1],['Synchronized cardioversion'],['Magnesium IV before starting CPR'],['Amiodarone 150 mg IV']],why:'Pulseless torsades is treated like VF. Magnesium comes next, but never before CPR and shocks. Amiodarone would prolong the QT further.'}]},
+ {ctx:'Complete heart block. Transcutaneous pacer on at rate 70.',state:{heart:{mode:'paced',rate:70,capture:false},vit:{sys:72,dia:40,spo2:93},status:'Confused, clammy.'},
+  script:[{at:0.3,log:'Intervention X performed.',cls:'act'},{at:3,heart:{mode:'paced',rate:70,capture:true,pulse:true,reset:true},vit:{sys:98,dia:58,spo2:96,tau:5}}],
+  qs:[{q:'What changed?',o:[['Output (mA) raised past the capture threshold',1],['Atropine was given'],['The pacing rate was increased'],['The pads were repositioned to the anterior chest only']],why:'Before: spikes with no QRS after them (no capture). After: every spike is followed by a wide QRS and a pulse wave. Same rate, more energy.'},
+      {q:'How do you confirm the pacer is perfusing the patient?',o:[['Palpate a femoral pulse at the paced rate',1],['Confirm a spike before every QRS'],['Feel the carotid pulse'],['SpO₂ above 90%']],why:'A spike followed by a QRS is only electrical capture. Mechanical capture is a pulse at the paced rate. Pacer muscle twitch makes carotid checks unreliable, so use the femoral pulse.'}]},
+ {ctx:'66-year-old, HFrEF (EF 20%). AF with RVR at 150, BP 104/66.',state:{heart:{mode:'af',rate:150},vit:{sys:104,dia:66,spo2:94},status:'Mildly dyspneic, crackles at the bases.'},
+  script:[{at:0.3,log:'Order-set medication X given IV.',cls:'act'},{at:1.5,clock:'+10 min',heart:{rate:118,ramp:5},vit:{sys:78,dia:46,spo2:88,tau:5}},{at:6,status:'More dyspneic, crackles halfway up, cool skin.'}],
+  qs:[{q:'Which medication was most likely given?',o:[['Diltiazem',1],['Amiodarone over 10 minutes'],['Adenosine'],['Digoxin']],why:'Rate fell, but so did BP and oxygenation. That is negative inotropy in a failing ventricle: a nondihydropyridine CCB.'},
+      {q:'Why did she decompensate?',o:[['Reduced contractility in a ventricle with an EF of 20%',1],['The rate came down too far'],['An allergic reaction'],['Fluid overload from the IV flush']],why:'Diltiazem lowers contractility. CCBs (and IV beta-blockers in decompensated HF) are classed as harmful with LV systolic dysfunction. The order set should have been questioned.'}]}
+];
+function startClip(){
+  clearTimers();const c=CLIPS[P.queue[P.qi]];P.clip=c;P.clipQ=0;
+  $('#pt').innerHTML=`<div class="nm"><span class="chip">Clip ${P.qi+1} of ${P.queue.length}</span> What just happened?</div><dt>Situation</dt><dd>${c.ctx}</dd>`;
+  applyState(c.state);rhythmLabel('');$('#log').innerHTML='';R.t0=S.t;
+  const D=$('#decision');
+  D.innerHTML=`<div class="cj">Watch first</div><div class="prompt">Study the baseline monitor and vital signs. When you're ready, give "Medication X" and watch what changes.</div><div class="nav"></div>`;
+  mkBtn(D.querySelector('.nav'),'▶ Give it',()=>playClip(false),true);
+  updPbar();
+}
+function playClip(replay){
+  clearTimers();const c=P.clip;
+  if(replay){applyState(c.state);$('#log').innerHTML='';R.t0=S.t;}
+  const D=$('#decision');D.innerHTML='<div class="cj">Watching…</div><div class="watch">▶ Watch the monitor and the vital signs…</div>';
+  runScript(c.script,()=>askClip());
+}
+function askClip(){
+  const c=P.clip,q=c.qs[P.clipQ],D=$('#decision');
+  D.innerHTML=`<div class="cj">Question ${P.clipQ+1} of ${c.qs.length}</div><div class="prompt">${q.q}</div><div class="opts"></div><div class="out"></div>`;
+  const O=D.querySelector('.opts');
+  shuffle(q.o).forEach(([t,ok])=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<span>${t}</span>`;b.dataset.ok=ok?1:0;
+    b.onclick=()=>{
+      O.querySelectorAll('button').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});
+      if(!ok){b.classList.add('wrong');P.missed.push(q.q);}
+      P.max+=1;if(ok)P.score+=1;updPbar();
+      const out=D.querySelector('.out');
+      out.innerHTML=`<div class="fb ${ok?'best':'harm'}"><span class="v">${ok?'Correct':'Not quite'}</span>${q.why}</div><div class="nav"></div>`;
+      const nav=out.querySelector('.nav');
+      const lastQ=P.clipQ>=c.qs.length-1,lastClip=P.qi>=P.queue.length-1;
+      if(!lastQ)mkBtn(nav,'Next question →',()=>{P.clipQ++;askClip();},true);
+      else if(!lastClip)mkBtn(nav,'Next clip →',()=>{P.qi++;startClip();},true);
+      else mkBtn(nav,'See final results →',finalClips,true);
+      mkBtn(nav,'↻ Replay the clip',()=>{playClipReview();});
+    };O.appendChild(b);});
+}
+function playClipReview(){
+  const c=P.clip;clearTimers();
+  applyState(c.state);$('#log').innerHTML='';R.t0=S.t;
+  R.timers.push(setTimeout(()=>runScript(c.script,()=>{}),800));
+}
+function finalClips(){
+  const pct=P.max?Math.round(100*P.score/P.max):0;bestScore('clips',pct);P.qi=P.queue.length;updPbar();
+  const D=$('#decision');
+  D.innerHTML=`<div class="cj">Clips complete</div><div class="bigscore">${pct}%<small>${P.score} of ${P.max} correct</small></div>${P.missed.length?`<h3>Missed</h3><ul class="nlist">${P.missed.map(m=>`<li>${m}</li>`).join('')}</ul>`:''}<div class="nav"></div>`;
+  const nav=D.querySelector('.nav');
+  mkBtn(nav,'Try again',()=>{practiceHome();$('#pm-clips').click();},true);mkBtn(nav,'Practice menu',practiceHome);
+}
+
+/* ============================================================
+   DRUG CARDS
+   ============================================================ */
+const DRUGS=[
+ {n:'Atropine',c:'Anticholinergic (parasympatholytic)',grp:'Brady',use:'Symptomatic bradycardia: first-line',dose:'1 mg IV every 3–5 min, max 3 mg (AHA 2025)',
+  m:'Blocks vagal (muscarinic) input to the SA and AV nodes, which speeds SA firing and AV conduction.',
+  nc:['Assess perfusion (BP, LOC, skin) before and after','Have pacing ready. Don\'t let atropine delay it','Watch for tachycardia and ischemia (higher O₂ demand), urinary retention, confusion in older adults'],
+  no:['Often ineffective for blocks below the AV node (Mobitz II, third-degree with wide QRS)','Not expected to work in heart transplant patients (denervated heart)','Not used in cardiac arrest (removed 2010)']},
+ {n:'Epinephrine',c:'Adrenergic agonist (α, β)',grp:'Brady Arrest',use:'Cardiac arrest (all rhythms); infusion for bradycardia unresponsive to atropine',dose:'Arrest: 1 mg IV/IO every 3–5 min. Bradycardia infusion: 2–10 mcg/min, titrated (per order)',
+  m:'α1: vasoconstriction, which raises coronary perfusion pressure during CPR. β1: raises HR and contractility.',
+  nc:['Arrest timing (AHA 2025): nonshockable rhythms, as soon as feasible; shockable rhythms, after initial shocks fail','Infusions: central line preferred; check the IV site for extravasation','Monitor for tachydysrhythmias, hypertension, ischemia'],
+  no:['Don\'t confuse the arrest dose (1 mg IV push) with infusion dosing (mcg/min)']},
+ {n:'Dopamine',c:'Catecholamine (dose-dependent β1/α)',grp:'Brady',use:'Symptomatic bradycardia unresponsive to atropine (bridge to pacing)',dose:'5–20 mcg/kg/min infusion, titrated (per order)',
+  m:'Moderate doses stimulate β1 (HR, contractility). Higher doses add α vasoconstriction.',
+  nc:['Infusion pump; central line preferred','Extravasation causes tissue necrosis: follow the antidote protocol (e.g., phentolamine)','Monitor for tachydysrhythmias and urine output'],no:['Correct hypovolemia; dopamine isn\'t a volume substitute']},
+ {n:'Adenosine',c:'Endogenous nucleoside (AV-nodal blocker)',grp:'Tachy',use:'Stable regular narrow-complex SVT (after vagal maneuvers)',dose:'6 mg rapid IV push + NS flush; 12 mg if needed (AHA 2025)',
+  m:'Activates A1 receptors and briefly blocks the AV node, which breaks AV-node-dependent re-entry. Half-life is under 10 seconds.',
+  nc:['Proximal (antecubital) IV, stopcock, rapid push, immediate 20 mL flush, raise the arm','Warn the patient: chest pressure, flushing, dyspnea for seconds','Run a strip. A brief pause or asystole is expected','Caffeine and theophylline blunt the effect; dipyridamole and carbamazepine strengthen it'],
+  no:['Not for unstable, irregularly irregular, or polymorphic wide-complex tachycardia (AHA 2025: harm)','Doesn\'t convert AF or flutter (it may only unmask them)','Caution with asthma (bronchospasm)']},
+ {n:'Diltiazem',c:'Nondihydropyridine calcium channel blocker',grp:'Tachy AF',use:'AF/flutter with RVR (rate control); stable regular narrow-complex SVT',dose:'0.25 mg/kg IV over 2 min (per order); infusion per protocol',
+  m:'Blocks L-type Ca²⁺ channels in the AV node, so fewer impulses are conducted and the ventricular rate falls.',
+  nc:['BP and HR before and after each dose; give over 2 minutes','Check the EF/HF history and look for pre-excitation (WPW) before giving','Monitor for hypotension and bradycardia'],
+  no:['Never for wide-complex tachycardia (AHA 2025: harm)','Avoid in HFrEF and decompensated HF with LV systolic dysfunction','Avoid in pre-excited AF/flutter']},
+ {n:'Metoprolol / Esmolol',c:'β1-selective beta-blockers',grp:'Tachy AF',use:'Rate control for AF/flutter with RVR; SVT',dose:'Per order. Esmolol is a short-acting titratable infusion',
+  m:'β1 blockade slows SA firing and AV conduction and reduces sympathetic drive.',
+  nc:['Hold parameters: HR and BP before each dose','Monitor for bradycardia, hypotension, bronchospasm, and masked hypoglycemia','Esmolol wears off within minutes of stopping, which is useful if hypotension develops'],
+  no:['Avoid IV beta-blockers in decompensated HF with LV systolic dysfunction (AHA 2025: harm)','Avoid in pre-excited AF/flutter','Caution with reactive airway disease']},
+ {n:'Digoxin',c:'Cardiac glycoside',grp:'AF',use:'AF rate control, especially with HF or hypotension',dose:'Per order (renal dosing)',
+  m:'Increases vagal tone at the AV node (slower conduction) and is mildly positively inotropic. Slow onset (hours).',
+  nc:['Take an apical pulse for 1 full minute; hold per parameters','Hypokalemia raises toxicity risk, so check K⁺','Toxicity: nausea and vomiting, visual changes (yellow-green halos), new dysrhythmias'],
+  no:['Avoid in pre-excited AF/flutter (AHA 2025: harm)','Not useful when rate control is needed quickly']},
+ {n:'Amiodarone',c:'Class III (multichannel: K⁺, Na⁺, Ca²⁺, β)',grp:'Tachy AF Arrest',use:'Stable wide-complex tachycardia/VT; refractory VF/pVT; AF rhythm or rate control in selected patients',dose:'Stable VT: 150 mg IV over 10 min, then 1 mg/min. Arrest: 300 mg IV/IO, then 150 mg',
+  m:'Prolongs repolarization and refractoriness, and slows conduction.',
+  nc:['Infuse 150 mg over 10 minutes when a pulse is present (rapid push only in arrest)','Monitor BP, HR, and QTc; in-line filter and non-PVC tubing per policy; central line for prolonged infusions (phlebitis)','Interactions: raises the INR on warfarin and raises digoxin levels','Long-term: pulmonary, thyroid, liver, ocular toxicity; photosensitivity','May convert AF, so confirm the anticoagulation plan'],
+  no:['Avoid IV amiodarone in pre-excited AF (AHA 2025: harm)','Not for QT-related torsades (it lengthens the QT)']},
+ {n:'Lidocaine',c:'Class Ib (Na⁺-channel blocker)',grp:'Arrest',use:'Refractory VF/pVT (alternative to amiodarone; AHA 2025 favors neither)',dose:'Arrest: 1–1.5 mg/kg IV/IO, then 0.5–0.75 mg/kg (per protocol)',
+  m:'Blocks fast Na⁺ channels in ischemic ventricular tissue and raises the fibrillation threshold.',
+  nc:['Toxicity: confusion, perioral numbness, tinnitus, slurred speech, seizures','Higher risk in older adults and with liver dysfunction or HF'],no:['Not on the 2025 algorithm for stable wide-complex tachycardia (use procainamide or amiodarone)']},
+ {n:'Procainamide',c:'Class Ia (Na⁺ ± K⁺ block)',grp:'Tachy',use:'Stable wide-complex tachycardia/VT; pre-excited AF (per expert)',dose:'20–50 mg/min until suppressed, hypotension, QRS widens >50%, or 17 mg/kg max; maintenance 1–4 mg/min (AHA 2025)',
+  m:'Slows conduction and prolongs refractoriness.',
+  nc:['Frequent BP checks; monitor QRS width and QTc during the infusion','Stop and report hypotension or QRS widening of more than 50%'],no:['Avoid with prolonged QT or HF (AHA 2025 algorithm)']},
+ {n:'Magnesium sulfate',c:'Electrolyte',grp:'Arrest Tachy',use:'Torsades de pointes; hypomagnesemia',dose:'Torsades: 1–2 g IV per order',
+  m:'Suppresses early afterdepolarizations and stabilizes membranes, even when serum Mg²⁺ is normal.',
+  nc:['Monitor BP (flushing, hypotension), deep tendon reflexes, respirations','Caution in renal impairment'],no:['Not given routinely in cardiac arrest (AHA 2025: no benefit). Only for torsades or known low Mg²⁺']},
+ {n:'Potassium chloride',c:'Electrolyte replacement',grp:'Tachy',use:'Hypokalemia with ectopy or VT risk',dose:'Per order and facility rate limits',
+  m:'Restores the resting membrane potential and lowers ventricular irritability.',
+  nc:['NEVER IV push; pump only; follow the facility\'s maximum peripheral and central rates','Check renal function and urine output; recheck the level','Monitor the IV site (burning, phlebitis)'],no:['IV push is fatal (asystole)']},
+ {n:'Sotalol / Dofetilide',c:'Class III (sotalol also β-blocker)',grp:'AF',use:'Maintaining sinus rhythm in AF/flutter (specialty-managed)',dose:'Per cardiology; renal (CrCl) dosing',
+  m:'Prolongs repolarization (K⁺ block).',
+  nc:['Started in the hospital on continuous ECG with QTc monitoring (dofetilide: at least 3 days)','Check QTc after doses per protocol and report prolongation','Sotalol also causes bradycardia (β-blockade)'],no:['Hold and report per protocol if the QTc prolongs excessively','Many drug interactions: pharmacy review']},
+ {n:'Anticoagulants',c:'DOACs (apixaban, rivaroxaban, dabigatran, edoxaban); warfarin; heparin/enoxaparin',grp:'AF',use:'Stroke prevention in AF/flutter; around cardioversion',dose:'Per order',
+  m:'Reduce thrombus formation in the stagnant left atrium.',
+  nc:['DOACs preferred over warfarin, except with a mechanical valve or moderate–severe mitral stenosis (2023 AF guideline)','Warfarin: INR monitoring (usual target 2–3); heparin: aPTT or anti-Xa per protocol','Bleeding precautions, fall risk, adherence teaching','Anticoagulation status must be known before any cardioversion'],
+  no:['Aspirin (alone or with clopidogrel) is not a substitute for anticoagulation in AF']},
+ {n:'Procedural sedation',c:'e.g., midazolam, etomidate (varies by facility)',grp:'Tachy',use:'Before synchronized cardioversion or for pacing discomfort',dose:'Per provider / sedation protocol',
+  m:'Supportive only. Not antiarrhythmic.',
+  nc:['AHA 2025: sedate whenever feasible before cardioversion','Airway equipment, suction, continuous SpO₂ and ETCO₂ per policy','Reassess pain and sedation during transcutaneous pacing'],no:['Don\'t delay cardioversion of a peri-arrest patient to arrange sedation']}
+];
+const DGROUPS=[['all','All'],['Brady','Bradycardia'],['Tachy','Tachycardia'],['AF','AF / flutter'],['Arrest','Cardiac arrest']];
+function renderDrugs(f){
+  $('#drugs').innerHTML=DRUGS.filter(d=>f==='all'||d.grp.split(' ').includes(f)).map(d=>`<article class="card drug"><h3>${d.n}</h3><div class="cls">${d.c}</div><div class="use"><b>Use:</b> ${d.use}</div>
+  <h4>How it works</h4><p style="margin:0;font-size:14px">${d.m}</p><h4>Dose (per order/protocol)</h4><p class="dose" style="margin:0">${d.dose}</p>
+  <h4>Nursing considerations</h4><ul>${d.nc.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Do not / caution</h4><ul class="no">${d.no.map(x=>`<li>${x}</li>`).join('')}</ul></article>`).join('');
+  document.querySelectorAll('#dfilter button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+}
+DGROUPS.forEach(([k,l])=>{const b=document.createElement('button');b.type='button';b.dataset.f=k;b.textContent=l;b.onclick=()=>renderDrugs(k);$('#dfilter').appendChild(b);});
+renderDrugs('all');
+
+function setTab(t){
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x.dataset.tab===t));
+  $('#v-sim').hidden=t==='drugs';$('#v-drugs').hidden=t!=='drugs';
+  if(t==='learn'){$('#cases').hidden=false;$('#pbar').hidden=true;if(R.mode!=='learn'){R.mode='learn';startCase(R.learnCase);}}
+  if(t==='practice'){$('#cases').hidden=true;$('#pbar').hidden=false;if(R.mode!=='practice'){R.mode='practice';practiceHome();}}
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+startCase('brady');
+window.__start=startCase;window.__setTab=setTab;window.__P=P;window.__S=S;window.__H=()=>H;
+})();
+</script>
+</body>
+</html>
