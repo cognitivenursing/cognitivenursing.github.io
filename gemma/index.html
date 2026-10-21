@@ -2102,9 +2102,10 @@ const PERSONAS = {
 // ── VOICE ──
 function resolveVoice() {
   const vs = window.speechSynthesis.getVoices();
-  let v = vs.find(v => v.name === VOICE_NAME && v.lang === VOICE_LANG);
-  if (!v) v = vs.find(v => v.name === 'Daniel' && v.lang === 'en-GB');
-  if (!v) v = vs.find(v => v.name === 'Karen' && v.lang === 'en-GB');
+  const femaleGB = ['Google UK English Female', 'Microsoft Sonia Online (Natural) - English (United Kingdom)', 'Microsoft Libby Online (Natural) - English (United Kingdom)', 'Microsoft Hazel - English (United Kingdom)', 'Serena', 'Kate', 'Martha', 'Stephanie'];
+  let v = null;
+  for (const name of femaleGB) { v = vs.find(x => x.name === name || x.name.startsWith(name + ' ')); if (v) break; }
+  if (!v) v = vs.find(v => v.lang === 'en-GB' && /female|woman|sonia|libby|hazel|serena|kate|martha/i.test(v.name));
   if (!v) v = vs.find(v => v.name === 'Moira' && v.lang === 'en-IE');
   if (!v) v = vs.find(v => v.lang === 'en-GB');
   if (!v) v = vs.find(v => v.name.includes('UK') || v.name.includes('British'));
@@ -2152,16 +2153,24 @@ async function speak(text) {
           document.getElementById('micBtn').classList.remove('speaking');
           setVS('', 'ready');
         };
-        audio.play();
-        return;
+        try { await audio.play(); return; }
+        catch(e) { ameliaNotice(e.name === 'NotAllowedError' ? 'Your browser blocked Amelia\'s audio. Click anywhere on the page, then try again.' : 'Amelia\'s audio could not play (' + e.name + '). Using the browser voice.'); }
+      } else {
+        const why = resp.status === 401 ? 'the ElevenLabs key was rejected'
+                  : resp.status === 402 || resp.status === 429 ? 'ElevenLabs quota or credits are used up'
+                  : 'ElevenLabs returned error ' + resp.status;
+        let detail = '';
+        try { const j = await resp.json(); detail = j.detail?.message || j.detail?.status || ''; } catch(e2) {}
+        ameliaNotice('Amelia unavailable: ' + why + (detail ? ' (' + detail + ')' : '') + '. Using the browser voice.');
       }
     } catch(e) {
-      console.warn('ElevenLabs error, falling back to browser TTS:', e);
+      ameliaNotice('Amelia unavailable: could not reach ElevenLabs (' + e.message + '). Using the browser voice.');
     }
     document.getElementById('micBtn').classList.remove('speaking');
   }
 
   // Fallback to browser TTS
+  if (!elApiKey) ameliaNotice('No ElevenLabs key entered, so Amelia\'s voice is off. Lock Gemma and add your ElevenLabs key to hear her.');
   if (!selVoice) resolveVoice();
   const u = new SpeechSynthesisUtterance(text);
   if (selVoice) u.voice = selVoice;
@@ -2177,6 +2186,21 @@ async function speak(text) {
     else setVS('', 'ready');
   };
   window.speechSynthesis.speak(u);
+}
+
+let lastAmeliaNotice = '';
+function ameliaNotice(msg) {
+  console.warn(msg);
+  if (msg === lastAmeliaNotice) return;   // show each problem once per session
+  lastAmeliaNotice = msg;
+  const msgs = document.getElementById('msgs');
+  if (!msgs) return;
+  const n = document.createElement('div');
+  n.className = 'amelia-notice';
+  n.style.cssText = 'margin:8px auto;max-width:640px;font-size:12px;font-family:var(--font-mono);color:var(--amber);background:var(--amber-bg);border:0.5px solid rgba(212,147,10,0.35);border-radius:8px;padding:8px 12px;';
+  n.textContent = msg;
+  msgs.appendChild(n);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function toggleSpeak() {
