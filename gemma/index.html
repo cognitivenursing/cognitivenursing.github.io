@@ -1437,9 +1437,10 @@ select.text-input{cursor:pointer;}
     <button class="lock-btn" onclick="unlock()">Enter Gemma</button>
     <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font-mono);">
       <input type="checkbox" id="rememberKey" style="accent-color:var(--teal2);" onchange="toggleRemember()"/>
-      Keep keys until I close this tab
+      Remember keys on this device
     </label>
-    <div class="lock-note">Keys are never saved permanently · Closing the tab or locking Gemma clears them</div>
+    <div class="lock-note">Only on your personal laptop or iPad, never a shared or school computer</div>
+    <button type="button" id="forgetKeysBtn" onclick="forgetKeys()" style="display:none;background:none;border:none;font-size:10px;font-family:var(--font-mono);color:var(--text3);text-decoration:underline;cursor:pointer;">Forget saved keys on this device</button>
   </div>
 </div>
 
@@ -1492,6 +1493,7 @@ select.text-input{cursor:pointer;}
         <span class="cost-trigger-total" id="sbCostTotal">$0.00 est.</span>
       </button>
       <button class="sb-lock-btn" onclick="lockApp()"><i class="ti ti-lock"></i> Lock Gemma</button>
+      <button class="sb-lock-btn" onclick="forgetKeys()" title="Remove saved API keys from this browser"><i class="ti ti-key-off"></i> Forget keys on this device</button>
     </div>
   </div>
 
@@ -2034,6 +2036,23 @@ function clearStoredKeys() {
   try { KEY_NAMES.forEach(k => { sessionStorage.removeItem(k); localStorage.removeItem(k); }); } catch(e) {}
 }
 
+function loadStoredKeys() {
+  let k = null, el = null;
+  try { k = localStorage.getItem('gemma_api_key'); el = localStorage.getItem('gemma_el_key'); } catch(e) {}
+  document.getElementById('apiInput').value = k || '';
+  document.getElementById('elApiInput').value = el || '';
+  document.getElementById('rememberKey').checked = !!k;
+  document.getElementById('forgetKeysBtn').style.display = k ? 'inline' : 'none';
+  return !!k;
+}
+
+function forgetKeys() {
+  clearStoredKeys();
+  lockApp();
+}
+
+let clockTimer = null;
+
 function unlock() {
   const key = document.getElementById('apiInput').value.trim();
   const err = document.getElementById('lockErr');
@@ -2045,9 +2064,9 @@ function unlock() {
   elApiKey = document.getElementById('elApiInput').value.trim();
   if (document.getElementById('rememberKey').checked) {
     try {
-      sessionStorage.setItem('gemma_api_key', key);
-      if (elApiKey) sessionStorage.setItem('gemma_el_key', elApiKey);
-      else sessionStorage.removeItem('gemma_el_key');
+      localStorage.setItem('gemma_api_key', key);
+      if (elApiKey) localStorage.setItem('gemma_el_key', elApiKey);
+      else localStorage.removeItem('gemma_el_key');
     } catch(e) {}
   } else {
     clearStoredKeys();
@@ -2060,7 +2079,7 @@ function unlock() {
   startWakeWord();
   fetchWeather();
   updateDateTimeWidget();
-  setInterval(updateDateTimeWidget, 60000);
+  if (!clockTimer) clockTimer = setInterval(updateDateTimeWidget, 60000);
 }
 
 function toggleRemember() {
@@ -2072,12 +2091,9 @@ function lockApp() {
   window.speechSynthesis.cancel();
   stopMic();
   stopWakeWord();
-  clearStoredKeys();
   document.getElementById('app').style.display = 'none';
   document.getElementById('lockScreen').style.display = 'flex';
-  document.getElementById('apiInput').value = '';
-  document.getElementById('elApiInput').value = '';
-  document.getElementById('rememberKey').checked = false;
+  loadStoredKeys();   // saved keys stay until you choose "Forget keys"
 }
 
 // ── PANELS ──
@@ -3313,16 +3329,9 @@ function resetCostTracker() {
 // ── INIT ──
 if (window.speechSynthesis.getVoices().length > 0) resolveVoice();
 window.speechSynthesis.onvoiceschanged = resolveVoice;
-// Older versions saved keys permanently in this browser; remove them
-try { ['gemma_api_key', 'gemma_el_key', 'gemma_pplx_key'].forEach(k => localStorage.removeItem(k)); } catch(e) {}
-const _savedKey   = (() => { try { return sessionStorage.getItem('gemma_api_key'); } catch(e) { return null; } })();
-const _savedElKey = (() => { try { return sessionStorage.getItem('gemma_el_key'); } catch(e) { return null; } })();
-if (_savedKey) {
-  document.getElementById('apiInput').value = _savedKey;
-  document.getElementById('rememberKey').checked = true;
-}
-if (_savedElKey) document.getElementById('elApiInput').value = _savedElKey;
-document.getElementById('apiInput').focus();
+try { sessionStorage.removeItem('gemma_api_key'); sessionStorage.removeItem('gemma_el_key'); localStorage.removeItem('gemma_pplx_key'); } catch(e) {}
+if (loadStoredKeys()) document.querySelector('.lock-btn').focus();   // saved keys: one click (or Enter) to go
+else document.getElementById('apiInput').focus();
 </script>
 </body>
 </html>
