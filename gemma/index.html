@@ -1,0 +1,3304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Gemma"/>
+<meta name="theme-color" content="#0d1117"/>
+<title>Gemma — Nursing & Educational Psychology Assistant</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a9e77'/><circle cx='50' cy='50' r='22' fill='none' stroke='white' stroke-width='4'/><circle cx='50' cy='50' r='10' fill='white'/></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  /* ── WARM DARK PALETTE ── */
+  --navy:  #0f0d0b;
+  --navy2: #171410;
+  --navy3: #1f1b16;
+  --navy4: #26211a;
+  --navy5: #2e2820;
+
+  --border:  rgba(201,168,76,0.1);
+  --border2: rgba(201,168,76,0.18);
+
+  /* Signature gold */
+  --brass:     #c9a84c;
+  --brass2:    #e2c06a;
+  --brass3:    #f0d898;
+  --brass-dim: #6b5520;
+  --brass-glow: rgba(201,168,76,0.08);
+
+  /* Sage teal — refined, not electric */
+  --teal:     #5fb8a0;
+  --teal2:    #3d9e85;
+  --teal-dim: #1a4a3d;
+  --teal-glow:rgba(63,158,133,0.08);
+
+  /* Warm cream text */
+  --text:  #f0ead8;
+  --text2: #a89880;
+  --text3: #6b5d4a;
+
+  /* Accents */
+  --red:        #c46060;
+  --red-bg:     rgba(196,96,96,0.08);
+  --amber:      #c8880a;
+  --amber-bg:   rgba(200,136,10,0.1);
+  --purple:     #a08ee0;
+  --purple-bg:  rgba(160,142,224,0.1);
+  --green:      #6dbe9e;
+  --green-bg:   rgba(109,190,158,0.1);
+
+  --opus-color:   #c9a84c;
+  --sonnet-color: #5fb8a0;
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', 'Palatino', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-reading: 'Crimson Pro', serif;
+
+  /* Elevation shadows */
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md:  0 8px 24px rgba(0,0,0,0.4);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.5);
+  --shadow-glow:0 0 40px rgba(201,168,76,0.06);
+}
+html,body{
+  height:100%;
+  background:var(--navy);
+  font-family:var(--font-body);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ── LOCK ── */
+#lockScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0;}
+.lock-card{background:var(--navy2);border:0.5px solid var(--border2);border-radius:18px;padding:44px 40px;width:400px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.lock-gem{width:64px;height:64px;background:var(--teal2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.lock-gem-inner{width:26px;height:26px;border:3px solid rgba(255,255,255,0.9);border-radius:50%;position:relative;}
+.lock-gem-inner::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:rgba(255,255,255,0.9);border-radius:50%;}
+.lock-title{font-family:var(--font-display);font-size:26px;font-weight:500;color:var(--text);letter-spacing:-0.02em;}
+.lock-sub{font-size:12px;color:var(--text3);text-align:center;line-height:1.6;max-width:280px;}
+.lock-field{width:100%;background:var(--navy3);border:0.5px solid var(--border2);border-radius:10px;display:flex;align-items:center;padding:0 14px;gap:10px;transition:border-color 0.15s;}
+.lock-field:focus-within{border-color:var(--teal2);}
+.lock-field i{color:var(--text3);font-size:16px;flex-shrink:0;}
+.lock-field input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:13px;padding:13px 0;font-family:var(--font-mono);letter-spacing:0.05em;}
+.lock-field input::placeholder{color:var(--text3);letter-spacing:0;font-family:var(--font-body);font-size:13px;}
+.lock-btn{width:100%;padding:13px;background:var(--teal2);color:white;border:none;border-radius:10px;font-size:14px;font-family:var(--font-body);font-weight:500;cursor:pointer;transition:background 0.15s;margin-top:4px;}
+.lock-btn:hover{background:var(--teal);}
+.lock-err{font-size:12px;color:var(--red);background:var(--red-bg);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px 14px;width:100%;text-align:center;display:none;}
+.lock-divider{width:100%;border-top:0.5px solid var(--border);margin:2px 0;}
+.lock-note{font-size:10px;color:var(--text3);font-family:var(--font-mono);text-align:center;}
+
+/* COMPLIANCE BANNER */
+.lock-compliance{width:100%;background:var(--amber-bg);border:0.5px solid rgba(212,147,10,0.35);border-radius:10px;padding:12px 14px;}
+.lock-compliance p{font-size:11px;color:var(--amber);line-height:1.6;margin-bottom:6px;}
+.lock-compliance label{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2);cursor:pointer;line-height:1.5;}
+.lock-compliance input[type=checkbox]{margin-top:2px;accent-color:var(--teal2);flex-shrink:0;}
+
+/* ── APP ── */
+#app{display:none;height:100vh;flex-direction:row;}
+
+/* SIDEBAR */
+#sidebar{width:235px;flex-shrink:0;background:var(--navy2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sb-brand{padding:16px 16px 12px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-gem{width:30px;height:30px;border-radius:50%;background:var(--teal2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-gem-inner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.85);border-radius:50%;position:relative;}
+.sb-gem-inner::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;background:rgba(255,255,255,0.85);border-radius:50%;}
+.sb-name{font-family:var(--font-display);font-size:16px;font-weight:500;color:var(--text);}
+.sb-ver{font-size:9px;font-family:var(--font-mono);color:var(--brass);letter-spacing:0.07em;}
+
+/* NAV */
+.sb-nav{display:flex;flex-direction:column;gap:2px;padding:10px 8px;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.nav-tab{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--text2);transition:all 0.15s;border:none;background:transparent;width:100%;text-align:left;font-family:var(--font-body);}
+.nav-tab i{font-size:16px;color:var(--text3);flex-shrink:0;width:18px;text-align:center;}
+.nav-tab .model-badge{margin-left:auto;font-size:8.5px;font-family:var(--font-mono);padding:2px 5px;border-radius:4px;flex-shrink:0;}
+.nav-tab:hover{background:var(--navy4);color:var(--text);}
+.nav-tab.active{background:var(--navy4);color:var(--brass2);}
+.nav-tab.active i{color:var(--brass);}
+.opus-badge{background:rgba(201,168,76,0.15);color:var(--brass);border:0.5px solid var(--brass-dim);}
+.sonnet-badge{background:rgba(45,212,160,0.1);color:var(--teal);border:0.5px solid var(--teal-dim);}
+
+/* HISTORY */
+.sb-section-label{font-size:9px;font-family:var(--font-mono);color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px 4px;flex-shrink:0;}
+.sb-history{flex:1;overflow-y:auto;padding:0 8px 8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.sb-convo{display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:7px;cursor:pointer;transition:all 0.15s;margin-bottom:2px;}
+.sb-convo:hover{background:var(--navy4);}
+.sb-convo.active{background:var(--navy4);border:0.5px solid var(--border2);}
+.sb-convo-icon{width:22px;height:22px;border-radius:5px;background:var(--navy5);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--text3);margin-top:1px;}
+.sb-convo.active .sb-convo-icon{background:var(--teal-dim);color:var(--teal);}
+.sb-convo-body{flex:1;min-width:0;}
+.sb-convo-title{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;}
+.sb-convo-meta{font-size:9.5px;font-family:var(--font-mono);color:var(--text3);margin-top:2px;}
+.sb-convo-del{font-size:12px;color:var(--text3);background:transparent;border:none;cursor:pointer;padding:2px;border-radius:4px;opacity:0;transition:opacity 0.15s;flex-shrink:0;}
+.sb-convo:hover .sb-convo-del{opacity:1;}
+.sb-convo-del:hover{color:var(--red);}
+
+.sb-bottom{border-top:0.5px solid var(--border);padding:10px 10px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.sb-voice-pill{display:flex;align-items:center;gap:6px;font-size:10px;font-family:var(--font-mono);color:var(--purple);background:var(--purple-bg);border:0.5px solid rgba(157,142,238,0.25);border-radius:6px;padding:5px 9px;}
+.sb-lock-btn{display:flex;align-items:center;gap:7px;padding:7px 9px;background:transparent;border:0.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;color:var(--text3);font-family:var(--font-body);transition:all 0.15s;}
+.sb-lock-btn:hover{color:var(--red);border-color:rgba(224,96,96,0.4);}
+.sb-lock-btn i{font-size:13px;}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--navy);min-width:0;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:0.5px solid var(--border);background:var(--navy2);flex-shrink:0;flex-wrap:wrap;}
+.persona-bar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;}
+.persona-bar::-webkit-scrollbar{display:none;}
+.p-chip{flex-shrink:0;font-size:10px;font-family:var(--font-mono);color:var(--text3);background:transparent;border:0.5px solid var(--border);border-radius:20px;padding:3px 11px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.p-chip:hover{color:var(--text2);border-color:var(--border2);}
+.p-chip.active{color:var(--brass2);background:rgba(201,168,76,0.1);border-color:var(--brass-dim);}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;}
+.status-row{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);color:var(--text3);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.model-indicator{font-size:9.5px;font-family:var(--font-mono);padding:3px 8px;border-radius:20px;}
+.model-opus{background:rgba(201,168,76,0.15);color:var(--brass);border:0.5px solid var(--brass-dim);}
+.model-sonnet{background:rgba(45,212,160,0.1);color:var(--teal);border:0.5px solid var(--teal-dim);}
+
+/* VOICE BAR */
+.voicebar{display:flex;align-items:center;gap:12px;padding:8px 20px;border-bottom:0.5px solid var(--border);background:var(--navy2);flex-shrink:0;}
+.mic-btn{width:34px;height:34px;border-radius:50%;border:0.5px solid var(--border2);background:var(--navy3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:15px;flex-shrink:0;transition:all 0.2s;}
+.mic-btn.listening{background:var(--teal2);border-color:var(--teal);color:white;animation:micPulse 1.5s infinite;}
+.mic-btn.speaking{background:var(--purple-bg);border-color:rgba(157,142,238,0.4);color:var(--purple);}
+.mic-btn.off{opacity:0.4;cursor:not-allowed;}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,160,0.25);}50%{box-shadow:0 0 0 8px rgba(45,212,160,0);}}
+.waveform{flex:1;height:26px;display:flex;align-items:center;gap:2px;overflow:hidden;}
+.wbar{width:2.5px;border-radius:2px;background:var(--border2);transition:height 0.08s ease;min-height:2px;}
+.spk-toggle{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);color:var(--text3);cursor:pointer;user-select:none;}
+.trk{width:26px;height:14px;border-radius:7px;background:var(--border2);position:relative;transition:background 0.2s;flex-shrink:0;}
+.trk.on{background:var(--teal2);}
+.trk::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:white;transition:left 0.2s;}
+.trk.on::after{left:14px;}
+.vstatus{font-size:10px;font-family:var(--font-mono);color:var(--text3);white-space:nowrap;min-width:115px;text-align:right;}
+.vstatus.listening{color:var(--teal);}
+.vstatus.speaking{color:var(--purple);}
+.vstatus.processing{color:var(--brass);}
+
+/* PANELS */
+.panel{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.panel.active{display:flex;}
+
+/* ── CHAT PANEL ── */
+.msgs{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:30px 20px;flex:1;}
+.welcome-gem{width:60px;height:60px;border-radius:50%;background:var(--teal2);display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.welcome-gem-inner{width:24px;height:24px;border:3px solid rgba(255,255,255,0.85);border-radius:50%;position:relative;}
+.welcome-gem-inner::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:9px;height:9px;background:rgba(255,255,255,0.85);border-radius:50%;}
+.welcome h2{font-family:var(--font-display);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.02em;}
+.welcome-sub{font-size:13px;color:var(--text2);line-height:1.7;max-width:360px;}
+.welcome-rule{width:40px;height:1px;background:var(--brass-dim);}
+.disclaimer{font-size:11px;color:var(--amber);background:var(--amber-bg);border:0.5px solid rgba(212,147,10,0.3);border-radius:8px;padding:7px 16px;max-width:440px;line-height:1.6;}
+.starters{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:520px;margin-top:4px;}
+.starter{font-size:11.5px;font-family:var(--font-body);color:var(--text2);background:var(--navy3);border:0.5px solid var(--border);border-radius:9px;padding:10px 13px;cursor:pointer;text-align:left;line-height:1.5;transition:all 0.15s;}
+.starter:hover{color:var(--text);border-color:var(--border2);background:var(--navy4);}
+
+.msg{display:flex;gap:12px;animation:fadeUp 0.2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{flex-direction:row-reverse;}
+.av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.av.ai{background:var(--teal2);}
+.av-inner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.85);border-radius:50%;}
+.av.user{background:var(--navy4);border:0.5px solid var(--border2);color:var(--text3);}
+.bwrap{display:flex;flex-direction:column;gap:6px;max-width:80%;}
+.bubble{padding:11px 15px;border-radius:13px;font-size:13.5px;line-height:1.75;color:var(--text);}
+.msg.ai .bubble{background:var(--navy3);border:0.5px solid var(--border);border-radius:4px 13px 13px 13px;}
+.msg.user .bubble{background:var(--navy4);border:0.5px solid var(--border2);border-radius:13px 4px 13px 13px;}
+.spoken-sum{font-size:12px;font-family:var(--font-display);font-style:italic;color:var(--brass2);background:rgba(201,168,76,0.07);border-left:2px solid var(--brass-dim);border-radius:0 7px 7px 0;padding:7px 12px;line-height:1.65;}
+.bubble code{font-family:var(--font-mono);font-size:12px;background:var(--navy5);border-radius:4px;padding:1px 6px;color:var(--teal);}
+.bubble pre{font-family:var(--font-mono);font-size:11.5px;background:var(--navy2);border:0.5px solid var(--border2);border-radius:9px;padding:12px 14px;overflow-x:auto;margin:8px 0;line-height:1.6;color:var(--text2);}
+.typing{display:flex;gap:5px;align-items:center;padding:4px 0;}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--teal2);animation:blink 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:0.2s;}
+.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.2;transform:scale(0.8);}40%{opacity:1;transform:scale(1);}}
+
+.chat-footer{border-top:0.5px solid var(--border);padding:12px 20px;background:var(--navy2);flex-shrink:0;}
+.input-row{display:flex;gap:9px;align-items:flex-end;}
+.inwrap{flex:1;background:var(--navy3);border:0.5px solid var(--border2);border-radius:11px;display:flex;align-items:flex-end;gap:6px;padding:9px 14px;transition:border-color 0.15s;}
+.inwrap:focus-within{border-color:var(--teal2);}
+#chatInp{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:13.5px;font-family:var(--font-body);resize:none;max-height:100px;min-height:20px;line-height:1.55;}
+#chatInp::placeholder{color:var(--text3);}
+.send-btn{width:36px;height:36px;border-radius:50%;background:var(--teal2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;flex-shrink:0;transition:all 0.15s;}
+.send-btn:hover{background:var(--teal);transform:translateY(-1px);}
+.send-btn:active{transform:scale(0.95);}
+.send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+.foot-meta{display:flex;justify-content:space-between;align-items:center;margin-top:7px;}
+.foot-tag{font-size:10px;font-family:var(--font-mono);color:var(--text3);}
+
+/* ── SHARED WORKSPACE STYLES ── */
+.workspace{flex:1;overflow-y:auto;padding:28px 32px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.ws-title{font-family:var(--font-display);font-size:22px;font-weight:500;color:var(--text);letter-spacing:-0.02em;margin-bottom:4px;}
+.ws-sub{font-size:12.5px;color:var(--text3);margin-bottom:24px;font-family:var(--font-mono);}
+.ws-section{margin-bottom:28px;}
+.ws-section-title{font-size:11px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;}
+.ws-card{background:var(--navy2);border:0.5px solid var(--border);border-radius:12px;padding:20px;}
+.ws-footer{border-top:0.5px solid var(--border);padding:14px 32px;background:var(--navy2);flex-shrink:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+
+/* FORM ELEMENTS */
+.field-label{font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-bottom:6px;display:block;}
+.text-input{width:100%;background:var(--navy3);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;transition:border-color 0.15s;}
+.text-input:focus{border-color:var(--teal2);}
+.text-input::placeholder{color:var(--text3);}
+textarea.text-input{resize:vertical;min-height:80px;line-height:1.6;}
+select.text-input{cursor:pointer;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-family:var(--font-body);cursor:pointer;transition:all 0.15s;border:none;font-weight:500;}
+.btn-primary{background:var(--teal2);color:white;}
+.btn-primary:hover{background:var(--teal);}
+.btn-secondary{background:var(--navy4);color:var(--text2);border:0.5px solid var(--border2);}
+.btn-secondary:hover{color:var(--text);border-color:var(--border2);background:var(--navy5);}
+.btn-brass{background:rgba(201,168,76,0.15);color:var(--brass2);border:0.5px solid var(--brass-dim);}
+.btn-brass:hover{background:rgba(201,168,76,0.25);}
+.btn-danger{background:var(--red-bg);color:var(--red);border:0.5px solid rgba(224,96,96,0.3);}
+.btn-danger:hover{background:rgba(224,96,96,0.2);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn i{font-size:15px;}
+
+/* UPLOAD ZONE */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--navy3);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--teal2);background:rgba(45,212,160,0.04);}
+.upload-zone i{font-size:32px;color:var(--text3);margin-bottom:10px;display:block;}
+.upload-zone p{font-size:13px;color:var(--text2);line-height:1.6;}
+.upload-zone span{font-size:11px;font-family:var(--font-mono);color:var(--text3);}
+.upload-zone input{display:none;}
+
+/* FILE CHIP */
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:var(--navy4);border:0.5px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text2);}
+.file-chip i{font-size:14px;color:var(--teal);}
+.file-chip .rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0;margin-left:2px;}
+.file-chip .rm:hover{color:var(--red);}
+.files-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+
+/* OUTPUT AREA */
+.output-box{background:var(--navy3);border:0.5px solid var(--border);border-radius:12px;padding:20px;min-height:120px;font-size:13.5px;line-height:1.75;color:var(--text);white-space:pre-wrap;}
+.output-box.empty{color:var(--text3);font-style:italic;font-size:13px;}
+.output-box code{font-family:var(--font-mono);font-size:12px;background:var(--navy5);border-radius:4px;padding:1px 5px;color:var(--teal);}
+
+/* GRADE SCORE TABLE */
+.score-table{width:100%;border-collapse:collapse;font-size:13px;}
+.score-table th{text-align:left;padding:9px 12px;font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;border-bottom:0.5px solid var(--border2);font-weight:400;}
+.score-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.5;}
+.score-table tr:last-child td{border-bottom:none;}
+.score-table .criterion{color:var(--text);font-weight:500;}
+.score-table .score{font-family:var(--font-mono);color:var(--brass2);font-size:14px;font-weight:500;white-space:nowrap;}
+.score-total{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;background:rgba(201,168,76,0.08);border:0.5px solid var(--brass-dim);border-radius:8px;margin-top:12px;}
+.score-total-label{font-size:12px;font-family:var(--font-mono);color:var(--text2);}
+.score-total-val{font-family:var(--font-display);font-size:24px;color:var(--brass2);}
+
+/* PROGRESS */
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px;}
+.progress-fill{height:100%;background:var(--teal2);border-radius:2px;transition:width 0.4s ease;}
+
+/* TAGS */
+.tag{display:inline-block;font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;border:0.5px solid;}
+.tag-teal{color:var(--teal);border-color:var(--teal-dim);background:rgba(45,212,160,0.08);}
+.tag-brass{color:var(--brass2);border-color:var(--brass-dim);background:rgba(201,168,76,0.08);}
+.tag-red{color:var(--red);border-color:rgba(224,96,96,0.3);background:var(--red-bg);}
+.tag-purple{color:var(--purple);border-color:rgba(157,142,238,0.3);background:var(--purple-bg);}
+
+/* COMPLIANCE NOTICE IN APP */
+.compliance-notice{background:var(--amber-bg);border:0.5px solid rgba(212,147,10,0.3);border-radius:8px;padding:10px 14px;font-size:11.5px;color:var(--amber);line-height:1.6;display:flex;align-items:flex-start;gap:10px;}
+.compliance-notice i{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* SEPARATOR */
+.sep{border:none;border-top:0.5px solid var(--border);margin:20px 0;}
+
+  /* ── iPAD & TOUCH OPTIMIZATIONS ── */
+
+  /* Safe area insets for notch/home bar */
+  #app {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Prevent text selection on UI elements */
+  .nav-tab, .p-chip, .chip, .btn, .mic-btn,
+  .send-btn, .starter, .sb-convo, .sb-new-btn {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Larger touch targets on iPad */
+  @media (pointer: coarse) {
+    .nav-tab { padding: 12px 14px; font-size: 13px; }
+    .p-chip { padding: 6px 14px; font-size: 11px; }
+    .mic-btn { width: 48px; height: 48px; font-size: 20px; }
+    .send-btn { width: 48px; height: 48px; font-size: 18px; }
+    .starter { padding: 14px 16px; font-size: 13px; }
+    .btn { padding: 12px 22px; font-size: 14px; }
+    .chip { padding: 7px 16px; font-size: 11.5px; }
+    .sb-convo { padding: 12px 10px; }
+    .sb-lock-btn { padding: 10px 12px; font-size: 12px; }
+    .nav-tab i { font-size: 18px; }
+    #chatInp { font-size: 16px; } /* prevents iOS zoom on input focus */
+    .text-input { font-size: 16px; } /* prevents iOS zoom */
+    .inwrap { padding: 12px 16px; }
+    .lock-field input { font-size: 16px; }
+  }
+
+  /* iPad landscape — wider sidebar */
+  @media (min-width: 1024px) and (pointer: coarse) {
+    #sidebar { width: 260px; }
+    .bubble { font-size: 15px; line-height: 1.8; }
+    .msgs { padding: 24px 32px; }
+    .workspace { padding: 32px 40px; }
+    .welcome h2 { font-size: 28px; }
+    .welcome-sub { font-size: 14px; }
+    .ws-title { font-size: 24px; }
+    .output-box { font-size: 14.5px; line-height: 1.8; }
+    .score-table { font-size: 14px; }
+    .lock-card { width: 440px; padding: 48px 44px; }
+    .lock-title { font-size: 28px; }
+  }
+
+  /* iPad portrait — compact sidebar */
+  @media (max-width: 1023px) and (pointer: coarse) {
+    #sidebar { width: 200px; }
+    .sb-name { font-size: 14px; }
+    .nav-tab { font-size: 12px; }
+    .bubble { font-size: 14px; }
+    .starters { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* Smooth scrolling on iOS */
+  .msgs, .workspace, .sb-history {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent bounce scrolling on main app shell */
+  #app { overflow: hidden; }
+
+  /* Better tap feedback on buttons */
+  .btn:active, .send-btn:active, .mic-btn:active { opacity: 0.75; }
+  .starter:active { background: var(--navy5); }
+  .nav-tab:active { background: var(--navy5); }
+
+  /* Hide scrollbars on touch devices for cleaner look */
+  @media (pointer: coarse) {
+    .msgs::-webkit-scrollbar,
+    .workspace::-webkit-scrollbar,
+    .sb-history::-webkit-scrollbar,
+    .personas::-webkit-scrollbar { display: none; }
+    .msgs, .workspace, .sb-history { scrollbar-width: none; }
+  }
+
+  /* Full screen PWA status bar adjustment */
+  @media (display-mode: standalone) {
+    .header { padding-top: max(16px, env(safe-area-inset-top)); }
+    #lockScreen { padding-top: env(safe-area-inset-top); }
+  }
+
+  /* Splash screen color for PWA launch */
+  @media (display-mode: standalone) {
+    body { background: #0d1117; }
+  }
+
+
+  /* ── LOCK SCREEN REDESIGN ── */
+  #lockScreen{
+    position:fixed;inset:0;
+    background:var(--navy);
+    display:flex;align-items:center;justify-content:center;
+    z-index:9999;
+    background-image: radial-gradient(ellipse at 30% 20%, rgba(26,158,119,0.06) 0%, transparent 60%),
+                      radial-gradient(ellipse at 70% 80%, rgba(201,168,76,0.04) 0%, transparent 60%);
+  }
+  .lock-step{display:flex;align-items:center;justify-content:center;width:100%;}
+  .lock-card{background:var(--navy2);border:0.5px solid var(--border2);border-radius:20px;padding:44px 40px;width:400px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 80px rgba(0,0,0,0.5);animation:lockIn 0.3s ease;}
+  .lock-card-wide{width:560px;padding:36px 40px;align-items:stretch;gap:14px;}
+  @keyframes lockIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .lock-gem{width:64px;height:64px;background:var(--teal2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:4px;flex-shrink:0;}
+  .lock-gem-sm{width:36px;height:36px;flex-shrink:0;}
+  .lock-gem-inner{width:26px;height:26px;border:3px solid rgba(255,255,255,0.9);border-radius:50%;position:relative;}
+  .lock-gem-inner::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:rgba(255,255,255,0.9);border-radius:50%;}
+  .lock-gem-sm .lock-gem-inner{width:14px;height:14px;border-width:2px;}
+  .lock-gem-sm .lock-gem-inner::after{width:5px;height:5px;}
+  .lock-title{font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--text);letter-spacing:-0.02em;}
+  .lock-sub{font-size:12px;color:var(--text3);text-align:center;line-height:1.6;max-width:280px;}
+  .lock-rule{width:100%;border-top:0.5px solid var(--border);margin:4px 0;}
+  .lock-field{width:100%;background:var(--navy3);border:0.5px solid var(--border2);border-radius:10px;display:flex;align-items:center;padding:0 14px;gap:10px;transition:border-color 0.15s;}
+  .lock-field:focus-within{border-color:var(--teal2);}
+  .lock-field i{color:var(--text3);font-size:16px;flex-shrink:0;}
+  .lock-field input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;padding:14px 0;font-family:var(--font-mono);letter-spacing:0.05em;}
+  .lock-field input::placeholder{color:var(--text3);letter-spacing:0;font-family:var(--font-body);}
+  .lock-field-inline{width:180px;flex-shrink:0;background:var(--navy4);border:0.5px solid var(--border);border-radius:8px;padding:0 10px;}
+  .lock-field-inline input{font-size:12px;padding:10px 0;}
+  .lock-btn{width:100%;padding:14px;background:var(--teal2);color:white;border:none;border-radius:10px;font-size:14px;font-family:var(--font-body);font-weight:500;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+  .lock-btn:hover{background:var(--teal);transform:translateY(-1px);}
+  .lock-btn i{font-size:16px;}
+  .lock-back-btn{background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text3);font-size:12px;font-family:var(--font-body);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.15s;flex-shrink:0;}
+  .lock-back-btn:hover{color:var(--text);border-color:var(--border2);}
+  .lock-back-btn i{font-size:14px;}
+  .lock-step2-header{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .lock-service-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:0.5px solid var(--border);}
+  .lock-service-row:last-of-type{border-bottom:none;}
+  .lock-service-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:0.5px solid;}
+  .lock-service-info{flex:1;min-width:0;}
+  .lock-service-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+  .lock-service-desc{font-size:10.5px;color:var(--text3);font-family:var(--font-mono);}
+  .lock-remember{display:flex;align-items:flex-start;gap:10px;cursor:pointer;width:100%;}
+  .lock-compliance{width:100%;background:var(--amber-bg);border:0.5px solid rgba(212,147,10,0.3);border-radius:10px;padding:12px 14px;}
+  .lock-compliance-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--amber);margin-bottom:6px;}
+  .lock-compliance-body{font-size:11px;color:var(--amber);line-height:1.6;opacity:0.85;}
+  .lock-err{font-size:12px;color:var(--red);background:var(--red-bg);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px 14px;width:100%;text-align:center;display:none;}
+  .lock-note{font-size:10px;color:var(--text3);font-family:var(--font-mono);text-align:center;}
+
+  /* ── COST TRACKER ── */
+  .cost-panel{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(4px);
+    z-index:500;display:none;
+    align-items:center;justify-content:center;
+  }
+  .cost-panel.open{display:flex;}
+  .cost-card{
+    background:var(--navy2);border:0.5px solid var(--border2);
+    border-radius:16px;padding:28px 32px;
+    width:520px;max-height:80vh;overflow-y:auto;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    animation:lockIn 0.25s ease;
+  }
+  .cost-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:20px;
+  }
+  .cost-title{
+    font-family:var(--font-display);
+    font-size:18px;font-weight:500;color:var(--text);
+  }
+  .cost-close{
+    background:transparent;border:0.5px solid var(--border);
+    border-radius:8px;padding:5px 10px;
+    color:var(--text3);cursor:pointer;font-size:13px;
+    font-family:var(--font-body);transition:all 0.15s;
+  }
+  .cost-close:hover{color:var(--text);border-color:var(--border2);}
+  .cost-section{margin-bottom:20px;}
+  .cost-section-title{
+    font-size:10px;font-family:var(--font-mono);
+    color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;
+    margin-bottom:10px;
+  }
+  .cost-service{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 14px;
+    background:var(--navy3);border:0.5px solid var(--border);
+    border-radius:10px;margin-bottom:7px;
+  }
+  .cost-service-icon{
+    width:32px;height:32px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;flex-shrink:0;border:0.5px solid;
+  }
+  .cost-service-body{flex:1;min-width:0;}
+  .cost-service-name{font-size:12.5px;font-weight:500;color:var(--text);}
+  .cost-service-detail{font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-top:2px;}
+  .cost-service-amount{
+    font-family:var(--font-display);
+    font-size:18px;color:var(--brass2);
+    flex-shrink:0;
+  }
+  .cost-bar-wrap{margin-top:6px;}
+  .cost-bar{
+    height:3px;background:var(--border2);
+    border-radius:2px;overflow:hidden;margin-top:4px;
+  }
+  .cost-bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease;}
+  .cost-total-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;
+    background:rgba(201,168,76,0.08);
+    border:0.5px solid var(--brass-dim);
+    border-radius:10px;margin-top:4px;
+  }
+  .cost-total-label{font-size:12px;font-family:var(--font-mono);color:var(--text2);}
+  .cost-total-amount{
+    font-family:var(--font-display);
+    font-size:24px;color:var(--brass2);
+  }
+  .cost-reset-note{
+    font-size:10.5px;font-family:var(--font-mono);
+    color:var(--text3);text-align:center;margin-top:12px;
+  }
+  .cost-links{
+    display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;
+  }
+  .cost-link{
+    font-size:10.5px;font-family:var(--font-mono);
+    color:var(--teal);
+    background:rgba(45,212,160,0.08);
+    border:0.5px solid var(--teal-dim);
+    border-radius:6px;padding:5px 10px;
+    text-decoration:none;transition:all 0.15s;
+    cursor:pointer;
+  }
+  .cost-link:hover{background:rgba(45,212,160,0.15);}
+  .cost-trigger{
+    display:flex;align-items:center;gap:6px;
+    padding:7px 9px;
+    background:transparent;border:0.5px solid var(--border);
+    border-radius:6px;cursor:pointer;
+    font-size:11px;color:var(--text3);
+    font-family:var(--font-body);transition:all 0.15s;
+    width:100%;
+  }
+  .cost-trigger:hover{color:var(--brass2);border-color:var(--brass-dim);}
+  .cost-trigger i{font-size:13px;color:var(--brass);}
+  .cost-trigger .cost-trigger-total{
+    margin-left:auto;
+    font-family:var(--font-mono);
+    font-size:10px;color:var(--brass2);
+  }
+
+
+  /* ── WAKE WORD & BRIEFING ENHANCEMENTS ── */
+  .wake-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--navy2);
+    border: 0.5px solid var(--border2);
+    border-radius: 30px;
+    padding: 8px 16px 8px 10px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .wake-indicator.active {
+    border-color: var(--teal2);
+    color: var(--teal);
+    box-shadow: 0 8px 32px rgba(45,212,160,0.15);
+  }
+  .wake-indicator.triggered {
+    border-color: var(--brass);
+    color: var(--brass2);
+    box-shadow: 0 8px 32px rgba(201,168,76,0.2);
+    animation: wakeGlow 0.5s ease;
+  }
+  @keyframes wakeGlow {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .wake-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text3);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .wake-indicator.active .wake-dot {
+    background: var(--teal2);
+    animation: pulse 1.5s infinite;
+  }
+  .wake-indicator.triggered .wake-dot {
+    background: var(--brass);
+  }
+
+  /* BRIEFING CARD LAYOUT */
+  .briefing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .briefing-widget {
+    background: var(--navy3);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .briefing-widget-title {
+    font-size: 9.5px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .briefing-widget-main {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .briefing-widget-sub {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .briefing-widget-detail {
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+  }
+  .nti-progress {
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .nti-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--teal2), var(--brass));
+    transition: width 0.5s ease;
+  }
+  .weather-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+  .briefing-full-text {
+    background: var(--navy3);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .briefing-section-label {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+
+  /* ── COLLAPSIBLE SIDEBAR & LARGE SCREEN ── */
+  #sidebar {
+    transition: width 0.25s ease, min-width 0.25s ease, opacity 0.2s ease;
+  }
+  #sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+    opacity: 0;
+    border-right: none;
+  }
+
+  .sidebar-toggle {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 48px;
+    background: var(--navy3);
+    border: 0.5px solid var(--border2);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.2s;
+    color: var(--text3);
+    font-size: 11px;
+  }
+  .sidebar-toggle:hover {
+    background: var(--navy4);
+    color: var(--text);
+    width: 24px;
+  }
+
+  #main { position: relative; }
+
+  /* LARGE SCREEN ENHANCEMENTS */
+  @media (min-width: 1400px) {
+    .msgs { padding: 24px 40px; gap: 20px; }
+    .bubble { font-size: 14.5px; line-height: 1.8; padding: 13px 18px; }
+    .workspace { padding: 32px 48px; }
+    .ws-title { font-size: 26px; }
+    .ws-sub { font-size: 13px; }
+    .output-box { font-size: 14px; line-height: 1.85; }
+    .score-table { font-size: 14px; }
+    .welcome h2 { font-size: 30px; }
+    .welcome-sub { font-size: 14px; max-width: 500px; }
+    .starters { max-width: 640px; }
+    .starter { font-size: 13px; padding: 12px 16px; }
+    .inwrap { padding: 11px 18px; }
+    #chatInp { font-size: 14.5px; }
+    .send-btn { width: 42px; height: 42px; font-size: 17px; }
+    .chat-footer { padding: 14px 40px; }
+    .ws-footer { padding: 14px 48px; }
+    .topbar { padding: 11px 40px; }
+    .voicebar { padding: 9px 40px; }
+  }
+
+  @media (min-width: 1800px) {
+    .msgs { padding: 28px 60px; }
+    .workspace { padding: 36px 64px; }
+    .bubble { font-size: 15px; }
+    .bwrap { max-width: 72%; }
+    .chat-footer { padding: 16px 60px; }
+    .ws-footer { padding: 16px 64px; }
+    .topbar { padding: 12px 60px; }
+    .voicebar { padding: 10px 60px; }
+    .grid-2 { gap: 24px; }
+    .ws-card { padding: 24px; }
+  }
+
+  /* WIDESCREEN — expand content width */
+  @media (min-width: 2000px) {
+    #app { max-width: 2400px; margin: 0 auto; }
+    .bwrap { max-width: 65%; }
+  }
+
+  /* KEYBOARD SHORTCUT HINT */
+  .kb-hint {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy3);
+    border: 0.5px solid var(--border2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .kb-hint.show { opacity: 1; }
+
+
+  @media (min-width: 1400px) {
+    #kbShortcuts { display: block !important; }
+  }
+
+
+  /* ── PREMIUM VISUAL LAYER ── */
+
+  /* Warm noise texture overlay on app */
+  #app::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Warm radial glow behind content */
+  #app::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 20%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SIDEBAR PREMIUM ── */
+  #sidebar {
+    background: linear-gradient(180deg, #1a1510 0%, #141210 100%);
+    border-right: 0.5px solid rgba(201,168,76,0.12);
+    box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+  }
+
+  .sb-brand {
+    background: linear-gradient(135deg, #1f1b14 0%, #181410 100%);
+    border-bottom: 0.5px solid rgba(201,168,76,0.1);
+    padding: 20px 18px 16px;
+  }
+
+  .sb-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, var(--brass3) 0%, var(--brass) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .sb-ver {
+    font-size: 8.5px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    margin-top: 1px;
+  }
+
+  .sb-gem {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--teal2) 0%, #2d7a65 100%);
+    box-shadow: 0 2px 12px rgba(63,158,133,0.3);
+  }
+
+  /* NAV TABS */
+  .nav-tab {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    border-radius: 6px;
+    margin: 1px 0;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .nav-tab:hover {
+    background: rgba(201,168,76,0.06);
+    color: var(--brass3);
+  }
+
+  .nav-tab.active {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.06) 100%);
+    color: var(--brass2);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(201,168,76,0.08);
+  }
+
+  .nav-tab.active i { color: var(--brass); }
+
+  /* CONVERSATION ITEMS */
+  .sb-convo:hover { background: rgba(201,168,76,0.05); }
+  .sb-convo.active {
+    background: rgba(201,168,76,0.08);
+    border: 0.5px solid rgba(201,168,76,0.15);
+  }
+
+  /* BOTTOM SIDEBAR */
+  .sb-bottom {
+    border-top: 0.5px solid rgba(201,168,76,0.1);
+    background: linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 100%);
+  }
+
+  .sb-voice-pill {
+    background: rgba(160,142,224,0.08);
+    border: 0.5px solid rgba(160,142,224,0.2);
+    color: var(--purple);
+    border-radius: 8px;
+  }
+
+  /* ── MAIN AREA ── */
+  #main { background: var(--navy); }
+
+  .topbar {
+    background: linear-gradient(180deg, #1a1510 0%, #151210 100%);
+    border-bottom: 0.5px solid rgba(201,168,76,0.1);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+
+  .voicebar {
+    background: linear-gradient(180deg, #151210 0%, #121009 100%);
+    border-bottom: 0.5px solid rgba(201,168,76,0.08);
+  }
+
+  /* PERSONA CHIPS */
+  .p-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    border: 0.5px solid rgba(201,168,76,0.12);
+    background: rgba(201,168,76,0.03);
+    color: var(--text3);
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .p-chip:hover {
+    color: var(--brass3);
+    border-color: rgba(201,168,76,0.25);
+    background: rgba(201,168,76,0.07);
+  }
+
+  .p-chip.active {
+    color: var(--brass2);
+    background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.08) 100%);
+    border-color: rgba(201,168,76,0.35);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(201,168,76,0.1);
+  }
+
+  /* ── MESSAGES ── */
+  .msgs {
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.015) 0%, transparent 60%), var(--navy);
+  }
+
+  /* WELCOME SCREEN */
+  .welcome h2 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    background: linear-gradient(135deg, var(--brass3) 0%, var(--brass2) 40%, var(--text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .welcome-rule {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--brass-dim), transparent);
+  }
+
+  .welcome-gem {
+    background: linear-gradient(135deg, var(--teal2) 0%, #2a7a68 100%);
+    box-shadow: 0 8px 32px rgba(63,158,133,0.25), 0 0 0 1px rgba(63,158,133,0.1);
+  }
+
+  .starter {
+    font-family: var(--font-body);
+    font-size: 12px;
+    background: linear-gradient(135deg, var(--navy3) 0%, var(--navy2) 100%);
+    border: 0.5px solid rgba(201,168,76,0.1);
+    color: var(--text2);
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .starter:hover {
+    color: var(--brass3);
+    border-color: rgba(201,168,76,0.25);
+    background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, var(--navy3) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* MESSAGE BUBBLES */
+  .msg.ai .bubble {
+    background: linear-gradient(135deg, #1e1a14 0%, #1a1610 100%);
+    border: 0.5px solid rgba(201,168,76,0.1);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .msg.user .bubble {
+    background: linear-gradient(135deg, #1f2318 0%, #1a1e14 100%);
+    border: 0.5px solid rgba(95,184,160,0.2);
+  }
+
+  .bubble { font-family: var(--font-body); font-size: 14px; line-height: 1.78; }
+  .bubble code { background: rgba(201,168,76,0.08); color: var(--brass3); }
+  .bubble pre { background: #0c0a08; border-color: rgba(201,168,76,0.1); color: var(--text2); }
+
+  .spoken-sum {
+    font-family: var(--font-reading);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--brass2);
+    background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+    border-left: 2px solid var(--brass-dim);
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* TYPING INDICATOR */
+  .typing span { background: var(--brass); opacity: 0.6; }
+
+  /* ── CHAT FOOTER ── */
+  .chat-footer {
+    background: linear-gradient(0deg, #1a1510 0%, #151210 100%);
+    border-top: 0.5px solid rgba(201,168,76,0.1);
+  }
+
+  .inwrap {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(201,168,76,0.15);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+
+  .inwrap:focus-within {
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.04);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.06);
+  }
+
+  #chatInp { font-family: var(--font-body); font-size: 14px; color: var(--text); }
+
+  .send-btn {
+    background: linear-gradient(135deg, var(--teal2) 0%, #2d7a65 100%);
+    box-shadow: 0 4px 12px rgba(63,158,133,0.3);
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .send-btn:hover {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal2) 100%);
+    box-shadow: 0 6px 18px rgba(63,158,133,0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ── WORKSPACES ── */
+  .workspace { background: var(--navy); }
+
+  .ws-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, var(--brass3) 0%, var(--text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .ws-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.03em;
+  }
+
+  .ws-card {
+    background: linear-gradient(135deg, #1e1a14 0%, #1a1610 100%);
+    border: 0.5px solid rgba(201,168,76,0.12);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ws-section-title {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ws-footer {
+    background: linear-gradient(0deg, #1a1510 0%, #151210 100%);
+    border-top: 0.5px solid rgba(201,168,76,0.1);
+  }
+
+  /* FORM ELEMENTS */
+  .text-input {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(201,168,76,0.15);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+
+  .text-input:focus {
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.04);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.06);
+    outline: none;
+  }
+
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* BUTTONS */
+  .btn { font-family: var(--font-body); font-weight: 500; letter-spacing: 0.01em; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--teal2) 0%, #2d7a65 100%);
+    box-shadow: 0 4px 12px rgba(63,158,133,0.25);
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal2) 100%);
+    box-shadow: 0 6px 20px rgba(63,158,133,0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn-brass {
+    background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.08) 100%);
+    color: var(--brass2);
+    border: 0.5px solid rgba(201,168,76,0.3);
+    transition: all 0.2s;
+  }
+
+  .btn-brass:hover {
+    background: linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.15) 100%);
+    box-shadow: 0 4px 12px rgba(201,168,76,0.15);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(201,168,76,0.12);
+    color: var(--text2);
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(201,168,76,0.06);
+    border-color: rgba(201,168,76,0.2);
+    color: var(--text);
+  }
+
+  /* UPLOAD ZONES */
+  .upload-zone {
+    background: rgba(255,255,255,0.02);
+    border: 1.5px dashed rgba(201,168,76,0.2);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+
+  .upload-zone:hover, .upload-zone.drag {
+    border-color: rgba(201,168,76,0.45);
+    background: rgba(201,168,76,0.04);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.04);
+  }
+
+  /* OUTPUT BOXES */
+  .output-box {
+    background: linear-gradient(135deg, #1a1610 0%, #161310 100%);
+    border: 0.5px solid rgba(201,168,76,0.1);
+    border-radius: 12px;
+    font-family: var(--font-reading);
+    font-size: 14px;
+    line-height: 1.85;
+  }
+
+  /* SCORE TABLE */
+  .score-table th {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    border-bottom-color: rgba(201,168,76,0.15);
+  }
+
+  .score-table td { border-bottom-color: rgba(201,168,76,0.08); }
+  .score-table .criterion { color: var(--text); font-weight: 500; }
+  .score-table .score { color: var(--brass2); }
+
+  .score-total {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.04) 100%);
+    border-color: rgba(201,168,76,0.2);
+  }
+
+  .score-total-val {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--brass2);
+  }
+
+  /* FILE CHIPS */
+  .file-chip {
+    background: rgba(201,168,76,0.06);
+    border-color: rgba(201,168,76,0.2);
+    color: var(--text2);
+  }
+
+  /* COMPLIANCE NOTICE */
+  .compliance-notice {
+    background: rgba(200,136,10,0.08);
+    border: 0.5px solid rgba(200,136,10,0.2);
+    border-radius: 10px;
+  }
+
+  /* MIC BUTTON */
+  .mic-btn {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(201,168,76,0.2);
+    color: var(--text3);
+    transition: all 0.2s;
+  }
+
+  .mic-btn.listening {
+    background: linear-gradient(135deg, var(--teal2) 0%, #2d7a65 100%);
+    border-color: var(--teal);
+    box-shadow: 0 4px 16px rgba(63,158,133,0.35);
+  }
+
+  .mic-btn.speaking {
+    background: rgba(160,142,224,0.12);
+    border-color: rgba(160,142,224,0.35);
+  }
+
+  /* WAVEFORM BARS */
+  .wbar { background: rgba(201,168,76,0.15); }
+
+  /* STATUS DOT */
+  .status-dot { background: var(--teal2); }
+
+  /* MODEL INDICATORS */
+  .model-opus {
+    background: rgba(201,168,76,0.1);
+    color: var(--brass2);
+    border-color: rgba(201,168,76,0.25);
+  }
+
+  .model-sonnet {
+    background: rgba(95,184,160,0.1);
+    color: var(--teal);
+    border-color: rgba(95,184,160,0.25);
+  }
+
+  /* LOCK SCREEN */
+  #lockScreen {
+    background: var(--navy);
+    background-image:
+      radial-gradient(ellipse at 30% 40%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 60%, rgba(63,158,133,0.03) 0%, transparent 60%);
+  }
+
+  .lock-card {
+    background: linear-gradient(135deg, #1e1a14 0%, #181410 100%);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    box-shadow: var(--shadow-lg), 0 0 80px rgba(201,168,76,0.04);
+  }
+
+  .lock-card-wide {
+    background: linear-gradient(135deg, #1e1a14 0%, #181410 100%);
+  }
+
+  .lock-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, var(--brass3) 0%, var(--brass2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .lock-field {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(201,168,76,0.15);
+  }
+
+  .lock-field:focus-within {
+    border-color: rgba(201,168,76,0.45);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.06);
+  }
+
+  .lock-btn {
+    background: linear-gradient(135deg, var(--teal2) 0%, #2d7a65 100%);
+    box-shadow: 0 6px 20px rgba(63,158,133,0.3);
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .lock-btn:hover {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal2) 100%);
+    box-shadow: 0 8px 28px rgba(63,158,133,0.4);
+    transform: translateY(-2px);
+  }
+
+  .lock-service-name { font-family: var(--font-body); font-weight: 500; }
+  .lock-service-desc { font-family: var(--font-mono); }
+  .lock-compliance { background: rgba(200,136,10,0.07); border-color: rgba(200,136,10,0.2); }
+
+  /* COST PANEL */
+  .cost-card {
+    background: linear-gradient(135deg, #1e1a14 0%, #181410 100%);
+    border-color: rgba(201,168,76,0.2);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cost-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; }
+  .cost-service { background: rgba(255,255,255,0.02); border-color: rgba(201,168,76,0.1); }
+  .cost-service-name { font-family: var(--font-body); font-weight: 500; }
+  .cost-service-detail { font-family: var(--font-mono); }
+  .cost-service-amount { font-family: var(--font-display); }
+  .cost-total-row { background: rgba(201,168,76,0.07); border-color: rgba(201,168,76,0.2); }
+  .cost-total-amount { font-family: var(--font-display); }
+  .cost-link { font-family: var(--font-mono); }
+
+  /* BRIEFING WIDGETS */
+  .briefing-widget {
+    background: linear-gradient(135deg, #1e1a14 0%, #1a1610 100%);
+    border-color: rgba(201,168,76,0.12);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .briefing-widget-title { font-family: var(--font-mono); letter-spacing: 0.1em; }
+  .briefing-widget-main { font-family: var(--font-display); font-weight: 400; }
+  .briefing-widget-detail { font-family: var(--font-mono); }
+  .briefing-full-text { font-family: var(--font-reading); font-size: 15px; line-height: 1.9; background: linear-gradient(135deg, #1a1610 0%, #161310 100%); border-color: rgba(201,168,76,0.1); }
+  .briefing-section-label { font-family: var(--font-mono); }
+
+  /* APA LIBRARY */
+  .lock-remember div { font-family: var(--font-body); }
+
+  /* WAKE INDICATOR */
+  .wake-indicator {
+    background: linear-gradient(135deg, #1e1a14 0%, #1a1610 100%);
+    border-color: rgba(201,168,76,0.2);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-mono);
+  }
+
+  .wake-indicator.active { border-color: rgba(95,184,160,0.4); }
+  .wake-indicator.triggered { border-color: rgba(201,168,76,0.5); }
+
+  /* COLLAPSIBLE SIDEBAR TOGGLE */
+  .sidebar-toggle {
+    background: linear-gradient(135deg, #1e1a14 0%, #1a1610 100%);
+    border-color: rgba(201,168,76,0.2);
+    color: var(--text3);
+  }
+
+  .sidebar-toggle:hover {
+    background: rgba(201,168,76,0.08);
+    color: var(--brass2);
+  }
+
+  /* SCROLL BARS — refined */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,0.3); }
+
+  /* SMOOTH ANIMATIONS throughout */
+  * { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes lockIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+
+  /* Wake-word pill: keep it clear of the send button and never block clicks */
+  .wake-indicator { bottom: 96px; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOCK SCREEN ══ -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-gem"><div class="lock-gem-inner"></div></div>
+    <div class="lock-title">Gemma</div>
+    <div class="lock-sub">Personal &amp; PhD Assistant<br>Ashley Cooke · PhD Student, Regent University</div>
+
+    <div class="lock-field">
+      <i class="ti ti-key"></i>
+      <input type="password" id="apiInput" autocomplete="off" placeholder="Anthropic API key  (sk-ant-...)" onkeydown="if(event.key==='Enter')unlock()"/>
+    </div>
+
+    <div class="lock-field">
+      <i class="ti ti-volume"></i>
+      <input type="password" id="elApiInput" autocomplete="off" placeholder="ElevenLabs key  (optional · Amelia's voice)" onkeydown="if(event.key==='Enter')unlock()"/>
+    </div>
+
+    <div class="lock-compliance">
+      <p><strong>Personal &amp; PhD use only.</strong><br>
+      No student records, grades, or patient information. Student work stays in CCCC's Gemini.</p>
+    </div>
+
+    <div class="lock-err" id="lockErr">Enter a valid Anthropic API key (it starts with sk-ant-).</div>
+    <button class="lock-btn" onclick="unlock()">Enter Gemma</button>
+    <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font-mono);">
+      <input type="checkbox" id="rememberKey" style="accent-color:var(--teal2);" onchange="toggleRemember()"/>
+      Keep keys until I close this tab
+    </label>
+    <div class="lock-note">Keys are never saved permanently · Closing the tab or locking Gemma clears them</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <div class="kb-hint" id="kbHint">⌘ \ — toggle sidebar</div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-gem"><div class="sb-gem-inner"></div></div>
+      <div>
+        <div class="sb-name">Gemma</div>
+        <div class="sb-ver">v3 · PERSONAL + PHD</div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <button class="nav-tab active" onclick="switchPanel('chat')" id="tab-chat">
+        <i class="ti ti-message-2"></i> Chat
+        <span class="model-badge sonnet-badge">Sonnet</span>
+      </button>
+      <button class="nav-tab" onclick="switchPanel('research')" id="tab-research">
+        <i class="ti ti-flask"></i> Research
+        <span class="model-badge opus-badge">Opus</span>
+      </button>
+      <button class="nav-tab" onclick="switchPanel('apa')" id="tab-apa">
+        <i class="ti ti-books"></i> APA Library
+        <span class="model-badge opus-badge">Opus</span>
+      </button>
+      <button class="nav-tab" onclick="switchPanel('litmap')" id="tab-litmap">
+        <i class="ti ti-network"></i> Lit Map
+        <span class="model-badge opus-badge">Opus</span>
+      </button>
+      <button class="nav-tab" onclick="switchPanel('briefing')" id="tab-briefing">
+        <i class="ti ti-sun"></i> Daily Briefing
+        <span class="model-badge sonnet-badge">Sonnet</span>
+      </button>
+    </div>
+
+    <div class="sb-section-label">conversations</div>
+    <div class="sb-history" id="sbHistory">
+      <div style="font-size:11px;color:var(--text3);padding:8px;font-family:var(--font-mono);">No conversations yet</div>
+    </div>
+
+    <div class="sb-bottom">
+      <div class="sb-voice-pill"><i class="ti ti-microphone"></i> Amelia · ElevenLabs · en-GB</div>
+      <button class="cost-trigger" onclick="openCostPanel()">
+        <i class="ti ti-chart-bar"></i> Usage & Costs
+        <span class="cost-trigger-total" id="sbCostTotal">$0.00 est.</span>
+      </button>
+      <button class="sb-lock-btn" onclick="lockApp()"><i class="ti ti-lock"></i> Lock Gemma</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar (⌘\)">
+      <i class="ti ti-chevron-left" id="sidebarToggleIcon"></i>
+    </button>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="persona-bar" id="personaBar">
+        <div class="p-chip active">✦ Gemma · Amelia</div>
+      </div>
+      <div class="topbar-right">
+        <div style="font-size:9px;font-family:var(--font-mono);color:var(--text3);display:none;" id="kbShortcuts" class="kb-shortcuts">
+          ⌘K chat &nbsp;·&nbsp; ⌘B briefing &nbsp;·&nbsp; ⌘\ sidebar
+        </div>
+        <span class="model-indicator model-sonnet" id="modelIndicator">claude sonnet</span>
+        <div class="status-row"><div class="status-dot"></div><span id="pLabel">gemma</span></div>
+      </div>
+    </div>
+
+    <!-- VOICE BAR -->
+    <div class="voicebar">
+      <button class="mic-btn off" id="micBtn" onclick="toggleMic()" aria-label="Toggle microphone">
+        <i class="ti ti-microphone"></i>
+      </button>
+      <div class="waveform" id="waveform"></div>
+      <div class="spk-toggle" onclick="toggleSpeak()">
+        <div class="trk on" id="spkTrk"></div> auto-speak
+      </div>
+      <div class="vstatus" id="vstatus">initializing…</div>
+      <div class="spk-toggle" onclick="toggleWebSearch()" style="margin-left:8px;">
+        <div class="trk" id="searchTrk"></div>
+        web search
+      </div>
+    </div>
+
+    <!-- ── CHAT PANEL ── -->
+    <div class="panel active" id="panel-chat">
+      <div class="msgs" id="msgs">
+        <div class="welcome" id="welcome">
+          <div class="welcome-gem"><div class="welcome-gem-inner"></div></div>
+          <h2>Good to see you, Ashley ✦</h2>
+          <div class="welcome-rule"></div>
+          <p class="welcome-sub">Your personal assistant for staying organized, PhD work, and thinking things through. Just start talking.</p>
+          <div class="disclaimer">Personal &amp; PhD use only · No student or patient information</div>
+          <div class="starters">
+            <button class="starter" onclick="qs(this)">Explain Vygotsky's zone of proximal development</button>
+            <button class="starter" onclick="qs(this)">How does cognitive load theory apply to nursing simulation?</button>
+            <button class="starter" onclick="qs(this)">Walk me through a clinical reasoning framework</button>
+            <button class="starter" onclick="qs(this)">Help me design a PhD research question in nursing education</button>
+            <button class="starter" onclick="qs(this)">What is Mezirow's transformative learning theory?</button>
+            <button class="starter" onclick="qs(this)">What is cognitive offloading, and how might it affect clinical judgment?</button>
+            <button class="starter" onclick="qs(this)">Tell me something fascinating I probably don't know</button>
+            <button class="starter" onclick="qs(this)">Give me a fun fact about nursing history</button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <div class="input-row">
+          <div class="inwrap">
+            <textarea id="chatInp" placeholder="Ask Gemma anything…" rows="1" onkeydown="handleKey(event)" oninput="resize(this)"></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn" onclick="sendChat()" aria-label="Send"><i class="ti ti-arrow-up"></i></button>
+        </div>
+        <div class="foot-meta">
+          <span class="foot-tag">gemma · <span id="footPersona">personal &amp; PhD</span></span>
+          <span class="foot-tag" id="micHint">click mic to activate</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RESEARCH PANEL ── -->
+    <div class="panel" id="panel-research">
+      <div class="workspace">
+        <div class="ws-title">Research Preparation</div>
+        <div class="ws-sub">claude opus · literature summaries · apa 7th · outlines · research question refinement · dissertation support</div>
+
+        <div class="ws-card" style="margin-bottom:20px;">
+          <div class="grid-2" style="gap:14px;">
+            <div>
+              <label class="field-label">Research task</label>
+              <select class="text-input" id="researchType">
+                <option value="question">Research question refinement</option>
+                <option value="litreview">Literature review summary</option>
+                <option value="framework">Theoretical framework selection</option>
+                <option value="methodology">Methodology recommendation</option>
+                <option value="outline">Dissertation chapter outline</option>
+                <option value="apa">APA 7th citation help</option>
+                <option value="abstract">Abstract drafting</option>
+                <option value="irb">IRB considerations</option>
+                <option value="analysis">Data analysis approach</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Research area</label>
+              <select class="text-input" id="researchArea">
+                <option value="nursing-ed">Nursing education</option>
+                <option value="ed-psych">Educational psychology</option>
+                <option value="both">Both / interdisciplinary</option>
+                <option value="clinical">Clinical nursing</option>
+                <option value="simulation">Simulation pedagogy</option>
+                <option value="assessment">Assessment &amp; evaluation</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label class="field-label">Your research input — question, abstract, sources, or topic</label>
+            <textarea class="text-input" id="researchInput" placeholder="Paste your draft research question, abstract, literature sources, or describe what you need help with. Example: 'I am studying the effect of high-fidelity simulation on clinical reasoning in undergraduate nursing students using a constructivist framework. My research question is: How does…'" style="min-height:120px;"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div class="ws-section-title">Upload supporting documents (optional)</div>
+          <div class="upload-zone" id="researchZone" onclick="document.getElementById('researchFile').click()" ondragover="dragOver(event,'researchZone')" ondragleave="dragLeave('researchZone')" ondrop="dropFile(event,'researchFile','researchZone')">
+            <i class="ti ti-files"></i>
+            <p>Upload articles, drafts, or notes for Gemma to reference</p>
+            <span>PDF · DOCX · No patient or student identifiers</span>
+            <input type="file" id="researchFile" accept=".pdf,.docx,.doc" onchange="fileSelected(this,'researchFilesList','researchZone')"/>
+          </div>
+          <div class="files-row" id="researchFilesList"></div>
+        </div>
+
+        <div class="ws-section-title">Research output</div>
+        <div class="output-box empty" id="researchOutput">Your research preparation will appear here…</div>
+
+        <div id="researchLoading" style="display:none;margin-top:12px;">
+          <div style="font-size:12px;font-family:var(--font-mono);color:var(--teal);margin-bottom:8px;">Gemma is working on your research with Opus…</div>
+          <div class="progress-bar"><div class="progress-fill" id="researchProgress" style="width:5%"></div></div>
+        </div>
+      </div>
+
+      <div class="ws-footer">
+        <button class="btn btn-primary" onclick="runResearch()"><i class="ti ti-sparkles"></i> Run with Opus</button>
+        <button class="btn btn-secondary" onclick="copyOutput('researchOutput')"><i class="ti ti-copy"></i> Copy</button>
+        <button class="btn btn-brass" onclick="exportResearchPDF()"><i class="ti ti-file-type-pdf"></i> Export PDF</button>
+        <span class="tag tag-brass" style="margin-left:auto;">Opus · Doctoral depth</span>
+      </div>
+    </div>
+
+
+    <!-- ── APA LIBRARY PANEL ── -->
+    <div class="panel" id="panel-apa">
+      <div class="workspace" id="apaWorkspace">
+        <div class="ws-title">APA 7th Reference Library</div>
+        <div class="ws-sub">claude opus · format citations · build your personal reference database · export bibliography</div>
+
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div>
+            <div class="ws-section-title">Add a reference</div>
+            <div class="ws-card">
+              <div style="margin-bottom:12px;">
+                <label class="field-label">Reference type</label>
+                <select class="text-input" id="apaType">
+                  <option value="journal">Journal article</option>
+                  <option value="book">Book</option>
+                  <option value="chapter">Book chapter</option>
+                  <option value="website">Website / online resource</option>
+                  <option value="dissertation">Dissertation / thesis</option>
+                  <option value="conference">Conference paper</option>
+                  <option value="report">Government / institutional report</option>
+                </select>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label class="field-label">Paste citation, DOI, URL, or describe the source</label>
+                <textarea class="text-input" id="apaInput" placeholder="Paste any format — rough notes, a DOI, a URL, or an existing citation. Gemma will format it correctly in APA 7th edition." style="min-height:90px;"></textarea>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label class="field-label">Tags / keywords (optional)</label>
+                <input class="text-input" id="apaTags" placeholder="e.g. constructivism, Vygotsky, ZPD, nursing simulation"/>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label class="field-label">Your notes on this source (optional)</label>
+                <textarea class="text-input" id="apaNotes" placeholder="Key argument, relevance to your research, quotes to remember…" style="min-height:60px;"></textarea>
+              </div>
+              <button class="btn btn-primary" onclick="formatAPA()" id="apaBtn">
+                <i class="ti ti-sparkles"></i> Format with Opus
+              </button>
+            </div>
+            <div id="apaFormatted" style="display:none;margin-top:12px;">
+              <div class="ws-section-title">Formatted citation</div>
+              <div class="output-box" id="apaOutput"></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn btn-secondary" onclick="copyOutput('apaOutput')"><i class="ti ti-copy"></i> Copy</button>
+                <button class="btn btn-primary" onclick="saveToLibrary()"><i class="ti ti-bookmark"></i> Save to library</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="ws-section-title">Your reference library (<span id="refCount">0</span>)</div>
+            <div style="margin-bottom:8px;display:flex;gap:6px;">
+              <input class="text-input" id="apaSearch" placeholder="Search library…" oninput="filterLibrary(this.value)" style="flex:1;"/>
+              <button class="btn btn-secondary" onclick="exportBibliography()"><i class="ti ti-file-type-pdf"></i></button>
+            </div>
+            <div id="apaLibrary" style="max-height:420px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;">
+              <div style="font-size:12px;color:var(--text3);font-family:var(--font-mono);padding:16px;text-align:center;">
+                No references yet — format and save your first citation
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="apaLoading" style="display:none;margin-bottom:12px;">
+          <div style="font-size:12px;font-family:var(--font-mono);color:var(--teal);margin-bottom:8px;">Gemma is formatting your citation…</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+        </div>
+      </div>
+      <div class="ws-footer">
+        <button class="btn btn-brass" onclick="exportBibliography()"><i class="ti ti-file-type-pdf"></i> Export full bibliography</button>
+        <button class="btn btn-secondary" onclick="clearLibrary()"><i class="ti ti-trash"></i> Clear library</button>
+        <span class="tag tag-brass" style="margin-left:auto;">Opus · APA 7th edition</span>
+      </div>
+    </div>
+
+    <!-- ── LIT MAP PANEL ── -->
+    <div class="panel" id="panel-litmap">
+      <div class="workspace" id="litmapWorkspace">
+        <div class="ws-title">Literature Map</div>
+        <div class="ws-sub">visual web of how your sources connect · themes · gaps · relationships</div>
+
+        <div class="ws-card" style="margin-bottom:16px;">
+          <div class="grid-2" style="gap:14px;">
+            <div>
+              <label class="field-label">Central research theme or question</label>
+              <input class="text-input" id="litmapTheme" placeholder="e.g. AI-assisted nursing education, cognitive load theory"/>
+            </div>
+            <div>
+              <label class="field-label">Map focus</label>
+              <select class="text-input" id="litmapFocus">
+                <option value="themes">Thematic connections</option>
+                <option value="theorists">Key theorists and relationships</option>
+                <option value="gaps">Research gaps</option>
+                <option value="methodology">Methodological approaches</option>
+                <option value="timeline">Chronological development</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <label class="field-label">Sources to map (paste titles, authors, or your library)</label>
+            <textarea class="text-input" id="litmapSources" placeholder="Paste your sources, key authors, or theories here. Or click 'Import from Library' to use your APA library." style="min-height:100px;"></textarea>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button class="btn btn-secondary" onclick="importFromLibrary()"><i class="ti ti-download"></i> Import from APA library</button>
+          </div>
+        </div>
+
+        <div id="litmapLoading" style="display:none;margin-bottom:12px;">
+          <div style="font-size:12px;font-family:var(--font-mono);color:var(--teal);margin-bottom:8px;">Gemma is mapping your literature…</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+        </div>
+
+        <div id="litmapViz" style="display:none;">
+          <div class="ws-section-title">Literature map</div>
+          <div id="litmapCanvas" style="background:var(--navy2);border:0.5px solid var(--border);border-radius:12px;padding:20px;min-height:300px;overflow:auto;"></div>
+          <div style="margin-top:12px;">
+            <div class="ws-section-title">Gemma's analysis</div>
+            <div class="output-box" id="litmapAnalysis"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ws-footer">
+        <button class="btn btn-primary" onclick="generateLitMap()"><i class="ti ti-sparkles"></i> Generate map with Opus</button>
+        <button class="btn btn-brass" onclick="exportLitMapPDF()"><i class="ti ti-file-type-pdf"></i> Export PDF</button>
+        <button class="btn btn-secondary" onclick="copyOutput('litmapAnalysis')"><i class="ti ti-copy"></i> Copy analysis</button>
+        <span class="tag tag-brass" style="margin-left:auto;">Opus · Literature synthesis</span>
+      </div>
+    </div>
+
+    <!-- ── DAILY BRIEFING PANEL ── -->
+    <div class="panel" id="panel-briefing">
+      <div class="workspace" id="briefingWorkspace">
+        <div class="ws-title" id="briefingTitle">Good morning, Ashley</div>
+        <div class="ws-sub">Say <strong style="color:var(--brass2)">"Good morning Gemma"</strong> anytime · or generate manually below · Amelia reads your day aloud</div>
+
+        <!-- DASHBOARD WIDGETS -->
+        <div class="briefing-grid" style="margin-top:20px;">
+
+          <!-- WEATHER WIDGET -->
+          <div class="briefing-widget">
+            <div class="briefing-widget-title">Weather</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="weather-icon" id="weatherIcon">⛅</div>
+              <div>
+                <div class="briefing-widget-main" id="weatherTemp">—°</div>
+                <div class="briefing-widget-sub" id="weatherDesc">Loading…</div>
+              </div>
+            </div>
+            <div class="briefing-widget-detail" id="weatherDetail">Fetching your local weather…</div>
+          </div>
+
+          <!-- TODAY DATE/TIME -->
+          <div class="briefing-widget">
+            <div class="briefing-widget-title">Today</div>
+            <div class="briefing-widget-main" id="briefingDate" style="font-size:20px;"></div>
+            <div class="briefing-widget-sub" id="briefingTime"></div>
+            <div class="briefing-widget-detail" id="briefingGreeting"></div>
+          </div>
+
+          <!-- APA LIBRARY STATUS -->
+          <div class="briefing-widget">
+            <div class="briefing-widget-title">APA Reference Library</div>
+            <div class="briefing-widget-main" id="briefRefCount" style="font-size:32px;">0</div>
+            <div class="briefing-widget-sub">references saved</div>
+            <div class="briefing-widget-detail" id="briefLibraryCount">Visit APA Library to add sources</div>
+          </div>
+
+        </div>
+
+        <!-- TASKS INPUT -->
+        <div class="grid-2" style="margin-bottom:16px;">
+          <div>
+            <div class="ws-section-title">Today's tasks & priorities</div>
+            <textarea class="text-input" id="briefingTasks" placeholder="What's on your plate today? e.g. EDU 600 week 1 reading, prep NUR 212 CP lecture, PRN shift Saturday" style="min-height:90px;"></textarea>
+          </div>
+          <div>
+            <div class="ws-section-title">Deadlines & appointments</div>
+            <textarea class="text-input" id="briefingDeadlines" placeholder="e.g. Faculty meeting 4pm, EFND 706 discussion post due Sunday" style="min-height:90px;"></textarea>
+          </div>
+        </div>
+
+        <!-- MOOD + PREFERENCES ROW -->
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div>
+            <div class="ws-section-title">How are you feeling?</div>
+            <select class="text-input" id="briefingMood">
+              <option value="">— optional —</option>
+              <option value="energized">Energized and focused</option>
+              <option value="busy">Overwhelmed with tasks</option>
+              <option value="tired">Tired — need gentle pacing</option>
+              <option value="creative">Creative — good day for writing</option>
+              <option value="anxious">Anxious — need encouragement</option>
+            </select>
+          </div>
+          <div>
+            <div class="ws-section-title">Briefing includes</div>
+            <div class="ws-card" style="padding:12px 14px;">
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludeQuote" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Scholarly quote of the day
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludePriority" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Prioritized task list
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludeResearch" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Doctoral encouragement
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludeNursing" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Nursing education insight
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefSpeak" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Amelia reads it aloud
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludeWeather" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Include weather summary
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BRIEFING OUTPUT -->
+        <div id="briefingOutput" style="display:none;">
+          <div class="ws-section-title">Your morning briefing</div>
+          <div class="briefing-full-text" id="briefingText"></div>
+        </div>
+
+        <div id="briefingLoading" style="display:none;margin-top:12px;">
+          <div style="font-size:12px;font-family:var(--font-mono);color:var(--teal);margin-bottom:8px;">Amelia is preparing your briefing…</div>
+          <div class="progress-bar"><div class="progress-fill" id="briefingProgress" style="width:20%"></div></div>
+        </div>
+      </div>
+      <div class="ws-footer">
+        <button class="btn btn-primary" onclick="generateBriefingManual()"><i class="ti ti-sun"></i> Generate briefing</button>
+        <button class="btn btn-secondary" onclick="speakBriefing()"><i class="ti ti-volume"></i> Read aloud</button>
+        <button class="btn btn-secondary" onclick="copyOutput('briefingText')"><i class="ti ti-copy"></i> Copy</button>
+        <span class="tag tag-sonnet" style="margin-left:auto;color:var(--teal);background:rgba(45,212,160,0.08);border:0.5px solid var(--teal-dim);padding:2px 8px;border-radius:20px;font-size:10px;font-family:var(--font-mono);">Sonnet · Amelia voice</span>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+<!-- ── WAKE WORD INDICATOR ── -->
+<div class="wake-indicator" id="wakeIndicator" style="display:none;">
+  <div class="wake-dot"></div>
+  <span id="wakeLabel">listening for "Good morning Gemma"</span>
+</div>
+
+<!-- ── COST TRACKER PANEL ── -->
+<div class="cost-panel" id="costPanel" onclick="closeCostOnBackdrop(event)">
+  <div class="cost-card" id="costCard">
+    <div class="cost-header">
+      <div class="cost-title">Usage &amp; Cost Tracker</div>
+      <button class="cost-close" onclick="closeCostPanel()">Close</button>
+    </div>
+
+    <div class="cost-section">
+      <div class="cost-section-title">This Session — API Usage (Gemma)</div>
+
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(45,212,160,0.1);border-color:rgba(45,212,160,0.3);">
+          <i class="ti ti-brain" style="color:var(--teal);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">Anthropic — Claude Sonnet</div>
+          <div class="cost-service-detail" id="sonnetDetail">0 calls · 0 tokens est.</div>
+          <div class="cost-bar-wrap">
+            <div class="cost-bar"><div class="cost-bar-fill" id="sonnetBar" style="width:0%;background:var(--teal2);"></div></div>
+          </div>
+        </div>
+        <div class="cost-service-amount" id="sonnetCost">$0.00</div>
+      </div>
+
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);">
+          <i class="ti ti-brain" style="color:var(--brass);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">Anthropic — Claude Opus</div>
+          <div class="cost-service-detail" id="opusDetail">0 calls · 0 tokens est.</div>
+          <div class="cost-bar-wrap">
+            <div class="cost-bar"><div class="cost-bar-fill" id="opusBar" style="width:0%;background:var(--brass);"></div></div>
+          </div>
+        </div>
+        <div class="cost-service-amount" id="opusCost">$0.00</div>
+      </div>
+
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(157,142,238,0.1);border-color:rgba(157,142,238,0.3);">
+          <i class="ti ti-microphone-2" style="color:var(--purple);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">ElevenLabs — Amelia</div>
+          <div class="cost-service-detail" id="elDetail">0 summaries spoken · 0 chars est.</div>
+          <div class="cost-bar-wrap">
+            <div class="cost-bar"><div class="cost-bar-fill" id="elBar" style="width:0%;background:var(--purple);"></div></div>
+          </div>
+        </div>
+        <div class="cost-service-amount" id="elCost">$0.00</div>
+      </div>
+
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);">
+          <i class="ti ti-search" style="color:var(--brass2);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">Claude — Web Search</div>
+          <div class="cost-service-detail" id="searchDetail">0 searches this session</div>
+          <div class="cost-bar-wrap">
+            <div class="cost-bar"><div class="cost-bar-fill" id="searchBar" style="width:0%;background:var(--brass2);"></div></div>
+          </div>
+        </div>
+        <div class="cost-service-amount" id="searchCost">$0.00</div>
+      </div>
+
+      <div class="cost-total-row">
+        <span class="cost-total-label">Estimated session total</span>
+        <span class="cost-total-amount" id="sessionTotal">$0.00</span>
+      </div>
+    </div>
+
+    <div class="cost-section">
+      <div class="cost-section-title">Monthly Subscriptions (Fixed)</div>
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(45,212,160,0.1);border-color:rgba(45,212,160,0.3);">
+          <i class="ti ti-credit-card" style="color:var(--teal);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">ElevenLabs Creator Plan</div>
+          <div class="cost-service-detail">300,000 chars/month · Amelia voice</div>
+        </div>
+        <div class="cost-service-amount">$22</div>
+      </div>
+      <div class="cost-service">
+        <div class="cost-service-icon" style="background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);">
+          <i class="ti ti-credit-card" style="color:var(--brass);"></i>
+        </div>
+        <div class="cost-service-body">
+          <div class="cost-service-name">Anthropic API Credits</div>
+          <div class="cost-service-detail">Pay-as-you-go · platform.claude.com</div>
+        </div>
+        <div class="cost-service-amount">PAYG</div>
+      </div>
+    </div>
+
+    <div class="cost-section">
+      <div class="cost-section-title">Pricing Reference</div>
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3);line-height:2;">
+        Sonnet 5.5: $2 in / $10 out per 1M tokens &nbsp;·&nbsp; Opus 5.5: $4 in / $20 out per 1M tokens<br>
+        Web search: $10 per 1,000 searches &nbsp;·&nbsp; ElevenLabs: ~$0.00011 / character<br>
+        Estimates only: Claude's hidden reasoning tokens are billed but not counted here. Check Anthropic billing for actuals.
+      </div>
+    </div>
+
+    <div class="cost-links">
+      <span class="cost-link" onclick="window.open('https://platform.claude.com/settings/billing','_blank')">
+        <i class="ti ti-external-link"></i> Anthropic billing
+      </span>
+      <span class="cost-link" onclick="window.open('https://elevenlabs.io/subscription','_blank')">
+        <i class="ti ti-external-link"></i> ElevenLabs usage
+      </span>
+      <span class="cost-link" onclick="resetCostTracker()">
+        <i class="ti ti-refresh"></i> Reset session costs
+      </span>
+    </div>
+    <div class="cost-reset-note">Estimates only · Actual billing may vary · Resets each session</div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── CONFIG ──
+const MODEL_SONNET = 'claude-sonnet-5-5';
+const MODEL_OPUS   = 'claude-opus-5-5';
+const VOICE_NAME   = 'Daniel';
+const VOICE_LANG   = 'en-GB';
+const VOICE_RATE   = 0.92;
+const VOICE_PITCH  = 1.0;
+const VOICE_VOL    = 1.0;
+
+// ── STATE ──
+let apiKey = '';
+let useWebSearch = false;
+let elApiKey = '';
+const EL_VOICE_ID = 'ZF6FPAbjXT4488VcRRnw';
+const EL_MODEL = 'eleven_turbo_v2_5';
+let history = [], persona = 'general', streaming = false, autoSpeak = true, msgCount = 0;
+let conversations = [], activeConvo = null;
+let micActive = false, micReady = false, silTimer = null, waveFrame = null;
+let finalTx = '', interimTx = '', selVoice = null;
+let audioCtx = null, analyser = null, recognition = null;
+
+// ── LOCK ──
+const KEY_NAMES = ['gemma_api_key', 'gemma_el_key', 'gemma_pplx_key'];
+
+function clearStoredKeys() {
+  try { KEY_NAMES.forEach(k => { sessionStorage.removeItem(k); localStorage.removeItem(k); }); } catch(e) {}
+}
+
+function unlock() {
+  const key = document.getElementById('apiInput').value.trim();
+  const err = document.getElementById('lockErr');
+  if (!key.startsWith('sk-ant-')) {
+    err.style.display = 'block';
+    return;
+  }
+  apiKey = key;
+  elApiKey = document.getElementById('elApiInput').value.trim();
+  if (document.getElementById('rememberKey').checked) {
+    try {
+      sessionStorage.setItem('gemma_api_key', key);
+      if (elApiKey) sessionStorage.setItem('gemma_el_key', elApiKey);
+      else sessionStorage.removeItem('gemma_el_key');
+    } catch(e) {}
+  } else {
+    clearStoredKeys();
+  }
+  err.style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  initMic();
+  resolveVoice();
+  startWakeWord();
+  fetchWeather();
+  updateDateTimeWidget();
+  setInterval(updateDateTimeWidget, 60000);
+}
+
+function toggleRemember() {
+  if (!document.getElementById('rememberKey').checked) clearStoredKeys();
+}
+
+function lockApp() {
+  apiKey = ''; elApiKey = ''; history = []; streaming = false;
+  window.speechSynthesis.cancel();
+  stopMic();
+  stopWakeWord();
+  clearStoredKeys();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('apiInput').value = '';
+  document.getElementById('elApiInput').value = '';
+  document.getElementById('rememberKey').checked = false;
+}
+
+// ── PANELS ──
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  const isSonnet = (name === 'chat' || name === 'briefing');
+  document.getElementById('personaBar').style.display = name === 'chat' ? 'flex' : 'none';
+  document.getElementById('modelIndicator').textContent = isSonnet ? 'claude sonnet' : 'claude opus';
+  document.getElementById('modelIndicator').className = 'model-indicator ' + (isSonnet ? 'model-sonnet' : 'model-opus');
+  if (name === 'briefing' && !briefingGenerated) generateBriefing();
+  if (name === 'litmap') renderLitMap();
+}
+
+// ── PERSONA ──
+const PERSONAS = {
+  general: { label: 'gemma', system: `You are Gemma, Ashley Cooke's personal AI assistant. Your replies are read aloud in Amelia's voice. Ashley is a nursing educator at Central Carolina Community College with more than 23 years of cardiothoracic and vascular nursing practice, works PRN in the ICU, and is a PhD student in Educational Psychology at Regent University (started October 2026). His research interest is cognitive offloading and the development of clinical judgment in nursing students. He uses you to stay organized across teaching, PhD coursework, and clinical work, and to think things through. Be warm, smart, and direct: conversational when he is casual, doctoral depth when he needs it. Give honest critique rather than reassurance. Never ask for or work with student records, grades, or patient information; if he shares any, remind him that it belongs in CCCC's systems. When web search is available, use it for anything current and name your sources. Always end with: SPOKEN_SUMMARY: [1-2 sentence spoken summary, natural and warm].` }
+};
+
+// ── VOICE ──
+function resolveVoice() {
+  const vs = window.speechSynthesis.getVoices();
+  let v = vs.find(v => v.name === VOICE_NAME && v.lang === VOICE_LANG);
+  if (!v) v = vs.find(v => v.name === 'Daniel' && v.lang === 'en-GB');
+  if (!v) v = vs.find(v => v.name === 'Karen' && v.lang === 'en-GB');
+  if (!v) v = vs.find(v => v.name === 'Moira' && v.lang === 'en-IE');
+  if (!v) v = vs.find(v => v.lang === 'en-GB');
+  if (!v) v = vs.find(v => v.name.includes('UK') || v.name.includes('British'));
+  if (!v) v = vs.find(v => v.lang === 'en-AU');
+  if (!v) v = vs.find(v => v.lang.startsWith('en'));
+  selVoice = v || null;
+}
+
+async function speak(text) {
+  if (!autoSpeak || !text) return;
+  window.speechSynthesis.cancel();
+
+  // Use ElevenLabs if key available
+  if (elApiKey) {
+    try {
+      document.getElementById('micBtn').classList.add('speaking');
+      setVS('speaking', 'Amelia speaking…');
+      if (micActive && recognition) try { recognition.stop(); } catch(e) {}
+
+      trackElevenLabs(text);
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE_ID}/stream`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': elApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: EL_MODEL,
+          voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+        })
+      });
+
+      if (resp.ok) {
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.onended = () => {
+          document.getElementById('micBtn').classList.remove('speaking');
+          URL.revokeObjectURL(url);
+          if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
+          else setVS('', 'ready');
+        };
+        audio.onerror = () => {
+          document.getElementById('micBtn').classList.remove('speaking');
+          setVS('', 'ready');
+        };
+        audio.play();
+        return;
+      }
+    } catch(e) {
+      console.warn('ElevenLabs error, falling back to browser TTS:', e);
+    }
+    document.getElementById('micBtn').classList.remove('speaking');
+  }
+
+  // Fallback to browser TTS
+  if (!selVoice) resolveVoice();
+  const u = new SpeechSynthesisUtterance(text);
+  if (selVoice) u.voice = selVoice;
+  u.rate = VOICE_RATE; u.pitch = VOICE_PITCH; u.volume = VOICE_VOL;
+  u.onstart = () => {
+    document.getElementById('micBtn').classList.add('speaking');
+    setVS('speaking', 'Gemma speaking…');
+    if (micActive && recognition) try { recognition.stop(); } catch(e) {}
+  };
+  u.onend = () => {
+    document.getElementById('micBtn').classList.remove('speaking');
+    if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
+    else setVS('', 'ready');
+  };
+  window.speechSynthesis.speak(u);
+}
+
+function toggleSpeak() {
+  autoSpeak = !autoSpeak;
+  document.getElementById('spkTrk').classList.toggle('on', autoSpeak);
+  if (!autoSpeak) window.speechSynthesis.cancel();
+}
+
+function toggleWebSearch() {
+  useWebSearch = !useWebSearch;
+  document.getElementById('searchTrk').classList.toggle('on', useWebSearch);
+}
+
+function setVS(cls, txt) {
+  const el = document.getElementById('vstatus');
+  el.textContent = txt;
+  el.className = 'vstatus' + (cls ? ' ' + cls : '');
+}
+
+// ── MIC ──
+const WCOUNT = 30;
+const wfEl = document.getElementById('waveform');
+const wbars = [];
+for (let i = 0; i < WCOUNT; i++) {
+  const b = document.createElement('div'); b.className = 'wbar'; b.style.height = '2px';
+  wfEl.appendChild(b); wbars.push(b);
+}
+
+async function initMic() {
+  try {
+    const ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(ms);
+    analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
+    src.connect(analyser);
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      recognition = new SR(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+      recognition.onresult = onSpeech;
+      recognition.onerror = e => { if (e.error !== 'aborted') setVS('', 'mic error'); };
+      recognition.onend = () => { if (micActive) try { recognition.start(); } catch(e) {} };
+    }
+    micReady = true;
+    document.getElementById('micBtn').classList.remove('off');
+    document.getElementById('micHint').textContent = 'click mic to activate';
+    setVS('', 'ready'); resolveVoice();
+  } catch(e) { setVS('', 'mic unavailable'); }
+}
+
+function onSpeech(e) {
+  interimTx = '';
+  for (let i = e.resultIndex; i < e.results.length; i++) {
+    if (e.results[i].isFinal) finalTx += e.results[i][0].transcript + ' ';
+    else interimTx += e.results[i][0].transcript;
+  }
+  const d = (finalTx + interimTx).trim();
+  if (d) document.getElementById('chatInp').value = d;
+  clearTimeout(silTimer);
+  if (finalTx.trim()) {
+    silTimer = setTimeout(() => {
+      if (finalTx.trim() && !streaming && document.getElementById('panel-chat').classList.contains('active')) {
+        const t = finalTx.trim(); finalTx = ''; interimTx = '';
+        document.getElementById('chatInp').value = '';
+        sendChatText(t);
+      }
+    }, 1800);
+  }
+}
+
+function toggleMic() { if (!micReady) return; micActive ? stopMic() : startMic(); }
+
+function startMic() {
+  if (!micReady || streaming) return;
+  micActive = true; finalTx = ''; interimTx = '';
+  document.getElementById('micBtn').classList.add('listening');
+  setVS('listening', 'listening…');
+  document.getElementById('micHint').textContent = 'speaking — pause to send';
+  if (recognition) try { recognition.start(); } catch(e) {}
+  animWave();
+}
+
+function stopMic() {
+  micActive = false; clearTimeout(silTimer);
+  document.getElementById('micBtn').classList.remove('listening', 'speaking');
+  setVS('', 'mic off');
+  document.getElementById('micHint').textContent = 'click mic to activate';
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  cancelAnimationFrame(waveFrame);
+  wbars.forEach(b => { b.style.height = '2px'; b.style.background = 'var(--border2)'; });
+}
+
+function animWave() {
+  function draw() {
+    if (analyser) {
+      const d = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(d);
+      const step = Math.floor(d.length / WCOUNT);
+      wbars.forEach((b, i) => {
+        const v = d[i * step] || 0;
+        b.style.height = micActive ? Math.max(2, v * 0.28) + 'px' : '2px';
+        b.style.background = micActive && v > 30 ? 'var(--teal)' : 'var(--border2)';
+      });
+    }
+    waveFrame = requestAnimationFrame(draw);
+  } draw();
+}
+
+// ── CHAT ──
+function qs(el) { document.getElementById('chatInp').value = el.textContent; sendChat(); }
+function resize(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'; }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
+function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
+
+function sendChat() {
+  const el = document.getElementById('chatInp');
+  const t = el.value.trim(); if (!t) return;
+  el.value = ''; el.style.height = 'auto'; sendChatText(t);
+}
+
+function appendUserMsg(text) {
+  hideWelcome();
+  const msgsEl = document.getElementById('msgs');
+  const div = document.createElement('div'); div.className = 'msg user';
+  const av = document.createElement('div'); av.className = 'av user';
+  av.innerHTML = '<i class="ti ti-user"></i>';
+  const bw = document.createElement('div'); bw.className = 'bwrap';
+  const b = document.createElement('div'); b.className = 'bubble';
+  b.innerHTML = esc(text).replace(/\n/g, '<br>');
+  bw.appendChild(b); div.appendChild(av); div.appendChild(bw);
+  msgsEl.appendChild(div); msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function appendAiMsg() {
+  hideWelcome();
+  const msgsEl = document.getElementById('msgs');
+  const div = document.createElement('div'); div.className = 'msg ai'; div.id = 'm' + (++msgCount);
+  const av = document.createElement('div'); av.className = 'av ai';
+  const inn = document.createElement('div'); inn.className = 'av-inner'; av.appendChild(inn);
+  const bw = document.createElement('div'); bw.className = 'bwrap';
+  const b = document.createElement('div'); b.className = 'bubble';
+  b.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  bw.appendChild(b); div.appendChild(av); div.appendChild(bw);
+  msgsEl.appendChild(div); msgsEl.scrollTop = msgsEl.scrollHeight;
+  return { b, bw };
+}
+
+function extractSummary(t) {
+  const m = t.match(/SPOKEN_SUMMARY:\s*(.+?)(?:\n|$)/i);
+  return m ? m[1].trim() : '';
+}
+function removeSummary(t) { return t.replace(/SPOKEN_SUMMARY:.*?(?:\n|$)/gi, '').trim(); }
+
+function fmt(t) {
+  return t
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, l, c) => `<pre><code>${esc(c.trim())}</code></pre>`)
+    .replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<strong style="font-size:12.5px;color:var(--brass2);display:block;margin-top:10px">$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="font-size:14px;color:var(--text);display:block;margin-top:12px">$1</strong>')
+    .replace(/^- (.+)$/gm, '&bull; $1')
+    .replace(/\n/g, '<br>');
+}
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+async function callClaude(model, system, messages, onChunk, useSearch) {
+  // Claude 5.5 models always reason before answering; max_tokens covers reasoning + reply
+  const body = { model, max_tokens: model === MODEL_OPUS ? 16000 : 8000, system, messages, stream: true };
+  if (useSearch) {
+    body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  }
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    let errMsg = resp.status + ' ' + resp.statusText;
+    try { const e = await resp.json(); errMsg = resp.status + ': ' + (e.error?.message || JSON.stringify(e)); } catch(e2) {}
+    throw new Error(errMsg);
+  }
+  const reader = resp.body.getReader(); const dec = new TextDecoder();
+  let full = '', buf = '';
+  while (true) {
+    const { done, value } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n'); buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const d = line.slice(6).trim(); if (d === '[DONE]') continue;
+      try {
+        const ev = JSON.parse(d);
+        if (ev.type === 'content_block_start' && ev.content_block?.type === 'server_tool_use' && ev.content_block?.name === 'web_search') trackSearch();
+        if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+          full += ev.delta.text;
+          if (onChunk) onChunk(full);
+        }
+      } catch(e) {}
+    }
+  }
+  return full;
+}
+
+async function sendChatText(text) {
+  if (streaming) return;
+  streaming = true;
+  document.getElementById('sendBtn').disabled = true;
+  setVS('processing', 'thinking…');
+  if (micActive && recognition) try { recognition.stop(); } catch(e) {}
+  window.speechSynthesis.cancel();
+
+  appendUserMsg(text);
+  history.push({ role: 'user', content: text });
+  const { b, bw } = appendAiMsg();
+  const msgsEl = document.getElementById('msgs');
+
+  try {
+    b.innerHTML = '';
+    const full = await callClaude(MODEL_SONNET, PERSONAS[persona].system, history, (partial) => {
+      b.innerHTML = fmt(removeSummary(partial));
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    }, useWebSearch);
+
+    history.push({ role: 'assistant', content: full });
+    trackSonnet(PERSONAS[persona].system + history.map(m=>m.content).join(' '), full);
+    b.innerHTML = fmt(removeSummary(full));
+    const sum = extractSummary(full);
+    if (sum) {
+      const sd = document.createElement('div'); sd.className = 'spoken-sum';
+      sd.textContent = '\u201c' + sum + '\u201d';
+      bw.appendChild(sd); msgsEl.scrollTop = msgsEl.scrollHeight;
+      setTimeout(() => speak(sum), 300);
+    }
+    if (history.length === 2) saveConvo(); else renderSidebar();
+  } catch(err) {
+    b.innerHTML = `<span style="color:var(--red)">Error: ${err.message}</span>`;
+  }
+
+  streaming = false;
+  document.getElementById('sendBtn').disabled = false;
+  if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
+  else setVS('', 'ready');
+}
+
+// ── SIDEBAR HISTORY ──
+function saveConvo() {
+  if (!history.length) return;
+  const first = history.find(m => m.role === 'user');
+  if (!first) return;
+  const title = first.content.slice(0, 46) + (first.content.length > 46 ? '…' : '');
+  const id = Date.now();
+  conversations.unshift({ id, title, history: [...history], persona, ts: new Date() });
+  if (conversations.length > 30) conversations.pop();
+  renderSidebar();
+}
+
+function loadConvo(id) {
+  const c = conversations.find(x => x.id === id); if (!c) return;
+  history = [...c.history]; persona = c.persona; activeConvo = id;
+  document.querySelectorAll('.p-chip').forEach(el => el.classList.toggle('active', el.dataset.persona === persona));
+  document.getElementById('pLabel').textContent = PERSONAS[persona].label;
+  document.getElementById('footPersona').textContent = PERSONAS[persona].label + ' mode';
+  const msgsEl = document.getElementById('msgs'); msgsEl.innerHTML = '';
+  history.forEach(m => {
+    if (m.role === 'user') appendUserMsg(m.content);
+    else {
+      const { b } = appendAiMsg();
+      b.innerHTML = fmt(removeSummary(m.content));
+    }
+  });
+  switchPanel('chat');
+  renderSidebar();
+}
+
+function deleteConvo(id, e) { e.stopPropagation(); conversations = conversations.filter(c => c.id !== id); if (activeConvo === id) activeConvo = null; renderSidebar(); }
+
+function renderSidebar() {
+  const el = document.getElementById('sbHistory');
+  if (!conversations.length) { el.innerHTML = '<div style="font-size:11px;color:var(--text3);padding:8px;font-family:\'DM Mono\',monospace;">No conversations yet</div>'; return; }
+  const icons = { general: '✦', edpsych: '◈', research: '∫', clinical: '⊕', pharm: 'Rx', nclex: '✓', sim: '▷' };
+  el.innerHTML = '';
+  conversations.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'sb-convo' + (activeConvo === c.id ? ' active' : '');
+    div.onclick = () => loadConvo(c.id);
+    const mins = Math.floor((Date.now() - new Date(c.ts)) / 60000);
+    const ts = mins < 1 ? 'just now' : mins < 60 ? mins + 'm ago' : Math.floor(mins / 60) + 'h ago';
+    div.innerHTML = `<div class="sb-convo-icon">${icons[c.persona] || '✦'}</div><div class="sb-convo-body"><div class="sb-convo-title">${esc(c.title)}</div><div class="sb-convo-meta">${ts} · ${PERSONAS[c.persona].label}</div></div><button class="sb-convo-del" onclick="deleteConvo(${c.id},event)"><i class="ti ti-x"></i></button>`;
+    el.appendChild(div);
+  });
+}
+
+// ── FILE HANDLING ──
+let fileStore = {}; // zone -> [{name, type, b64}]
+
+function dragOver(e, zoneId) { e.preventDefault(); document.getElementById(zoneId).classList.add('drag'); }
+function dragLeave(zoneId) { document.getElementById(zoneId).classList.remove('drag'); }
+
+function dropFile(e, inputId, zoneId) {
+  e.preventDefault(); dragLeave(zoneId);
+  const input = document.getElementById(inputId);
+  const dt = e.dataTransfer;
+  if (dt.files.length) {
+    const fakeEvent = { target: { files: dt.files, id: inputId } };
+    fileSelected({ target: { files: dt.files } }, inputId.replace('File','Files'), zoneId);
+  }
+}
+
+function fileSelected(input, listId, zoneId) {
+  const files = Array.from(input.files || input.target.files);
+  if (!fileStore[listId]) fileStore[listId] = [];
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const b64 = e.target.result.split(',')[1];
+      fileStore[listId].push({ name: file.name, type: file.type, b64, size: file.size });
+      renderFileChips(listId);
+    };
+    reader.readAsDataURL(file);
+  });
+  if (zoneId) document.getElementById(zoneId).classList.remove('drag');
+}
+
+function renderFileChips(listId) {
+  const el = document.getElementById(listId); el.innerHTML = '';
+  (fileStore[listId] || []).forEach((f, i) => {
+    const chip = document.createElement('div'); chip.className = 'file-chip';
+    const icon = f.type.includes('pdf') ? 'ti-file-type-pdf' : f.type.includes('image') ? 'ti-photo' : 'ti-file-type-doc';
+    chip.innerHTML = `<i class="ti ${icon}"></i>${esc(f.name)}<button class="rm" onclick="removeFile('${listId}',${i})"><i class="ti ti-x"></i></button>`;
+    el.appendChild(chip);
+  });
+}
+
+function removeFile(listId, i) { fileStore[listId].splice(i, 1); renderFileChips(listId); }
+
+async function fileToApiContent(files) {
+  const content = [];
+  for (const f of files) {
+    if (f.type.includes('image')) {
+      content.push({ type: 'image', source: { type: 'base64', media_type: f.type, data: f.b64 } });
+    } else if (f.type.includes('pdf')) {
+      content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.b64 } });
+    } else {
+      content.push({ type: 'text', text: `[Attached file: ${f.name}]\n(Content extraction from DOCX requires server-side processing. Please describe the key content or paste the text.)` });
+    }
+  }
+  return content;
+}
+
+// ── RESEARCH ──
+async function runResearch() {
+  const type  = document.getElementById('researchType').value;
+  const area  = document.getElementById('researchArea').value;
+  const input = document.getElementById('researchInput').value.trim();
+  const files = fileStore['researchFilesList'] || [];
+
+  if (!input && !files.length) { alert('Please enter your research input or upload a document.'); return; }
+
+  document.getElementById('researchLoading').style.display = 'block';
+  document.getElementById('researchOutput').textContent = '';
+  document.getElementById('researchOutput').classList.add('empty');
+  animProgress('researchProgress', 90, 18000);
+
+  const typeLabels = { question:'Refine and strengthen the following research question(s)', litreview:'Provide a comprehensive literature review summary and synthesis for', framework:'Recommend and explain appropriate theoretical frameworks for', methodology:'Recommend and justify appropriate research methodology for', outline:'Create a detailed dissertation chapter outline for', apa:'Provide APA 7th edition citation formatting and guidance for', abstract:'Draft a scholarly abstract for', irb:'Outline key IRB and ethical considerations for', analysis:'Recommend appropriate data analysis approaches for' };
+  const areaLabels = { 'nursing-ed':'nursing education research', 'ed-psych':'educational psychology research', 'both':'interdisciplinary nursing education and educational psychology research', 'clinical':'clinical nursing research', 'simulation':'simulation pedagogy research', 'assessment':'assessment and evaluation research' };
+
+  const system = `You are Gemma, a doctoral-level research consultant specializing in nursing education and educational psychology. You support Ashley Cooke, a PhD student in Educational Psychology at Regent University whose research interest is cognitive offloading and clinical judgment in nursing students, with rigorous scholarly research preparation. You cite seminal and contemporary literature, apply appropriate theoretical frameworks, and write at doctoral academic standards. You are familiar with APA 7th edition, common qualitative and quantitative methodologies, and the major journals in nursing education and educational psychology.`;
+
+  const fileContent = files.length ? await fileToApiContent(files) : [];
+  const userContent = [
+    { type: 'text', text: `${typeLabels[type] || type} in the context of ${areaLabels[area] || area}.\n\n${input}` },
+    ...fileContent
+  ];
+
+  try {
+    const out = document.getElementById('researchOutput');
+    out.classList.remove('empty');
+    out.textContent = '';
+    const resOut = await callClaude(MODEL_OPUS, system, [{ role: 'user', content: userContent }], (partial) => {
+      out.textContent = partial;
+    }, useWebSearch);
+    trackOpus(system + input, resOut);
+  } catch(err) {
+    document.getElementById('researchOutput').textContent = 'Error: ' + err.message;
+  }
+  document.getElementById('researchLoading').style.display = 'none';
+}
+
+// ── PDF EXPORT ──
+function makePDF(title, subtitle, buildFn) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W = 215.9, H = 279.4, M = 20, CW = W - M * 2;
+
+  doc.setFillColor(13, 17, 23); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(19, 25, 32); doc.rect(0, 0, W, 42, 'F');
+  doc.setDrawColor(42, 58, 82); doc.setLineWidth(0.3); doc.line(0, 42, W, 42);
+
+  doc.setFillColor(26, 158, 119); doc.circle(M + 6, 21, 5, 'F');
+  doc.setFillColor(255, 255, 255, 0.9);
+  doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.8);
+  doc.circle(M + 6, 21, 3, 'S');
+  doc.setFillColor(255, 255, 255); doc.circle(M + 6, 21, 1.2, 'F');
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(232, 228, 216);
+  doc.text(title, M + 16, 18);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(157, 168, 184);
+  doc.text(subtitle, M + 16, 26);
+  doc.setFontSize(8); doc.setTextColor(90, 104, 128);
+  doc.text('cognitivenursing.io/gemma · Ashley Cooke · ' + new Date().toLocaleDateString(), M + 16, 33);
+
+  let y = 54;
+  buildFn(doc, y, M, CW, W, H);
+
+  const pages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(19, 25, 32); doc.rect(0, H - 12, W, 12, 'F');
+    doc.setDrawColor(42, 58, 82); doc.setLineWidth(0.2); doc.line(0, H - 12, W, H - 12);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(90, 104, 128);
+    doc.text('Gemma · Personal & PhD use · AI-generated, verify before use', M, H - 5);
+    doc.text(`Page ${i} of ${pages}`, W - M, H - 5, { align: 'right' });
+  }
+  return doc;
+}
+
+function exportTextPDF(title, subtitle, content, filename) {
+  const doc = makePDF(title, subtitle, (doc, startY, M, CW, W, H) => {
+    let y = startY;
+    content.split('\n').forEach(line => {
+      if (y > H - 22) { doc.addPage(); doc.setFillColor(13,17,23); doc.rect(0,0,W,H,'F'); y = 24; }
+      const isH = line.startsWith('##') || line.startsWith('**');
+      doc.setFont('helvetica', isH ? 'bold' : 'normal');
+      doc.setFontSize(isH ? 11 : 9);
+      doc.setTextColor(...(isH ? [232,201,106] : [157,168,184]));
+      const clean = line.replace(/[#*]/g, '').trim();
+      if (!clean) { y += 4; return; }
+      const lines = doc.splitTextToSize(clean, CW);
+      lines.forEach(l => { doc.text(l, M, y); y += (isH ? 11 : 9) * 0.42; });
+      y += 3;
+    });
+  });
+  doc.save(filename);
+}
+
+function exportResearchPDF() {
+  const content = document.getElementById('researchOutput').textContent.trim();
+  if (!content || content === 'Your research preparation will appear here…') { alert('Run research first.'); return; }
+  const type  = document.getElementById('researchType').options[document.getElementById('researchType').selectedIndex].text;
+  const doc = makePDF(`Research — ${type}`, 'Research Preparation · claude opus · Gemma', (doc, startY, M, CW, W, H) => {
+    let y = startY;
+    content.split('\n').forEach(line => {
+      if (y > H - 22) { doc.addPage(); doc.setFillColor(13,17,23); doc.rect(0,0,W,H,'F'); y = 24; }
+      const isH = line.startsWith('##') || line.startsWith('**');
+      doc.setFont('helvetica', isH ? 'bold' : 'normal');
+      doc.setFontSize(isH ? 11 : 9);
+      doc.setTextColor(...(isH ? [232,201,106] : [157,168,184]));
+      const clean = line.replace(/[#*]/g, '').trim();
+      if (!clean) { y += 4; return; }
+      const lines = doc.splitTextToSize(clean, CW);
+      lines.forEach(l => { doc.text(l, M, y); y += (isH ? 11 : 9) * 0.42; });
+      y += 3;
+    });
+  });
+  doc.save(`Gemma_Research_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+// ── UTILS ──
+
+// ── SIDEBAR TOGGLE ──
+let sidebarCollapsed = false;
+
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sidebar = document.getElementById('sidebar');
+  const icon    = document.getElementById('sidebarToggleIcon');
+  const toggle  = document.getElementById('sidebarToggle');
+
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+    icon.className = 'ti ti-chevron-right';
+    toggle.title = 'Show sidebar (⌘\\)';
+    toggle.style.left = '0';
+  } else {
+    sidebar.classList.remove('collapsed');
+    icon.className = 'ti ti-chevron-left';
+    toggle.title = 'Hide sidebar (⌘\\)';
+    toggle.style.left = '0';
+  }
+
+  // Save preference
+  try { localStorage.setItem('gemma_sidebar_collapsed', sidebarCollapsed); } catch(e) {}
+}
+
+function showKbHint() {
+  const hint = document.getElementById('kbHint');
+  hint.classList.add('show');
+  setTimeout(() => hint.classList.remove('show'), 2000);
+}
+
+// Keyboard shortcut — Cmd+\ to toggle sidebar
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+    e.preventDefault();
+    toggleSidebar();
+  }
+  // Cmd+K — focus chat input from anywhere
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    switchPanel('chat');
+    setTimeout(() => document.getElementById('chatInp').focus(), 100);
+  }
+  // Cmd+B — go to briefing
+  if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+    e.preventDefault();
+    switchPanel('briefing');
+  }
+});
+
+// Restore sidebar preference
+function restoreSidebarState() {
+  try {
+    const saved = localStorage.getItem('gemma_sidebar_collapsed');
+    if (saved === 'true') {
+      sidebarCollapsed = false; // toggle will flip it
+      toggleSidebar();
+    }
+  } catch(e) {}
+}
+
+function copyOutput(id) {
+  const t = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(() => { /* silent */ });
+}
+
+// ── APA LIBRARY ──
+let apaLibrary = [];
+let currentFormatted = '';
+
+async function formatAPA() {
+  const type    = document.getElementById('apaType').value;
+  const input   = document.getElementById('apaInput').value.trim();
+  if (!input) { alert('Please enter a citation, DOI, URL, or source description.'); return; }
+
+  document.getElementById('apaLoading').style.display = 'block';
+  document.getElementById('apaFormatted').style.display = 'none';
+  document.getElementById('apaBtn').disabled = true;
+
+  const system = `You are an expert in APA 7th edition citation formatting. Format the provided source information into a perfect APA 7th edition reference. Return ONLY the formatted citation — no explanation, no preamble, no markdown. Use hanging indent format. Be precise with italics notation by using *asterisks* around titles that should be italicized.`;
+
+  const prompt = `Format this as an APA 7th edition ${type} reference:
+
+${input}
+
+Return only the formatted APA citation, nothing else.`;
+
+  try {
+    const out = document.getElementById('apaOutput');
+    out.classList.remove('empty');
+    out.textContent = '';
+    const result = await callClaude(MODEL_OPUS, system, [{ role: 'user', content: prompt }], (partial) => {
+      out.textContent = partial;
+    }, false);
+    currentFormatted = result;
+    trackOpus(system + prompt, result);
+    document.getElementById('apaFormatted').style.display = 'block';
+  } catch(err) {
+    document.getElementById('apaOutput').textContent = 'Error: ' + err.message;
+    document.getElementById('apaFormatted').style.display = 'block';
+  }
+
+  document.getElementById('apaLoading').style.display = 'none';
+  document.getElementById('apaBtn').disabled = false;
+}
+
+function saveToLibrary() {
+  const citation = currentFormatted.trim();
+  if (!citation) return;
+  const tags  = document.getElementById('apaTags').value.trim();
+  const notes = document.getElementById('apaNotes').value.trim();
+  const type  = document.getElementById('apaType').value;
+  const id    = Date.now();
+  apaLibrary.unshift({ id, citation, tags, notes, type, ts: new Date() });
+  renderLibrary();
+  updateBriefingLibraryCount();
+  // Clear form
+  document.getElementById('apaInput').value = '';
+  document.getElementById('apaTags').value = '';
+  document.getElementById('apaNotes').value = '';
+  document.getElementById('apaFormatted').style.display = 'none';
+  currentFormatted = '';
+}
+
+function renderLibrary(filter = '') {
+  const el = document.getElementById('apaLibrary');
+  document.getElementById('refCount').textContent = apaLibrary.length;
+  const filtered = filter ? apaLibrary.filter(r =>
+    r.citation.toLowerCase().includes(filter.toLowerCase()) ||
+    r.tags.toLowerCase().includes(filter.toLowerCase()) ||
+    r.notes.toLowerCase().includes(filter.toLowerCase())
+  ) : apaLibrary;
+
+  if (!filtered.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);font-family:var(--font-mono);padding:16px;text-align:center;">${filter ? 'No matches found' : 'No references yet — format and save your first citation'}</div>`;
+    return;
+  }
+
+  const typeIcons = { journal:'ti-file-text', book:'ti-book', chapter:'ti-bookmark', website:'ti-world', dissertation:'ti-school', conference:'ti-presentation', report:'ti-report' };
+
+  el.innerHTML = '';
+  filtered.forEach(r => {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--navy3);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;';
+    div.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <i class="ti ${typeIcons[r.type]||'ti-file'}" style="color:var(--teal);font-size:14px;margin-top:2px;flex-shrink:0;"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;color:var(--text);line-height:1.6;font-family:var(--font-mono);">${esc(r.citation)}</div>
+          ${r.tags ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${r.tags.split(',').map(t=>`<span style="font-size:9.5px;font-family:var(--font-mono);color:var(--teal2);background:rgba(45,212,160,0.08);border:0.5px solid var(--teal-dim);border-radius:20px;padding:1px 7px;">${esc(t.trim())}</span>`).join('')}</div>` : ''}
+          ${r.notes ? `<div style="margin-top:6px;font-size:11px;color:var(--text3);font-style:italic;line-height:1.5;">${esc(r.notes)}</div>` : ''}
+        </div>
+        <button onclick="removeRef(${r.id})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;flex-shrink:0;" title="Remove"><i class="ti ti-x"></i></button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function filterLibrary(val) { renderLibrary(val); }
+function removeRef(id) { apaLibrary = apaLibrary.filter(r => r.id !== id); renderLibrary(); updateBriefingLibraryCount(); }
+function clearLibrary() { if(confirm('Clear all references?')) { apaLibrary = []; renderLibrary(); updateBriefingLibraryCount(); } }
+
+function updateBriefingLibraryCount() {
+  const el = document.getElementById('briefLibraryCount');
+  if (el) el.textContent = apaLibrary.length + ' references saved · ' + (apaLibrary.length ? 'last added: ' + apaLibrary[0].citation.slice(0,60) + '…' : 'visit APA Library to add sources');
+}
+
+function exportBibliography() {
+  if (!apaLibrary.length) { alert('No references in library yet.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'letter' });
+  const W=215.9, M=20, CW=W-M*2;
+  doc.setFillColor(13,17,23); doc.rect(0,0,W,279.4,'F');
+  doc.setFillColor(19,25,32); doc.rect(0,0,W,40,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(232,228,216);
+  doc.text('Reference Library — APA 7th Edition', M, 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(157,168,184);
+  doc.text('Ashley Cooke · cognitivenursing.io/gemma · ' + new Date().toLocaleDateString(), M, 28);
+  doc.setTextColor(90,104,128); doc.text(apaLibrary.length + ' references', M, 35);
+  let y = 52;
+  apaLibrary.forEach((r, i) => {
+    if (y > 255) { doc.addPage(); doc.setFillColor(13,17,23); doc.rect(0,0,W,279.4,'F'); y=20; }
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(157,168,184);
+    const lines = doc.splitTextToSize(r.citation, CW-8);
+    lines.forEach(l => { doc.text(l, M+8, y); y+=5; });
+    if (r.tags) { doc.setFontSize(8); doc.setTextColor(45,212,160); doc.text('Tags: '+r.tags, M+8, y); y+=5; }
+    if (r.notes) { doc.setFontSize(8); doc.setTextColor(90,104,128); doc.setFont('helvetica','italic'); doc.text(r.notes.slice(0,120), M+8, y); doc.setFont('helvetica','normal'); y+=5; }
+    y+=4;
+  });
+  doc.save('Gemma_APA_Bibliography_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+
+// ── LIT MAP ──
+let litMapData = null;
+
+function importFromLibrary() {
+  if (!apaLibrary.length) { alert('No references in your APA library yet. Add some first.'); return; }
+  const citations = apaLibrary.map(r => r.citation).join('\n\n');
+  document.getElementById('litmapSources').value = citations;
+}
+
+function renderLitMap() { /* called on panel switch — no-op until generated */ }
+
+async function generateLitMap() {
+  const theme   = document.getElementById('litmapTheme').value.trim();
+  const focus   = document.getElementById('litmapFocus').value;
+  const sources = document.getElementById('litmapSources').value.trim();
+  if (!sources) { alert('Please enter sources or import from your APA library.'); return; }
+
+  document.getElementById('litmapLoading').style.display = 'block';
+  document.getElementById('litmapViz').style.display = 'none';
+
+  const focusLabels = { themes:'thematic connections', theorists:'key theorists and their relationships', gaps:'research gaps and opportunities', methodology:'methodological approaches', timeline:'chronological development of ideas' };
+
+  const system = `You are Gemma, an expert in literature synthesis and doctoral research support. Analyze the provided sources and create a literature map showing ${focusLabels[focus]||focus}. 
+
+Respond in this EXACT JSON format (no markdown, no preamble):
+{
+  "nodes": [
+    {"id":"1","label":"Short label","type":"theme|author|theory|method|gap","description":"Brief description"}
+  ],
+  "connections": [
+    {"from":"1","to":"2","relationship":"Description of relationship"}
+  ],
+  "analysis": "Three to five paragraph scholarly analysis of the literature landscape, key themes, relationships, gaps, and implications for research in this area.",
+  "keyInsights": ["Insight 1","Insight 2","Insight 3"],
+  "researchGaps": ["Gap 1","Gap 2"]
+}`;
+
+  const prompt = `Central theme: ${theme || 'Not specified'}
+Map focus: ${focusLabels[focus]}
+
+Sources:
+${sources}`;
+
+  try {
+    const raw = await callClaude(MODEL_OPUS, system, [{ role:'user', content:prompt }], null, false);
+    trackOpus(system+prompt, raw);
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const data = JSON.parse(clean);
+    litMapData = data;
+    renderLitMapViz(data);
+    document.getElementById('litmapAnalysis').textContent = data.analysis || '';
+    document.getElementById('litmapViz').style.display = 'block';
+  } catch(err) {
+    document.getElementById('litmapAnalysis').textContent = 'Error generating map: ' + err.message;
+    document.getElementById('litmapViz').style.display = 'block';
+  }
+  document.getElementById('litmapLoading').style.display = 'none';
+}
+
+function renderLitMapViz(data) {
+  const canvas = document.getElementById('litmapCanvas');
+  if (!data || !data.nodes) { canvas.innerHTML='<div style="color:var(--text3);font-size:12px;">No map data</div>'; return; }
+
+  const colors = { theme:'var(--teal2)', author:'var(--brass)', theory:'var(--purple)', method:'#4ade80', gap:'var(--red)' };
+
+  let html = '<div style="display:flex;flex-direction:column;gap:20px;">';
+
+  // Insights
+  if (data.keyInsights && data.keyInsights.length) {
+    html += '<div><div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Key insights</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    data.keyInsights.forEach(ins => {
+      html += `<div style="font-size:11.5px;color:var(--text2);background:var(--navy4);border:0.5px solid var(--border2);border-radius:8px;padding:7px 12px;line-height:1.5;max-width:280px;">${esc(ins)}</div>`;
+    });
+    html += '</div></div>';
+  }
+
+  // Nodes
+  html += '<div><div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Concepts &amp; connections</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+  data.nodes.forEach(node => {
+    const color = colors[node.type] || 'var(--text3)';
+    html += `<div style="background:var(--navy4);border:0.5px solid ${color};border-radius:10px;padding:10px 14px;max-width:200px;">
+      <div style="font-size:12px;font-weight:500;color:${color};margin-bottom:4px;">${esc(node.label)}</div>
+      <div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;margin-bottom:4px;">${esc(node.type)}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.5;">${esc(node.description)}</div>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  // Connections
+  if (data.connections && data.connections.length) {
+    html += '<div><div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Relationships</div>';
+    data.connections.forEach(c => {
+      const fromNode = data.nodes.find(n=>n.id===c.from);
+      const toNode   = data.nodes.find(n=>n.id===c.to);
+      if (!fromNode||!toNode) return;
+      html += `<div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text2);padding:5px 0;border-bottom:0.5px solid var(--border);">
+        <span style="color:var(--teal2);font-weight:500;">${esc(fromNode.label)}</span>
+        <i class="ti ti-arrow-right" style="color:var(--text3);font-size:12px;flex-shrink:0;"></i>
+        <span style="color:var(--text3);font-style:italic;flex:1;">${esc(c.relationship)}</span>
+        <i class="ti ti-arrow-right" style="color:var(--text3);font-size:12px;flex-shrink:0;"></i>
+        <span style="color:var(--brass2);font-weight:500;">${esc(toNode.label)}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Research gaps
+  if (data.researchGaps && data.researchGaps.length) {
+    html += '<div><div style="font-size:10px;font-family:var(--font-mono);color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Research gaps identified</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    data.researchGaps.forEach(g => {
+      html += `<div style="font-size:11.5px;color:var(--text2);background:var(--red-bg);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px 12px;line-height:1.5;">${esc(g)}</div>`;
+    });
+    html += '</div></div>';
+  }
+
+  html += '</div>';
+  canvas.innerHTML = html;
+}
+
+function exportLitMapPDF() {
+  const content = document.getElementById('litmapAnalysis').textContent.trim();
+  if (!content) { alert('Generate a literature map first.'); return; }
+  exportTextPDF('Literature Map', 'Literature Map · claude opus · Gemma', content, `Gemma_LitMap_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+// ── WEATHER ──
+let weatherData = null;
+
+async function fetchWeather() {
+  try {
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 })
+    );
+    const { latitude: lat, longitude: lon } = pos.coords;
+    const resp = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m&temperature_unit=fahrenheit&windspeed_unit=mph`
+    );
+    const data = await resp.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const code = data.current.weathercode;
+    const wind = Math.round(data.current.windspeed_10m);
+    const { icon, desc } = weatherCodeToDesc(code);
+    weatherData = { temp, icon, desc, wind };
+    document.getElementById('weatherIcon').textContent  = icon;
+    document.getElementById('weatherTemp').textContent  = temp + '°F';
+    document.getElementById('weatherDesc').textContent  = desc;
+    document.getElementById('weatherDetail').textContent = 'Wind: ' + wind + ' mph';
+  } catch(e) {
+    document.getElementById('weatherDesc').textContent  = 'Location unavailable';
+    document.getElementById('weatherDetail').textContent = 'Allow location access for weather';
+    document.getElementById('weatherTemp').textContent  = '—°F';
+    weatherData = null;
+  }
+}
+
+function weatherCodeToDesc(code) {
+  if (code === 0)              return { icon: '☀️',  desc: 'Clear skies' };
+  if (code <= 2)               return { icon: '⛅',  desc: 'Partly cloudy' };
+  if (code === 3)              return { icon: '☁️',  desc: 'Overcast' };
+  if (code <= 49)              return { icon: '🌫️',  desc: 'Foggy' };
+  if (code <= 69)              return { icon: '🌧️',  desc: 'Rain' };
+  if (code <= 79)              return { icon: '❄️',  desc: 'Snow' };
+  if (code <= 99)              return { icon: '⛈️',  desc: 'Thunderstorms' };
+  return { icon: '🌡️', desc: 'Unknown' };
+}
+
+// ── DATE / TIME WIDGET ──
+function updateDateTimeWidget() {
+  const now  = new Date();
+  const hour = now.getHours();
+  const dateStr = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  let greeting = 'Good evening, Ashley';
+  if (hour < 12)      greeting = 'Good morning, Ashley';
+  else if (hour < 17) greeting = 'Good afternoon, Ashley';
+
+  document.getElementById('briefingDate').textContent    = dateStr;
+  document.getElementById('briefingTime').textContent    = timeStr;
+  document.getElementById('briefingGreeting').textContent = greeting;
+  document.getElementById('briefingTitle').textContent    = greeting;
+}
+
+// ── WAKE WORD ──
+let wakeWordActive  = false;
+let wakeRecognition = null;
+
+function startWakeWord() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  wakeRecognition = new SR();
+  wakeRecognition.continuous   = true;
+  wakeRecognition.interimResults = true;
+  wakeRecognition.lang         = 'en-US';
+  wakeRecognition.onresult     = checkWakeWord;
+  wakeRecognition.onend        = () => { if (wakeWordActive) try { wakeRecognition.start(); } catch(e) {} };
+  wakeRecognition.onerror      = () => {};
+  try { wakeRecognition.start(); } catch(e) {}
+  wakeWordActive = true;
+  const ind = document.getElementById('wakeIndicator');
+  if (ind) { ind.style.display = 'flex'; ind.classList.add('active'); }
+}
+
+function stopWakeWord() {
+  wakeWordActive = false;
+  if (wakeRecognition) try { wakeRecognition.stop(); } catch(e) {}
+  const ind = document.getElementById('wakeIndicator');
+  if (ind) { ind.style.display = 'none'; ind.classList.remove('active','triggered'); }
+}
+
+let wakeDebounce = false;
+function checkWakeWord(e) {
+  if (wakeDebounce) return;
+  let transcript = '';
+  for (let i = e.resultIndex; i < e.results.length; i++) {
+    transcript += e.results[i][0].transcript.toLowerCase();
+  }
+  const triggers = ['good morning gemma', 'morning gemma', 'good morning, gemma', 'hey gemma good morning'];
+  if (triggers.some(t => transcript.includes(t))) {
+    wakeDebounce = true;
+    setTimeout(() => { wakeDebounce = false; }, 5000);
+    triggerMorningBriefing();
+  }
+}
+
+function triggerMorningBriefing() {
+  const ind = document.getElementById('wakeIndicator');
+  if (ind) {
+    ind.classList.remove('active');
+    ind.classList.add('triggered');
+    const wakeGreetings = [
+        'Good morning, Ashley! Give me just a moment…',
+        'Ah, there you are! Briefing incoming…',
+        'Rise and shine — your day awaits!',
+        'Good morning! Let us see what today has in store…',
+        'Morning, Ashley! One brilliant briefing, coming right up…'
+      ];
+      document.getElementById('wakeLabel').textContent = wakeGreetings[Math.floor(Math.random()*wakeGreetings.length)];
+    setTimeout(() => {
+      ind.classList.remove('triggered');
+      ind.classList.add('active');
+      document.getElementById('wakeLabel').textContent = 'listening for "Good morning Gemma"';
+    }, 4000);
+  }
+  // Switch to briefing panel and generate
+  switchPanel('briefing');
+  setTimeout(() => generateBriefingManual(), 500);
+}
+
+// ── DAILY BRIEFING ──
+let briefingGenerated = false;
+
+async function generateBriefing() {
+  briefingGenerated = true;
+  updateDateTimeWidget();
+  updateBriefingLibraryCount();
+  fetchWeather();
+}
+
+async function generateBriefingManual() {
+  updateDateTimeWidget();
+  updateBriefingLibraryCount();
+
+  const tasks     = document.getElementById('briefingTasks').value.trim();
+  const deadlines = document.getElementById('briefingDeadlines').value.trim();
+  const mood      = document.getElementById('briefingMood').value;
+  const incQuote  = document.getElementById('briefIncludeQuote').checked;
+  const incPri    = document.getElementById('briefIncludePriority').checked;
+  const incRes    = document.getElementById('briefIncludeResearch').checked;
+  const incNurs   = document.getElementById('briefIncludeNursing').checked;
+  const incWx     = document.getElementById('briefIncludeWeather').checked;
+  const doSpeak   = document.getElementById('briefSpeak').checked;
+
+  document.getElementById('briefingLoading').style.display = 'block';
+  document.getElementById('briefingOutput').style.display  = 'none';
+  animProgress('briefingProgress', 85, 12000);
+
+  const moodMap = {
+    energized: 'energized and focused',
+    busy:      'feeling overwhelmed with tasks',
+    tired:     'tired and needing gentle pacing',
+    creative:  'in a creative and generative mood',
+    anxious:   'feeling anxious and needing encouragement',
+    '':        'not specified'
+  };
+
+  const today    = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const timeOfDay = new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  const refCount  = apaLibrary.length;
+
+
+  const weatherSummary = weatherData
+    ? `${weatherData.icon} ${weatherData.temp}°F — ${weatherData.desc}, wind ${weatherData.wind} mph`
+    : 'Weather data unavailable';
+
+  const system = `You are Gemma — Ashley Cooke's personal scholarly AI assistant and daily companion. You are delivering his morning briefing in Amelia's voice — warm, measured, British academic English with genuine care and encouragement. Address Ashley directly as "you" or "Ashley." This briefing is the first thing he hears each morning. Make it feel like a trusted mentor and colleague greeting him for the day. Be specific, practical, and uplifting.`;
+
+  const prompt = `Generate Ashley's morning briefing for ${today} at ${timeOfDay}.
+
+CONTEXT:
+- Mood: ${moodMap[mood] || 'not specified'}
+- Tasks today: ${tasks || 'None specified — give general encouragement'}
+- Deadlines/appointments: ${deadlines || 'None specified'}
+- APA library references: ${refCount}
+${incWx ? `- Weather: ${weatherSummary}` : ''}
+
+BRIEFING STRUCTURE — include each section clearly:
+1. GREETING — warm, personal, time-appropriate opening (2-3 sentences)
+${incWx ? '2. WEATHER — brief practical note on the weather today (1-2 sentences)' : ''}
+${incPri ? '3. PRIORITIES — prioritized task list with brief reasoning (3-5 bullet points)' : ''}
+${incRes ? '5. DOCTORAL CORNER — one specific, actionable doctoral tip or encouragement related to his PhD coursework at Regent and his research interest in cognitive offloading and clinical judgment (3-4 sentences)' : ''}
+${incNurs ? '6. NURSING INSIGHT — one current, evidence-based nursing education thought or clinical education tip (2-3 sentences)' : ''}
+${incQuote ? '7. SCHOLARLY QUOTE — one inspiring quote from an educational psychologist, nursing theorist, or educator with attribution' : ''}
+8. CLOSING — warm send-off that energizes Ashley for the day ahead (2 sentences)
+
+Keep the total to 350-450 words — substantive but speakable in under 3 minutes.`;
+
+  try {
+    const out = document.getElementById('briefingText');
+    out.textContent = '';
+    const result = await callClaude(MODEL_SONNET, system, [{ role:'user', content:prompt }], (partial) => {
+      out.textContent = partial;
+    }, false);
+    trackSonnet(system + prompt, result);
+    document.getElementById('briefingOutput').style.display = 'block';
+    if (doSpeak && result) {
+      // Speak the full briefing in chunks
+      setTimeout(() => speakFullBriefing(result), 600);
+    }
+  } catch(err) {
+    document.getElementById('briefingText').textContent = 'Error: ' + err.message;
+    document.getElementById('briefingOutput').style.display = 'block';
+  }
+  document.getElementById('briefingLoading').style.display = 'none';
+}
+
+function speakFullBriefing(text) {
+  // Speak the full briefing — ElevenLabs handles up to ~2500 chars cleanly
+  const clean = text.replace(/[#*]/g, '').trim();
+  speak(clean.slice(0, 2000));
+}
+
+function speakBriefing() {
+  const text = document.getElementById('briefingText').textContent.trim();
+  if (text) speakFullBriefing(text);
+}
+
+function animProgress(id, target, duration) {
+  const el = document.getElementById(id);
+  let w = 5; const step = (target - 5) / (duration / 100);
+  const iv = setInterval(() => {
+    w = Math.min(target, w + step);
+    el.style.width = w + '%';
+    if (w >= target) clearInterval(iv);
+  }, 100);
+}
+
+// ── COST TRACKER ──
+// Prices in USD per 1M tokens (Claude), per character (ElevenLabs), per search (web search)
+const COSTS = {
+  sonnet_in: 2, sonnet_out: 10,
+  opus_in: 4, opus_out: 20,
+  el_per_char: 0.00011,
+  per_search: 0.01
+};
+
+function emptyCosts() {
+  return { sonnetCalls:0, sonnetTokens:0, sonnetCost:0, opusCalls:0, opusTokens:0, opusCost:0, elChars:0, elCalls:0, searches:0 };
+}
+let costData = emptyCosts();
+
+function estimateTokens(text) {
+  return Math.ceil((text || '').length / 4);
+}
+
+function trackSonnet(inputText, outputText) {
+  const ti = estimateTokens(inputText), to = estimateTokens(outputText);
+  costData.sonnetCalls++;
+  costData.sonnetTokens += ti + to;
+  costData.sonnetCost += ti / 1e6 * COSTS.sonnet_in + to / 1e6 * COSTS.sonnet_out;
+  updateCostDisplay();
+}
+
+function trackOpus(inputText, outputText) {
+  const ti = estimateTokens(inputText), to = estimateTokens(outputText);
+  costData.opusCalls++;
+  costData.opusTokens += ti + to;
+  costData.opusCost += ti / 1e6 * COSTS.opus_in + to / 1e6 * COSTS.opus_out;
+  updateCostDisplay();
+}
+
+function trackElevenLabs(text) {
+  costData.elCalls++;
+  costData.elChars += (text || '').length;
+  updateCostDisplay();
+}
+
+function trackSearch() {
+  costData.searches++;
+  updateCostDisplay();
+}
+
+function updateCostDisplay() {
+  const sonnetCost = costData.sonnetCost;
+  const opusCost   = costData.opusCost;
+  const elCost     = costData.elChars * COSTS.el_per_char;
+  const searchCost = costData.searches * COSTS.per_search;
+  const total      = sonnetCost + opusCost + elCost + searchCost;
+  const maxCost    = Math.max(sonnetCost, opusCost, elCost, searchCost, 0.01);
+
+  const fmt = (n) => '$' + n.toFixed(4);
+
+  const el = (id) => document.getElementById(id);
+  if (!el('sonnetCost')) return;
+
+  el('sonnetCost').textContent    = fmt(sonnetCost);
+  el('opusCost').textContent      = fmt(opusCost);
+  el('elCost').textContent        = fmt(elCost);
+  el('searchCost').textContent    = fmt(searchCost);
+  el('sessionTotal').textContent  = '$' + total.toFixed(4);
+  el('sbCostTotal').textContent   = '$' + total.toFixed(4) + ' est.';
+
+  el('sonnetDetail').textContent = `${costData.sonnetCalls} calls · ${costData.sonnetTokens.toLocaleString()} tokens est.`;
+  el('opusDetail').textContent   = `${costData.opusCalls} calls · ${costData.opusTokens.toLocaleString()} tokens est.`;
+  el('elDetail').textContent     = `${costData.elCalls} summaries · ${costData.elChars.toLocaleString()} chars est.`;
+  el('searchDetail').textContent = `${costData.searches} searches this session`;
+
+  el('sonnetBar').style.width = Math.min(100, (sonnetCost / maxCost) * 100) + '%';
+  el('opusBar').style.width   = Math.min(100, (opusCost / maxCost) * 100) + '%';
+  el('elBar').style.width     = Math.min(100, (elCost / maxCost) * 100) + '%';
+  el('searchBar').style.width = Math.min(100, (searchCost / maxCost) * 100) + '%';
+}
+
+function openCostPanel()  { document.getElementById('costPanel').classList.add('open'); }
+function closeCostPanel() { document.getElementById('costPanel').classList.remove('open'); }
+function closeCostOnBackdrop(e) { if (e.target.id === 'costPanel') closeCostPanel(); }
+function resetCostTracker() {
+  costData = emptyCosts();
+  updateCostDisplay();
+}
+
+// ── INIT ──
+if (window.speechSynthesis.getVoices().length > 0) resolveVoice();
+window.speechSynthesis.onvoiceschanged = resolveVoice;
+// Older versions saved keys permanently in this browser; remove them
+try { ['gemma_api_key', 'gemma_el_key', 'gemma_pplx_key'].forEach(k => localStorage.removeItem(k)); } catch(e) {}
+const _savedKey   = (() => { try { return sessionStorage.getItem('gemma_api_key'); } catch(e) { return null; } })();
+const _savedElKey = (() => { try { return sessionStorage.getItem('gemma_el_key'); } catch(e) { return null; } })();
+if (_savedKey) {
+  document.getElementById('apiInput').value = _savedKey;
+  document.getElementById('rememberKey').checked = true;
+}
+if (_savedElKey) document.getElementById('elApiInput').value = _savedElKey;
+document.getElementById('apiInput').focus();
+</script>
+</body>
+</html>
