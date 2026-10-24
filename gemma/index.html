@@ -1512,7 +1512,7 @@ body{
 .wbar{background:var(--signal) !important;}
 
 /* Conversation: transcript, not chat bubbles */
-.welcome h2{font-family:var(--font-display) !important; font-weight:300 !important; font-size:34px !important; letter-spacing:-0.03em !important;}
+.welcome h2{font-family:var(--font-reading) !important; font-weight:400 !important; font-size:46px !important; letter-spacing:-0.025em !important; line-height:1.05 !important; font-variation-settings:'opsz' 72;}
 .welcome-rule{background:linear-gradient(90deg, transparent, var(--signal), transparent) !important; opacity:.6;}
 .welcome-sub{color:var(--text2) !important;}
 .starter{border-radius:14px !important; background:rgba(23,38,71,0.55) !important; border:1px solid var(--border) !important;
@@ -1586,9 +1586,64 @@ body{
 @media (prefers-reduced-motion: reduce){
   .lock-gem,.sb-gem,.welcome-gem,.av.ai{animation:none !important;}
 }
+
+/* ════════ Amelia presence: the living orb ════════ */
+canvas.amelia-orb{display:block; flex-shrink:0;}
+.welcome-orb{margin:-20px auto -14px; width:190px; height:190px;}
+
+/* Briefing hero: orb + greeting */
+.brief-hero{display:flex; align-items:center; gap:28px; margin:4px 0 30px;}
+.brief-hero .amelia-orb{width:210px; height:210px; margin:-36px -20px -36px -40px;}
+.brief-hero-text{min-width:0;}
+.brief-greet{font-family:var(--font-reading) !important; font-weight:400 !important; font-size:60px !important;
+  line-height:1.02 !important; letter-spacing:-0.025em !important; color:var(--text) !important; margin:0 0 10px !important;
+  font-variation-settings:'opsz' 72;}
+.brief-hero .ws-sub{margin-bottom:12px !important; font-size:13px !important;}
+.orb-caption{display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text2);
+  padding:6px 14px 6px 12px; border-radius:999px; border:1px solid var(--border); background:rgba(11,21,48,0.45);
+  transition:color .4s, border-color .4s, background .4s;}
+.orb-caption::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--text3); transition:background .4s, box-shadow .4s;}
+.orb-caption[data-state="speaking"]{color:#F6DDAE; border-color:rgba(233,184,102,0.45); background:rgba(233,184,102,0.08);}
+.orb-caption[data-state="speaking"]::before{background:var(--ember); box-shadow:0 0 10px var(--ember);}
+.orb-caption[data-state="thinking"]{color:#D3CBFF; border-color:rgba(157,140,255,0.45);}
+.orb-caption[data-state="thinking"]::before{background:var(--iris); box-shadow:0 0 10px var(--iris);}
+.orb-caption[data-state="listening"]{color:#B9F7EF; border-color:rgba(79,227,210,0.45);}
+.orb-caption[data-state="listening"]::before{background:var(--signal); box-shadow:0 0 10px var(--signal);}
+
+/* Speaking dock: visible on every panel while Amelia talks */
+#ameliaDock{position:fixed; left:50%; bottom:96px; z-index:900; display:flex; align-items:center; gap:14px;
+  padding:8px 10px 8px 8px; border-radius:999px; border:1px solid rgba(233,184,102,0.35);
+  background:rgba(13,24,52,0.82); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  box-shadow:0 18px 50px rgba(2,8,28,0.6), 0 0 40px rgba(233,184,102,0.12);
+  transform:translate(-50%, 140%); opacity:0; pointer-events:none; transition:transform .5s cubic-bezier(.2,.9,.2,1), opacity .3s;}
+#ameliaDock.on{transform:translate(-50%,0); opacity:1; pointer-events:auto;}
+#ameliaDock .amelia-orb{width:64px; height:64px; margin:-8px -6px -8px -8px;}
+#ameliaDock .dock-text{font-size:13px; color:#F6DDAE; white-space:nowrap;}
+#ameliaDock .dock-stop{border:1px solid rgba(233,184,102,0.4); background:rgba(233,184,102,0.1); color:#F6DDAE;
+  border-radius:999px; padding:7px 14px; font:inherit; font-size:12.5px; cursor:pointer;}
+#ameliaDock .dock-stop:hover{background:rgba(233,184,102,0.2);}
+
+/* Briefing labels in sentence case */
+.regent-label{font-size:12px; color:var(--text3); margin:12px 0 4px;}
+
+@media (max-width: 760px){
+  .brief-hero{flex-direction:column; align-items:flex-start; gap:0; margin-bottom:22px;}
+  .brief-hero .amelia-orb{width:150px; height:150px; margin:-8px 0 -18px -34px;}
+  .brief-greet{font-size:42px !important;}
+  .briefing-grid{grid-template-columns:1fr !important;}
+  .welcome-orb{width:150px; height:150px;}
+  #ameliaDock{bottom:132px; max-width:calc(100vw - 32px);}
+}
 </style>
 </head>
 <body>
+
+<!-- Amelia speaking dock -->
+<div id="ameliaDock" role="status" aria-live="polite">
+  <canvas class="amelia-orb" aria-hidden="true"></canvas>
+  <span class="dock-text">Amelia is speaking</span>
+  <button class="dock-stop" onclick="stopAmelia()">Stop</button>
+</div>
 
 <!-- ══ LOCK SCREEN ══ -->
 <div id="lockScreen">
@@ -1700,8 +1755,8 @@ body{
     <div class="panel active" id="panel-chat">
       <div class="msgs" id="msgs">
         <div class="welcome" id="welcome">
-          <div class="welcome-gem"><div class="welcome-gem-inner"></div></div>
-          <h2>Good to see you, Ashley ✦</h2>
+          <canvas class="amelia-orb welcome-orb" aria-hidden="true"></canvas>
+          <h2>Good to see you, Ashley</h2>
           <div class="welcome-rule"></div>
           <p class="welcome-sub">Your personal assistant for staying organized, PhD work, and thinking things through. Just start talking.</p>
           <div class="disclaimer">Personal &amp; PhD use only · No student or patient information</div>
@@ -1931,8 +1986,14 @@ body{
     <!-- ── DAILY BRIEFING PANEL ── -->
     <div class="panel" id="panel-briefing">
       <div class="workspace" id="briefingWorkspace">
-        <div class="ws-title" id="briefingTitle">Good morning, Ashley</div>
-        <div class="ws-sub">Say <strong style="color:var(--brass2)">"Good morning Gemma"</strong> anytime · or generate manually below · Amelia reads your day aloud</div>
+        <div class="brief-hero">
+          <canvas class="amelia-orb" aria-hidden="true"></canvas>
+          <div class="brief-hero-text">
+            <h1 class="ws-title brief-greet" id="briefingTitle">Good morning, Ashley</h1>
+            <div class="ws-sub">Say "Good morning Gemma" or press Generate briefing, and Amelia will read your day to you.</div>
+            <div class="orb-caption" id="orbCaption" data-state="idle" role="status" aria-live="polite">Amelia is ready</div>
+          </div>
+        </div>
 
         <!-- DASHBOARD WIDGETS -->
         <div class="briefing-grid" style="margin-top:20px;">
@@ -2298,6 +2359,7 @@ function enterApp() {
   resolveVoice();
   startWakeWord();
   fetchWeather();
+  orbStart();
   loadGemmaNotes(false);
   updateDateTimeWidget();
   if (!clockTimer) clockTimer = setInterval(updateDateTimeWidget, 60000);
@@ -2376,11 +2438,177 @@ function unlockAmeliaAudio() {
   if (ameliaUnlocked) return;
   ameliaAudio.src = SILENT_WAV;
   const p = ameliaAudio.play();
-  if (p && p.then) p.then(() => { ameliaUnlocked = true; ameliaAudio.pause(); }).catch(() => {});
+  if (p && p.then) p.then(() => { ameliaUnlocked = true; if (ameliaAudio.src === SILENT_WAV) ameliaAudio.pause(); }).catch(() => {});
   else ameliaUnlocked = true;
 }
+ameliaAudio.addEventListener('playing', () => { if (ameliaAudio.src !== SILENT_WAV) orbSetState('speaking'); });
+['ended','pause'].forEach(ev => ameliaAudio.addEventListener(ev, () => {
+  if (ameliaAudio.src !== SILENT_WAV && !window.speechSynthesis.speaking) orbSetState(micActive ? 'listening' : 'idle');
+}));
 ['pointerdown','keydown','touchstart'].forEach(ev =>
   document.addEventListener(ev, unlockAmeliaAudio, { capture: true, passive: true }));
+
+// ── AMELIA ORB ──────────────────────────────────────────────
+// One renderer draws every .amelia-orb canvas. It reacts to Amelia's real voice:
+// the ElevenLabs clip is decoded once to a loudness envelope, then read in sync
+// with playback. The browser voice falls back to word-boundary pulses.
+const ORB = { state:'idle', level:0, target:0, kick:0, rings:[], env:null, envRate:60, t0:performance.now(), raf:0 };
+const ORB_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let orbDecodeCtx = null;
+
+function orbSetState(st) {
+  if (ORB.state === st) return;
+  ORB.state = st;
+  const cap = document.getElementById('orbCaption');
+  if (cap) {
+    cap.dataset.state = st;
+    cap.textContent = { idle:'Amelia is ready', listening:'Amelia is listening', thinking:'Amelia is preparing your briefing', speaking:'Amelia is reading to you' }[st] || 'Amelia is ready';
+    if (st === 'thinking' && !document.getElementById('briefingLoading')?.offsetParent) cap.textContent = 'Amelia is thinking';
+  }
+  const dock = document.getElementById('ameliaDock');
+  if (dock) dock.classList.toggle('on', st === 'speaking');
+  if (st !== 'speaking') ORB.env = null;
+  orbStart();
+}
+
+async function orbBuildEnvelope(blob) {
+  try {
+    if (!orbDecodeCtx) orbDecodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await orbDecodeCtx.decodeAudioData(await blob.arrayBuffer());
+    const data = buf.getChannelData(0), hop = Math.floor(buf.sampleRate / ORB.envRate);
+    const env = new Float32Array(Math.ceil(data.length / hop));
+    let peak = 1e-4;
+    for (let i = 0; i < env.length; i++) {
+      let sum = 0; const s0 = i * hop, s1 = Math.min(data.length, s0 + hop);
+      for (let j = s0; j < s1; j++) sum += data[j] * data[j];
+      env[i] = Math.sqrt(sum / Math.max(1, s1 - s0)); if (env[i] > peak) peak = env[i];
+    }
+    for (let i = 0; i < env.length; i++) env[i] = Math.min(1, env[i] / (peak * 0.8));
+    return env;
+  } catch(e) { return null; }
+}
+
+function stopAmelia() {
+  try { ameliaAudio.pause(); } catch(e) {}
+  window.speechSynthesis.cancel();
+  document.getElementById('micBtn')?.classList.remove('speaking');
+  setVS(micActive ? 'listening' : '', micActive ? 'listening…' : 'ready');
+}
+
+function orbFrameLevel() {
+  if (ORB.state === 'speaking') {
+    if (ORB.env && !ameliaAudio.paused) {
+      const i = Math.floor(ameliaAudio.currentTime * ORB.envRate);
+      return ORB.env[Math.min(ORB.env.length - 1, i)] || 0;
+    }
+    ORB.kick *= 0.9;                       // browser voice: pulse on each word
+    return Math.min(1, ORB.kick + 0.12 + 0.08 * Math.sin(performance.now() / 140));
+  }
+  if (ORB.state === 'listening' && typeof analyser !== 'undefined' && analyser) {
+    try {
+      const a = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(a);
+      let sum = 0; for (let i = 0; i < a.length; i++) { const v = (a[i] - 128) / 128; sum += v * v; }
+      return Math.min(1, Math.sqrt(sum / a.length) * 6);
+    } catch(e) {}
+  }
+  return 0;
+}
+
+const ORB_COLORS = {
+  idle:      ['#4FE3D2', '#7FA8FF', '#9D8CFF', '#4FE3D2'],
+  listening: ['#4FE3D2', '#8FF5E9', '#7FA8FF', '#4FE3D2'],
+  thinking:  ['#9D8CFF', '#7FA8FF', '#C9B8FF', '#9D8CFF'],
+  speaking:  ['#E9B866', '#F2D29A', '#9D8CFF', '#E9B866']
+};
+
+function orbDraw(cv, now) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return false;
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.25, t = (now - ORB.t0) / 1000, L = ORB.level;
+  const col = ORB_COLORS[ORB.state] || ORB_COLORS.idle;
+
+  // halo
+  const haloR = Math.min(w, h) * 0.5 - 1;                     // never wider than the canvas
+  const halo = ctx.createRadialGradient(cx, cy, R * 0.8, cx, cy, haloR);
+  const hA = Math.round(0x30 + L * 0x40).toString(16);
+  halo.addColorStop(0, col[0] + hA); halo.addColorStop(0.45, col[2] + '18'); halo.addColorStop(1, col[2] + '00');
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, haloR, 0, Math.PI * 2); ctx.fill();
+
+  // rings released by the voice (or slow ripples while listening)
+  ctx.lineWidth = Math.max(1, R * 0.018);
+  const maxRing = (Math.min(w, h) * 0.5 - 2) / R;
+  ORB.rings = ORB.rings.filter(r => r.a > 0.02 && r.r < maxRing);
+  for (const r of ORB.rings) {
+    ctx.strokeStyle = col[r.c] + Math.round(r.a * 255).toString(16).padStart(2, '0');
+    ctx.beginPath(); ctx.arc(cx, cy, R * r.r, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // the body: a soft blob whose edge moves with the voice
+  const N = 96, breathe = ORB.state === 'idle' ? 0.025 * Math.sin(t * 1.3) : 0;
+  ctx.beginPath();
+  for (let i = 0; i <= N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    const calm = ORB.state === 'idle' ? 0.35 : 1;
+    const wob = calm * (0.022 * Math.sin(a * 3 + t * 1.1) + 0.014 * Math.sin(a * 5 - t * 1.7)) +
+                L * (0.085 * Math.sin(a * 4 + t * 6) + 0.05 * Math.sin(a * 7 - t * 9));
+    const rr = R * (1 + breathe + L * 0.16 + wob);
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  }
+  ctx.closePath();
+  const spin = t * (ORB.state === 'thinking' ? 1.6 : ORB.state === 'speaking' ? 0.9 : 0.35);
+  let fill;
+  if (ctx.createConicGradient) {
+    fill = ctx.createConicGradient(spin, cx, cy);
+    fill.addColorStop(0, col[0]); fill.addColorStop(0.33, col[1]); fill.addColorStop(0.66, col[2]); fill.addColorStop(1, col[3]);
+  } else {
+    fill = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.2); fill.addColorStop(0, col[1]); fill.addColorStop(1, col[2]);
+  }
+  ctx.save(); ctx.shadowColor = col[0]; ctx.shadowBlur = Math.min(R * (0.45 + L * 0.7), Math.min(w, h) * 0.5 - R * 1.25); ctx.fillStyle = fill; ctx.fill(); ctx.restore();
+
+  // glass core and highlight
+  ctx.save(); ctx.clip();
+  const core = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.38, R * 0.05, cx, cy, R * 1.25);
+  core.addColorStop(0, 'rgba(255,255,255,0.80)'); core.addColorStop(0.3, 'rgba(255,255,255,0.14)');
+  core.addColorStop(0.7, 'rgba(11,21,48,0.0)'); core.addColorStop(1, 'rgba(11,21,48,0.45)');
+  ctx.fillStyle = core; ctx.fillRect(cx - R * 1.5, cy - R * 1.5, R * 3, R * 3);
+  ctx.restore();
+
+  // thinking: three motes orbiting
+  if (ORB.state === 'thinking') {
+    for (let k = 0; k < 3; k++) {
+      const a = t * 2.2 + k * 2.094, rr = R * 1.32;
+      ctx.fillStyle = col[k % 3]; ctx.shadowColor = col[k % 3]; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.92, Math.max(1.5, R * 0.06), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+  }
+  return true;
+}
+
+function orbTick(now) {
+  ORB.raf = 0;
+  const raw = orbFrameLevel();
+  ORB.level += (raw - ORB.level) * (raw > ORB.level ? 0.45 : 0.12);
+  // release a ring on voice peaks, or every ~1.6 s while listening
+  const last = ORB.rings[ORB.rings.length - 1];
+  if (ORB.state === 'speaking' && raw > 0.55 && (!last || last.r > 1.25)) ORB.rings.push({ r: 1.05, a: 0.55, c: 0 });
+  if (ORB.state === 'listening' && (!last || last.r > 1.9)) ORB.rings.push({ r: 1.0, a: 0.35 + ORB.level * 0.4, c: 1 });
+  for (const r of ORB.rings) { r.r += 0.012 + ORB.level * 0.01; r.a *= 0.965; }
+
+  let any = false;
+  document.querySelectorAll('canvas.amelia-orb').forEach(cv => { if (cv.offsetParent !== null || cv.closest('#ameliaDock.on')) any = orbDraw(cv, now) || any; });
+  if (ORB_REDUCED && ORB.state === 'idle') return;          // static when motion is reduced
+  if (!document.hidden) ORB.raf = requestAnimationFrame(orbTick);
+}
+function orbStart() { if (!ORB.raf) ORB.raf = requestAnimationFrame(orbTick); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) orbStart(); });
+window.addEventListener('resize', orbStart);
 
 async function speak(text) {
   if (!autoSpeak || !text) return;
@@ -2407,6 +2635,7 @@ async function speak(text) {
 
       if (resp.ok) {
         const blob = await resp.blob();
+        ORB.env = await orbBuildEnvelope(blob);
         const url = URL.createObjectURL(blob);
         const audio = ameliaAudio;
         audio.pause();
@@ -2447,6 +2676,7 @@ async function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
   if (selVoice) u.voice = selVoice;
   u.rate = VOICE_RATE; u.pitch = VOICE_PITCH; u.volume = VOICE_VOL;
+  u.onboundary = () => { ORB.kick = 0.85; };
   u.onstart = () => {
     document.getElementById('micBtn').classList.add('speaking');
     setVS('speaking', 'Gemma speaking…');
@@ -2454,6 +2684,7 @@ async function speak(text) {
   };
   u.onend = () => {
     document.getElementById('micBtn').classList.remove('speaking');
+    setTimeout(() => { if (!ameliaIsTalking()) orbSetState(micActive ? 'listening' : 'idle'); }, 50);
     if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
     else setVS('', 'ready');
   };
@@ -2502,7 +2733,12 @@ function toggleWebSearch() {
   document.getElementById('searchTrk').classList.toggle('on', useWebSearch);
 }
 
+function ameliaIsTalking() {
+  return (!ameliaAudio.paused && !ameliaAudio.ended && ameliaAudio.src !== SILENT_WAV) || window.speechSynthesis.speaking;
+}
 function setVS(cls, txt) {
+  const st = { speaking:'speaking', listening:'listening', processing:'thinking' }[cls] || 'idle';
+  orbSetState(st !== 'speaking' && ameliaIsTalking() ? 'speaking' : st);   // the voice wins while it is playing
   const el = document.getElementById('vstatus');
   el.textContent = txt;
   el.className = 'vstatus' + (cls ? ' ' + cls : '');
@@ -3568,7 +3804,7 @@ function updateRegentWidget() {
   const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   let html = '';
   if (st.before) html += '<div style="margin-bottom:8px;color:var(--brass2);">Classes start Monday, Oct 26. Check Canvas announcements and do the EDU 600 syllabus quiz early.</div>';
-  html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:4px 0 4px;">Due in the next 7 days</div>';
+  html += '<div class="regent-label" style="margin-top:4px;">Due in the next 7 days</div>';
   if (!st.upcoming.length) {
     html += '<div>Nothing due this week.</div>';
   } else {
@@ -3580,11 +3816,11 @@ function updateRegentWidget() {
     .filter(x => parseInt(x.w) >= 20 && x.date > new Date(st.today.getTime() + 7*86400000))
     .sort((a,b)=>a.date-b.date).slice(0,2);
   if (big.length) {
-    html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 4px;">Major work coming up</div>';
+    html += '<div class="regent-label">Major work coming up</div>';
     html += big.map(x => `<div>${x.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <strong style="color:var(--text);">${x.c}</strong> ${esc(x.t)} (${x.w}) — ${Math.round((x.date - st.today)/86400000)} days</div>`).join('');
   }
   if (st.wk) {
-    html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 4px;">EFND 706 ' + st.wk.n + ' readings (Wed–Tue)</div>';
+    html += '<div class="regent-label">EFND 706 ' + st.wk.n + ' readings (Wed–Tue)</div>';
     html += '<div>' + esc(st.wk.r) + '</div>';
   }
   html += '<div style="font-size:10.5px;color:var(--text3);margin-top:10px;">From the Fall 2026 syllabi · confirm dates in Canvas</div>';
@@ -3705,6 +3941,7 @@ async function generateBriefingManual() {
 
   document.getElementById('briefingLoading').style.display = 'block';
   document.getElementById('briefingOutput').style.display  = 'none';
+  orbSetState('thinking');
   animProgress('briefingProgress', 85, 12000);
 
   const moodMap = {
@@ -3782,6 +4019,7 @@ Keep the total to 350-450 words — substantive but speakable in under 3 minutes
     document.getElementById('briefingOutput').style.display = 'block';
   }
   document.getElementById('briefingLoading').style.display = 'none';
+  if (ORB.state === 'thinking') orbSetState('idle');
 }
 
 function speakFullBriefing(text) {
