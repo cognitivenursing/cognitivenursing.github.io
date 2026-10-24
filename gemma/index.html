@@ -1589,13 +1589,13 @@ body{
 
 /* ════════ Amelia presence: the living orb ════════ */
 canvas.amelia-orb{display:block; flex-shrink:0;}
-.welcome-orb{margin:-20px auto -14px; width:190px; height:190px;}
+.welcome-orb{margin:-36px auto -24px; width:260px; height:260px;}
 
 /* Briefing hero: orb + greeting */
 .brief-hero{display:flex; align-items:center; gap:28px; margin:4px 0 30px;}
-.brief-hero .amelia-orb{width:210px; height:210px; margin:-36px -20px -36px -40px;}
+.brief-hero .amelia-orb{width:270px; height:270px; margin:-34px -34px -52px -40px;}
 .brief-hero-text{min-width:0;}
-.brief-greet{font-family:var(--font-reading) !important; font-weight:400 !important; font-size:60px !important;
+.brief-greet{font-family:var(--font-reading) !important; font-weight:400 !important; font-size:68px !important;
   line-height:1.02 !important; letter-spacing:-0.025em !important; color:var(--text) !important; margin:0 0 10px !important;
   font-variation-settings:'opsz' 72;}
 .brief-hero .ws-sub{margin-bottom:12px !important; font-size:13px !important;}
@@ -1617,7 +1617,7 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
   box-shadow:0 18px 50px rgba(2,8,28,0.6), 0 0 40px rgba(233,184,102,0.12);
   transform:translate(-50%, 140%); opacity:0; pointer-events:none; transition:transform .5s cubic-bezier(.2,.9,.2,1), opacity .3s;}
 #ameliaDock.on{transform:translate(-50%,0); opacity:1; pointer-events:auto;}
-#ameliaDock .amelia-orb{width:64px; height:64px; margin:-8px -6px -8px -8px;}
+#ameliaDock .amelia-orb{width:80px; height:80px; margin:-16px -10px -16px -14px;}
 #ameliaDock .dock-text{font-size:13px; color:#F6DDAE; white-space:nowrap;}
 #ameliaDock .dock-stop{border:1px solid rgba(233,184,102,0.4); background:rgba(233,184,102,0.1); color:#F6DDAE;
   border-radius:999px; padding:7px 14px; font:inherit; font-size:12.5px; cursor:pointer;}
@@ -1628,10 +1628,10 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
 
 @media (max-width: 760px){
   .brief-hero{flex-direction:column; align-items:flex-start; gap:0; margin-bottom:22px;}
-  .brief-hero .amelia-orb{width:150px; height:150px; margin:-8px 0 -18px -34px;}
+  .brief-hero .amelia-orb{width:190px; height:190px; margin:-6px 0 -12px -26px;}
   .brief-greet{font-size:42px !important;}
   .briefing-grid{grid-template-columns:1fr !important;}
-  .welcome-orb{width:150px; height:150px;}
+  .welcome-orb{width:200px; height:200px;}
   #ameliaDock{bottom:132px; max-width:calc(100vw - 32px);}
 }
 </style>
@@ -2529,18 +2529,18 @@ function orbDraw(cv, now) {
   const ctx = cv.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, w, h);
-  const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.25, t = (now - ORB.t0) / 1000, L = ORB.level;
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.24, t = (now - ORB.t0) / 1000, L = ORB.level;
   const col = ORB_COLORS[ORB.state] || ORB_COLORS.idle;
 
   // halo
   const haloR = Math.min(w, h) * 0.5 - 1;                     // never wider than the canvas
   const halo = ctx.createRadialGradient(cx, cy, R * 0.8, cx, cy, haloR);
-  const hA = Math.round(0x30 + L * 0x40).toString(16);
+  const hA = Math.round(0x30 + L * 0x8F).toString(16).padStart(2, '0');
   halo.addColorStop(0, col[0] + hA); halo.addColorStop(0.45, col[2] + '18'); halo.addColorStop(1, col[2] + '00');
   ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, haloR, 0, Math.PI * 2); ctx.fill();
 
   // rings released by the voice (or slow ripples while listening)
-  ctx.lineWidth = Math.max(1, R * 0.018);
+  ctx.lineWidth = Math.max(1.2, R * 0.028);
   const maxRing = (Math.min(w, h) * 0.5 - 2) / R;
   ORB.rings = ORB.rings.filter(r => r.a > 0.02 && r.r < maxRing);
   for (const r of ORB.rings) {
@@ -2555,8 +2555,8 @@ function orbDraw(cv, now) {
     const a = (i / N) * Math.PI * 2;
     const calm = ORB.state === 'idle' ? 0.35 : 1;
     const wob = calm * (0.022 * Math.sin(a * 3 + t * 1.1) + 0.014 * Math.sin(a * 5 - t * 1.7)) +
-                L * (0.085 * Math.sin(a * 4 + t * 6) + 0.05 * Math.sin(a * 7 - t * 9));
-    const rr = R * (1 + breathe + L * 0.16 + wob);
+                L * (0.09 * Math.sin(a * 4 + t * 7) + 0.05 * Math.sin(a * 7 - t * 10) + 0.025 * Math.sin(a * 11 + t * 13));
+    const rr = R * (1 + breathe + L * 0.24 + wob);
     const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
     i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
   }
@@ -2569,7 +2569,7 @@ function orbDraw(cv, now) {
   } else {
     fill = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.2); fill.addColorStop(0, col[1]); fill.addColorStop(1, col[2]);
   }
-  ctx.save(); ctx.shadowColor = col[0]; ctx.shadowBlur = Math.min(R * (0.45 + L * 0.7), Math.min(w, h) * 0.5 - R * 1.25); ctx.fillStyle = fill; ctx.fill(); ctx.restore();
+  ctx.save(); ctx.shadowColor = col[0]; ctx.shadowBlur = Math.min(R * (0.45 + L * 1.4), Math.min(w, h) * 0.5 - R * 1.25); ctx.fillStyle = fill; ctx.fill(); ctx.restore();
 
   // glass core and highlight
   ctx.save(); ctx.clip();
@@ -2594,12 +2594,16 @@ function orbDraw(cv, now) {
 function orbTick(now) {
   ORB.raf = 0;
   const raw = orbFrameLevel();
-  ORB.level += (raw - ORB.level) * (raw > ORB.level ? 0.45 : 0.12);
+  ORB.level += (raw - ORB.level) * (raw > ORB.level ? 0.6 : 0.14);
   // release a ring on voice peaks, or every ~1.6 s while listening
   const last = ORB.rings[ORB.rings.length - 1];
-  if (ORB.state === 'speaking' && raw > 0.55 && (!last || last.r > 1.25)) ORB.rings.push({ r: 1.05, a: 0.55, c: 0 });
+  const rising = raw > 0.45 && raw - (ORB.prevRaw || 0) > 0.08;
+  if (ORB.state === 'speaking' && rising && now - (ORB.lastRing || 0) > 170 && ORB.rings.length < 5) {
+    ORB.rings.push({ r: 1.12 + raw * 0.18, a: 0.45 + raw * 0.45, c: (ORB.ringN = (ORB.ringN || 0) + 1) % 2 ? 2 : 0 }); ORB.lastRing = now;
+  }
+  ORB.prevRaw = raw;
   if (ORB.state === 'listening' && (!last || last.r > 1.9)) ORB.rings.push({ r: 1.0, a: 0.35 + ORB.level * 0.4, c: 1 });
-  for (const r of ORB.rings) { r.r += 0.012 + ORB.level * 0.01; r.a *= 0.965; }
+  for (const r of ORB.rings) { r.r += 0.014 + ORB.level * 0.022; r.a *= 0.968; }
 
   let any = false;
   document.querySelectorAll('canvas.amelia-orb').forEach(cv => { if (cv.offsetParent !== null || cv.closest('#ameliaDock.on')) any = orbDraw(cv, now) || any; });
