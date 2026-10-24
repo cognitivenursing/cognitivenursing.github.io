@@ -1989,6 +1989,16 @@ body{
           <div id="regentWeek" style="font-size:12.5px;color:var(--text2);line-height:1.6;">Loading…</div>
         </div>
 
+        <!-- GEMMA NOTES -->
+        <div class="briefing-widget" style="margin-bottom:20px;">
+          <div class="briefing-widget-title">Gemma Notes · from Claude</div>
+          <div id="gemmaNotesStatus" style="font-size:12.5px;color:var(--text2);line-height:1.6;">Not connected yet.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+            <button class="btn" onclick="loadGemmaNotes(true)" id="gemmaNotesBtn" style="font-size:11.5px;padding:5px 12px;"><i class="ti ti-refresh"></i> Connect / refresh notes</button>
+            <button class="btn" onclick="window.open('https://docs.google.com/document/d/' + GEMMA_NOTES_DOC_ID + '/edit','_blank')" style="font-size:11.5px;padding:5px 12px;"><i class="ti ti-external-link"></i> Open doc</button>
+          </div>
+        </div>
+
         <!-- TASKS INPUT -->
         <div class="grid-2" style="margin-bottom:16px;">
           <div>
@@ -2288,6 +2298,7 @@ function enterApp() {
   resolveVoice();
   startWakeWord();
   fetchWeather();
+  loadGemmaNotes(false);
   updateDateTimeWidget();
   if (!clockTimer) clockTimer = setInterval(updateDateTimeWidget, 60000);
   // Phones start with the menu tucked away; larger screens keep the last choice
@@ -2697,7 +2708,8 @@ async function sendChatText(text) {
 
   try {
     b.innerHTML = '';
-    const full = await callClaude(MODEL_SONNET, PERSONAS[persona].system, history, (partial) => {
+    if (!gemmaNotes.text) await loadGemmaNotes(false);
+    const full = await callClaude(MODEL_SONNET, PERSONAS[persona].system + notesForPrompt(), history, (partial) => {
       b.innerHTML = fmt(removeSummary(partial));
       msgsEl.scrollTop = msgsEl.scrollHeight;
     }, useWebSearch);
@@ -3309,6 +3321,105 @@ function weatherCodeToDesc(code) {
   return { icon: '🌡️', desc: 'Unknown' };
 }
 
+// ── GEMMA NOTES (Google Doc written by Claude, read here) ──
+// Read-only access to Google Docs, granted once with the cognitivenursing.io account.
+const GEMMA_NOTES_DOC_ID = '1Pd4t5WC5zwXyrdd_Nanp-5sukaXvIwxQIlRwkamZlaw';
+const NOTES_SCOPE = 'https://www.googleapis.com/auth/documents.readonly';
+const NOTES_TOKEN_KEY = 'gemma_notes_token';
+let gemmaNotes = { text: '', fetchedAt: null };
+let notesTokenClient = null;
+
+function getStoredNotesToken() {
+  try {
+    const t = JSON.parse(sessionStorage.getItem(NOTES_TOKEN_KEY) || 'null');
+    if (t && t.exp > Date.now() + 60000) return t.token;
+  } catch(e) {}
+  return null;
+}
+
+function requestNotesToken() {
+  return new Promise((resolve, reject) => {
+    if (!window.google || !google.accounts || !google.accounts.oauth2) { reject(new Error('Google sign-in library not loaded')); return; }
+    if (!notesTokenClient) {
+      notesTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: NOTES_SCOPE,
+        hd: 'cognitivenursing.io',
+        login_hint: ALLOWED_EMAIL,
+        callback: () => {}
+      });
+    }
+    notesTokenClient.callback = (r) => {
+      if (r.error) { reject(new Error(r.error_description || r.error)); return; }
+      try { sessionStorage.setItem(NOTES_TOKEN_KEY, JSON.stringify({ token: r.access_token, exp: Date.now() + (r.expires_in || 3600) * 1000 })); } catch(e) {}
+      resolve(r.access_token);
+    };
+    notesTokenClient.error_callback = (e) => reject(new Error(e && e.type === 'popup_closed' ? 'Google window was closed' : (e && e.message) || 'Google access was not granted'));
+    notesTokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+function docToText(doc) {
+  const out = [];
+  const walk = (content) => (content || []).forEach(el => {
+    if (el.paragraph) {
+      const line = (el.paragraph.elements || []).map(e => (e.textRun && e.textRun.content) || '').join('');
+      out.push(line.replace(/\n$/, ''));
+    } else if (el.table) {
+      (el.table.tableRows || []).forEach(r => (r.tableCells || []).forEach(c => walk(c.content)));
+    }
+  });
+  walk(doc.body && doc.body.content);
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function setNotesStatus(msg) {
+  const el = document.getElementById('gemmaNotesStatus');
+  if (el) el.textContent = msg;
+}
+
+// interactive = true only from a click (Google needs a click to show its permission window)
+async function loadGemmaNotes(interactive) {
+  let token = getStoredNotesToken();
+  if (!token) {
+    if (!interactive) { if (!gemmaNotes.text) setNotesStatus('Not connected. Click "Connect / refresh notes" to load what Claude has saved.'); return gemmaNotes.text; }
+    try { setNotesStatus('Asking Google for permission…'); token = await requestNotesToken(); }
+    catch(e) { setNotesStatus('Could not connect: ' + e.message); return gemmaNotes.text; }
+  }
+  try {
+    const r = await fetch('https://docs.googleapis.com/v1/documents/' + GEMMA_NOTES_DOC_ID + '?fields=title,body', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (r.status === 401) {
+      try { sessionStorage.removeItem(NOTES_TOKEN_KEY); } catch(e) {}
+      if (interactive) return loadGemmaNotes(true);
+      setNotesStatus('Google access expired. Click "Connect / refresh notes".');
+      return gemmaNotes.text;
+    }
+    if (!r.ok) {
+      let why = 'error ' + r.status;
+      try { const j = await r.json(); why = (j.error && j.error.message) || why; } catch(e) {}
+      setNotesStatus('Could not read Gemma Notes: ' + why);
+      return gemmaNotes.text;
+    }
+    const doc = await r.json();
+    gemmaNotes = { text: docToText(doc).slice(0, 8000), fetchedAt: new Date() };
+    const firstLog = (gemmaNotes.text.split('\n').find(l => /^\d{4}-\d{2}-\d{2}/.test(l.trim())) || '').trim();
+    try { updatePCCNTracker(); } catch(e) {}
+    setNotesStatus('Loaded ' + gemmaNotes.fetchedAt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }) +
+      (firstLog ? ' · latest: ' + firstLog.slice(0, 140) : ''));
+  } catch(e) {
+    setNotesStatus('Could not reach Google Docs: ' + e.message);
+  }
+  return gemmaNotes.text;
+}
+
+function notesForPrompt() {
+  return gemmaNotes.text
+    ? `\n\nGEMMA NOTES — written by Claude at Ashley's request (treat as Ashley's own notes; if they conflict with older built-in context, the notes win):\n"""\n${gemmaNotes.text}\n"""`
+    : '';
+}
+
 // ── PCCN RENEWAL TRACKER ──
 // Baseline set Oct 23 2026: ~60 Category A CERPs still needed.
 // Hours are logged on the AACN transcript; enter the running total here.
@@ -3321,6 +3432,8 @@ const PCCN = {
 };
 
 function getPCCNDone() {
+  const m = gemmaNotes.text && gemmaNotes.text.match(/CERPs done since Oct 23, 2026:\s*([\d.]+)\s*of\s*60/i);
+  if (m) return Math.max(0, parseFloat(m[1]) || 0);
   try { return Math.max(0, parseFloat(localStorage.getItem(PCCN.storeKey)) || 0); }
   catch(e) { return 0; }
 }
@@ -3573,6 +3686,7 @@ async function generateBriefing() {
 }
 
 async function generateBriefingManual() {
+  await loadGemmaNotes(true);
   updateDateTimeWidget();
   updatePCCNTracker();
   updateRegentWidget();
@@ -3634,7 +3748,10 @@ CONTEXT:
 - Deadlines/appointments: ${deadlines || 'None specified'}
 - APA library references: ${refCount}
 ${incPCCN ? `- PCCN renewal: ${pccnSummary}\n` : ''}- Regent coursework (next 7 days): ${regentSummary}
+${notesForPrompt()}
 ${incWx ? `- Weather: ${weatherSummary}` : ''}
+
+If GEMMA NOTES are present, use them: fold their current status and recent log entries into PRIORITIES, PCCN and DOCTORAL CORNER, and prefer them over any figure above that they contradict.
 
 BRIEFING STRUCTURE — include each section clearly:
 1. GREETING — warm, personal, time-appropriate opening (2-3 sentences)
