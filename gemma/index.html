@@ -1587,6 +1587,28 @@ body{
   .lock-gem,.sb-gem,.welcome-gem,.av.ai{animation:none !important;}
 }
 
+/* PCCN card */
+.pccn-card{grid-column:1 / -1;}
+.pccn-body{display:grid; grid-template-columns:minmax(180px, 0.8fr) 2fr; gap:28px; align-items:start; margin-top:4px;}
+.pccn-total .briefing-widget-main{font-size:52px !important; line-height:1;}
+.pccn-ring-note{font-size:12.5px; color:var(--text2); margin:6px 0 4px;}
+.pccn-cats{display:flex; flex-direction:column; gap:13px;}
+.pccn-cat-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:13px; color:var(--text);}
+.pccn-cat-head .pc-name{color:var(--text2);}
+.pccn-cat-head .pc-name strong{color:var(--text); font-weight:500; margin-right:6px;}
+.pccn-cat-head .pc-val{font-variant-numeric:tabular-nums; white-space:nowrap;}
+.pccn-cat-head .pc-met{color:var(--signal);}
+.pccn-bar{position:relative; height:7px; border-radius:999px; background:var(--rim); margin-top:6px; overflow:visible;}
+.pccn-bar-fill{height:100%; border-radius:999px; transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.pccn-bar-min{position:absolute; top:-3px; width:2px; height:13px; background:var(--text2); border-radius:1px; opacity:.7;}
+.pccn-edit{margin-top:14px; font-size:12px; color:var(--text3);}
+.pccn-edit summary{cursor:pointer; width:max-content;}
+.pccn-edit-row{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
+.pccn-edit-row label{display:flex; align-items:center; gap:6px; color:var(--text2);}
+.pccn-edit-row input{width:72px; background:rgba(11,21,48,0.6); color:var(--text); border:1px solid var(--border2); border-radius:8px; padding:4px 8px; font:inherit; font-size:12px;}
+.pccn-edit-note{margin-top:6px;}
+@media (max-width: 760px){ .pccn-body{grid-template-columns:1fr; gap:16px;} }
+
 /* Menu button: always a visible way back to the side menu */
 .menu-btn{display:none; align-items:center; gap:8px; margin-right:12px; padding:7px 14px 7px 11px; border-radius:999px;
   border:1px solid var(--border2); background:rgba(23,38,71,0.75); color:var(--text); font:inherit; font-size:13px; cursor:pointer;
@@ -2038,18 +2060,26 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
           </div>
 
           <!-- PCCN RENEWAL TRACKER -->
-          <div class="briefing-widget">
-            <div class="briefing-widget-title">PCCN Renewal · due Dec 31</div>
-            <div class="briefing-widget-main" id="pccnRemaining">—</div>
-            <div class="briefing-widget-sub" id="pccnSub">Category A CERPs to go</div>
-            <div class="nti-progress"><div class="nti-progress-fill" id="pccnProgressFill"></div></div>
-            <div class="briefing-widget-detail" id="pccnDetail">Loading…</div>
-            <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2);margin-top:2px;">
-              Cat A done since Oct 23:
-              <input type="number" id="pccnDoneInput" min="0" max="60" step="0.25" value="0"
-                     onchange="savePCCNProgress(this.value)"
-                     style="width:64px;background:var(--navy2,transparent);color:var(--text);border:0.5px solid var(--border2);border-radius:6px;padding:3px 6px;font-size:11px;"/>
-            </label>
+          <div class="briefing-widget pccn-card">
+            <div class="briefing-widget-title">PCCN renewal · Direct Care pathway · due Dec 31</div>
+            <div class="pccn-body">
+              <div class="pccn-total">
+                <div class="briefing-widget-main" id="pccnRemaining">—</div>
+                <div class="briefing-widget-sub" id="pccnSub">CERPs to go</div>
+                <div class="pccn-ring-note" id="pccnTotalLine"></div>
+                <div class="briefing-widget-detail" id="pccnDetail">Loading…</div>
+              </div>
+              <div class="pccn-cats" id="pccnCats"></div>
+            </div>
+            <details class="pccn-edit">
+              <summary>Update totals here</summary>
+              <div class="pccn-edit-row">
+                <label>A <input type="number" id="pccnInA" min="0" step="0.25" onchange="savePCCNProgress()"/></label>
+                <label>B <input type="number" id="pccnInB" min="0" step="0.25" onchange="savePCCNProgress()"/></label>
+                <label>C <input type="number" id="pccnInC" min="0" step="0.25" onchange="savePCCNProgress()"/></label>
+              </div>
+              <div class="pccn-edit-note">Saved in this browser only. Telling Claude updates Gemma Notes, which takes priority.</div>
+            </details>
           </div>
 
         </div>
@@ -3747,74 +3777,100 @@ function notesForPrompt() {
 }
 
 // ── PCCN RENEWAL TRACKER ──
-// Baseline set Oct 23 2026: ~60 Category A CERPs still needed.
-// Hours are logged on the AACN transcript; enter the running total here.
+// AACN PCCN renewal, Direct Care pathway: 100 Synergy CERPs in the 3-year cycle,
+// with at least 60 in Category A, 10 in B and 10 in C; the rest can be any category.
+// Totals come from Gemma Notes ("PCCN CERPs: A x, B y, C z") or the manual fields.
 const PCCN = {
-  needA:    60,
-  start:    new Date('2026-10-23T00:00:00'),
+  total: 100, min: { A: 60, B: 10, C: 10 },
+  baseline: { A: 7.5, B: 6.75, C: 9, date: new Date('2026-10-24T00:00:00') },
   target:   new Date('2026-12-15T00:00:00'),   // finish early, leave a buffer
   deadline: new Date('2026-12-31T23:59:59'),
-  storeKey: 'gemma_pccn_cat_a_done'
+  storeKey: 'gemma_pccn_abc'
 };
+const PCCN_LABELS = {
+  A: 'Clinical judgment',
+  B: 'Advocacy, caring, diversity, facilitation of learning',
+  C: 'Collaboration, systems thinking, clinical inquiry'
+};
+const PCCN_COLORS = { A: 'var(--signal)', B: 'var(--iris)', C: 'var(--ember)' };
 
-function getPCCNDone() {
-  const m = gemmaNotes.text && gemmaNotes.text.match(/CERPs done since Oct 23, 2026:\s*([\d.]+)\s*of\s*60/i);
-  if (m) return Math.max(0, parseFloat(m[1]) || 0);
-  try { return Math.max(0, parseFloat(localStorage.getItem(PCCN.storeKey)) || 0); }
-  catch(e) { return 0; }
+function getPCCNTotals() {
+  const m = gemmaNotes.text && gemmaNotes.text.match(/PCCN CERPs[^:\n]*:\s*A\s*([\d.]+)\s*[,;]\s*B\s*([\d.]+)\s*[,;]\s*C\s*([\d.]+)/i);
+  if (m) return { A: +m[1] || 0, B: +m[2] || 0, C: +m[3] || 0, source: 'notes' };
+  try {
+    const v = JSON.parse(localStorage.getItem(PCCN.storeKey) || 'null');
+    if (v && typeof v.A === 'number') return { A: v.A, B: v.B, C: v.C, source: 'browser' };
+  } catch(e) {}
+  return { A: PCCN.baseline.A, B: PCCN.baseline.B, C: PCCN.baseline.C, source: 'baseline' };
 }
 
-function savePCCNProgress(val) {
-  const n = Math.min(PCCN.needA, Math.max(0, parseFloat(val) || 0));
-  try { localStorage.setItem(PCCN.storeKey, String(n)); } catch(e) {}
+function savePCCNProgress() {
+  const val = id => Math.max(0, parseFloat(document.getElementById(id).value) || 0);
+  const v = { A: val('pccnInA'), B: val('pccnInB'), C: val('pccnInC') };
+  try { localStorage.setItem(PCCN.storeKey, JSON.stringify(v)); } catch(e) {}
   updatePCCNTracker();
-  updateRegentWidget();
 }
 
 function getPCCNStatus() {
-  const msDay = 1000 * 60 * 60 * 24;
+  const msDay = 86400000;
   const today = new Date(); today.setHours(0,0,0,0);
-  const done  = getPCCNDone();
-  const left  = Math.max(0, PCCN.needA - done);
+  const t = getPCCNTotals();
+  const done = +(t.A + t.B + t.C).toFixed(2);
+  const need = { A: Math.max(0, PCCN.min.A - t.A), B: Math.max(0, PCCN.min.B - t.B), C: Math.max(0, PCCN.min.C - t.C) };
+  const needMins = need.A + need.B + need.C;
+  const left = +Math.max(0, PCCN.total - done, needMins).toFixed(2);
+  const flexible = +Math.max(0, left - needMins).toFixed(2);       // can be any category
   const daysToDeadline = Math.ceil((PCCN.deadline - today) / msDay);
   const daysToTarget   = Math.ceil((PCCN.target - today) / msDay);
   const weeksToTarget  = Math.max(daysToTarget / 7, 0);
   const perWeek = left === 0 ? 0 : (weeksToTarget >= 1 ? left / weeksToTarget : left);
-  // Where you "should" be if pacing evenly from Oct 23 to Dec 15
-  const totalSpan = (PCCN.target - PCCN.start) / msDay;
-  const elapsed   = Math.min(totalSpan, Math.max(0, (today - PCCN.start) / msDay));
-  const expected  = PCCN.needA * (elapsed / totalSpan);
-  const behind    = done + 0.01 < expected - 3;   // more than ~3 CERPs behind even pace
-  return { done, left, daysToDeadline, daysToTarget, perWeek, expected, behind };
+  const base = PCCN.baseline.A + PCCN.baseline.B + PCCN.baseline.C;
+  const span = (PCCN.target - PCCN.baseline.date) / msDay;
+  const elapsed = Math.min(span, Math.max(0, (today - PCCN.baseline.date) / msDay));
+  const expected = base + (PCCN.total - base) * (elapsed / span);
+  const behind = done + 0.01 < expected - 3;
+  return { totals: t, done, need, needMins, left, flexible, daysToDeadline, daysToTarget, perWeek, expected, behind };
 }
 
+function fmtH(n) { return (Math.round(n * 100) / 100).toLocaleString(); }
+
 function updatePCCNTracker() {
-  const st = getPCCNStatus();
-  const input = document.getElementById('pccnDoneInput');
-  if (input && document.activeElement !== input) input.value = st.done;
-  const pct = Math.min(100, (st.done / PCCN.needA) * 100);
-  document.getElementById('pccnProgressFill').style.width = pct + '%';
+  const st = getPCCNStatus(), t = st.totals;
+  ['A','B','C'].forEach(k => { const el = document.getElementById('pccnIn' + k); if (el && document.activeElement !== el) el.value = t[k]; });
 
   const main = document.getElementById('pccnRemaining');
   const sub  = document.getElementById('pccnSub');
+  const line = document.getElementById('pccnTotalLine');
   const det  = document.getElementById('pccnDetail');
+  if (!main) return;
 
   if (st.left === 0) {
     main.textContent = '✓';
-    sub.textContent  = 'Category A complete — submit renewal';
-    det.textContent  = st.daysToDeadline + ' days to Dec 31 deadline';
-    return;
-  }
-  main.textContent = (Math.round(st.left * 4) / 4).toLocaleString();
-  sub.textContent  = 'Category A CERPs to go';
-  if (st.daysToDeadline < 0) {
-    det.textContent = 'Deadline passed — check AACN inactive-status options';
-  } else if (st.daysToTarget <= 0) {
-    det.textContent = 'Past Dec 15 target · ' + st.daysToDeadline + ' days to deadline';
+    sub.textContent  = 'All requirements met. Submit your renewal.';
+    line.textContent = fmtH(st.done) + ' of 100 CERPs';
+    det.textContent  = st.daysToDeadline + ' days to the Dec 31 deadline';
   } else {
-    det.textContent = '~' + st.perWeek.toFixed(1) + '/wk to finish by Dec 15 · ' +
-      st.daysToDeadline + ' days to deadline' + (st.behind ? ' · BEHIND PACE' : '');
+    main.textContent = fmtH(st.left);
+    sub.textContent  = 'CERPs to go';
+    line.textContent = fmtH(st.done) + ' of 100 done' + (st.flexible ? ' · ' + fmtH(st.flexible) + ' can be any category' : '');
+    det.textContent  = st.daysToDeadline < 0 ? 'Deadline passed. Check AACN inactive-status options.'
+      : st.daysToTarget <= 0 ? 'Past the Dec 15 target · ' + st.daysToDeadline + ' days to deadline'
+      : '~' + st.perWeek.toFixed(1) + ' a week to finish by Dec 15' + (st.behind ? ' · behind pace' : '');
+    det.style.color = st.behind ? 'var(--amber)' : '';
   }
+
+  // One bar per category, scaled to the larger of the minimum and what you have; tick marks the minimum
+  const cats = document.getElementById('pccnCats');
+  if (cats) cats.innerHTML = ['A','B','C'].map(k => {
+    const have = t[k], min = PCCN.min[k], scale = Math.max(min, have) * 1.08;
+    const met = have >= min;
+    return `<div class="pccn-cat">
+      <div class="pccn-cat-head"><span class="pc-name"><strong>${k}</strong>${PCCN_LABELS[k]}</span>
+        <span class="pc-val ${met ? 'pc-met' : ''}">${fmtH(have)} / ${min} min${met ? ' ✓' : ' · ' + fmtH(min - have) + ' to go'}</span></div>
+      <div class="pccn-bar"><div class="pccn-bar-fill" style="width:${Math.min(100, have / scale * 100)}%;background:${PCCN_COLORS[k]};"></div>
+        <div class="pccn-bar-min" style="left:${min / scale * 100}%;" title="Minimum ${min}"></div></div>
+    </div>`;
+  }).join('');
 }
 
 // ── REGENT COURSEWORK (Fall 2026 Session B, Oct 26 – Dec 19) ──
@@ -4116,9 +4172,10 @@ async function generateBriefingManual() {
       + (regent.wk ? ` | EFND 706 ${regent.wk.n} readings: ${regent.wk.r}` : '')
       + (regent.before ? ' | Classes have not started yet (start Mon Oct 26).' : '');
   const pccn = getPCCNStatus();
+  const pt = pccn.totals;
   const pccnSummary = pccn.left === 0
-    ? `All 60 Category A CERPs complete; renewal application still to submit (${pccn.daysToDeadline} days to Dec 31 deadline)`
-    : `${pccn.done} of 60 Category A CERPs done since Oct 23; ${pccn.left} to go; ${pccn.daysToDeadline} days to the Dec 31 deadline; target finish Dec 15 needs ~${pccn.perWeek.toFixed(1)} per week; ${pccn.behind ? 'BEHIND even pace (expected ~' + Math.round(pccn.expected) + ' by now)' : 'on or ahead of pace'}`;
+    ? `All PCCN renewal requirements met (A ${pt.A}, B ${pt.B}, C ${pt.C}; ${pccn.done} of 100). Renewal application still to submit; ${pccn.daysToDeadline} days to the Dec 31 deadline.`
+    : `Direct Care pathway: 100 CERPs total with minimums A 60, B 10, C 10. Current A ${pt.A}, B ${pt.B}, C ${pt.C} = ${pccn.done} of 100. Still needed: ${pccn.left} total, including at least A ${pccn.need.A}, B ${pccn.need.B}, C ${pccn.need.C}; the other ${pccn.flexible} can be any category. ${pccn.daysToDeadline} days to the Dec 31 deadline; finishing by Dec 15 needs ~${pccn.perWeek.toFixed(1)} per week; ${pccn.behind ? 'BEHIND even pace (expected ~' + Math.round(pccn.expected) + ' by now)' : 'on or ahead of pace'}.`;
 
   const weatherSummary = weatherData
     ? `${weatherData.icon} ${weatherData.temp}°F — ${weatherData.desc}, wind ${weatherData.wind} mph`
@@ -4144,7 +4201,7 @@ BRIEFING STRUCTURE — include each section clearly:
 1. GREETING — warm, personal, time-appropriate opening (2-3 sentences)
 ${incWx ? '2. WEATHER — brief practical note on the weather today (1-2 sentences)' : ''}
 ${incPri ? '3. PRIORITIES — prioritized task list with brief reasoning (3-5 bullet points)' : ''}
-${incPCCN ? `4. PCCN RENEWAL — state the Category A CERPs remaining, days to the Dec 31 deadline, and this week\'s pace target. If behind pace, say so plainly and suggest one concrete AACN Category A activity he could finish today (e.g., a free AACN online CE or a module of the Adult CCRN review course, which double-counts as CCRN prep). No cheerleading — be direct (2-3 sentences)` : ''}
+${incPCCN ? `4. PCCN RENEWAL — state total CERPs remaining, which category minimums are still open (A, B, C), days to the Dec 31 deadline, and this week\'s pace target. Point out that the flexible remainder can be Category A, which is easiest to find. If behind pace, say so plainly and suggest one concrete activity for the most-needed category (for A: a free AACN online CE or a module of the Adult CCRN review course, which double-counts as CCRN prep). No cheerleading — be direct (2-3 sentences)` : ''}
 ${incRes ? '5. DOCTORAL CORNER — first state what is due at Regent today and in the next few days, from the Regent coursework context above, with exact dates; flag anything due today or tomorrow first. Then one specific, actionable doctoral tip related to his PhD coursework at Regent and his research interest in cognitive offloading and clinical judgment (3-4 sentences)' : ''}
 ${incNurs ? '6. NURSING INSIGHT — one current, evidence-based nursing education thought or clinical education tip (2-3 sentences)' : ''}
 ${incQuote ? '7. SCHOLARLY QUOTE — one inspiring quote from an educational psychologist, nursing theorist, or educator with attribution' : ''}
