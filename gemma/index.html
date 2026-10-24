@@ -2150,6 +2150,9 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
                   <input type="checkbox" id="briefIncludePCCN" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Include PCCN renewal tracker
                 </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludeCNE" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Include CNE exam plan
+                </label>
               </div>
             </div>
           </div>
@@ -3776,6 +3779,36 @@ function notesForPrompt() {
     : '';
 }
 
+// ── CNE EXAM PLAN ──
+// NLN Certified Nurse Educator. Default dates from the plan Claude built Oct 24, 2026.
+// If the "CNE certification:" line in Gemma Notes says something different, the notes win.
+const CNE_PHASES = [
+  { start: '2026-10-24', end: '2026-12-20', name: 'Setup only (PCCN comes first)',
+    next: 'Confirm eligibility route A or B from the MSN transcript; ask whether CCCC has an NLN agency membership. No studying yet.' },
+  { start: '2026-12-21', end: '2026-12-23', name: 'Baseline',
+    next: 'Take NLN SAE Form C timed, cold, and score each of the 8 content areas.' },
+  { start: '2026-12-24', end: '2027-01-10', name: 'Core study (winter break, 8-10 h/week)',
+    next: 'Facilitate Learning first (36% of scored items), then the two weakest baseline areas.' },
+  { start: '2027-01-11', end: '2027-02-21', name: 'Semester pace (4-5 h/week)',
+    next: '25-30 practice items a week with rationales. Feb 8 gate: apply to NLN if practice runs ~75%+ in Facilitate Learning.' },
+  { start: '2027-02-22', end: '2027-03-14', name: 'Final review',
+    next: 'SAE Form D timed around Feb 22; one full 150-item timed practice exam by early March; repair weak areas only.' },
+  { start: '2027-03-15', end: '2027-03-20', name: 'Exam week',
+    next: 'Sit the CNE. Bring government photo ID that matches the registration exactly.' }
+];
+const CNE = { exam: '2027-03-15', apply: '2027-02-08' };
+
+function getCNEStatus() {
+  const msDay = 86400000;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = s => new Date(s + 'T00:00:00');
+  const phase = CNE_PHASES.find(p => today >= d(p.start) && today <= d(p.end));
+  const daysToExam = Math.ceil((d(CNE.exam) - today) / msDay);
+  const daysToApply = Math.ceil((d(CNE.apply) - today) / msDay);
+  const notesLine = ((gemmaNotes.text || '').split('\n').find(l => /^\s*CNE certification\s*:/i.test(l)) || '').trim();
+  return { phase, daysToExam, daysToApply, after: today > d(CNE_PHASES.at(-1).end), notesLine };
+}
+
 // ── PCCN RENEWAL TRACKER ──
 // AACN PCCN renewal, Direct Care pathway: 100 Synergy CERPs in the 3-year cycle,
 // with at least 60 in Category A, 10 in B and 10 in C; the rest can be any category.
@@ -4143,6 +4176,7 @@ async function generateBriefingManual() {
   const incNurs   = document.getElementById('briefIncludeNursing').checked;
   const incWx     = document.getElementById('briefIncludeWeather').checked;
   const incPCCN   = document.getElementById('briefIncludePCCN').checked;
+  const incCNE    = document.getElementById('briefIncludeCNE').checked;
   const doSpeak   = document.getElementById('briefSpeak').checked;
 
   document.getElementById('briefingLoading').style.display = 'block';
@@ -4177,6 +4211,14 @@ async function generateBriefingManual() {
     ? `All PCCN renewal requirements met (A ${pt.A}, B ${pt.B}, C ${pt.C}; ${pccn.done} of 100). Renewal application still to submit; ${pccn.daysToDeadline} days to the Dec 31 deadline.`
     : `Direct Care pathway: 100 CERPs total with minimums A 60, B 10, C 10. Current A ${pt.A}, B ${pt.B}, C ${pt.C} = ${pccn.done} of 100. Still needed: ${pccn.left} total, including at least A ${pccn.need.A}, B ${pccn.need.B}, C ${pccn.need.C}; the other ${pccn.flexible} can be any category. ${pccn.daysToDeadline} days to the Dec 31 deadline; finishing by Dec 15 needs ~${pccn.perWeek.toFixed(1)} per week; ${pccn.behind ? 'BEHIND even pace (expected ~' + Math.round(pccn.expected) + ' by now)' : 'on or ahead of pace'}.`;
 
+  const cne = getCNEStatus();
+  const cneSummary = cne.after
+    ? 'Exam week (Mar 15-20, 2027) has passed; check Gemma Notes for the result.'
+    : `Target exam week of Mar 15, 2027 (${cne.daysToExam} days). ` +
+      (cne.daysToApply > 0 ? `Submit NLN application about Feb 8 (${cne.daysToApply} days); the 90-day testing window starts at approval. ` : 'Application should be submitted by now. ') +
+      (cne.phase ? `Current phase: ${cne.phase.name}. Next action: ${cne.phase.next}` : '') +
+      (cne.notesLine ? ` | Gemma Notes line: ${cne.notesLine}` : '');
+
   const weatherSummary = weatherData
     ? `${weatherData.icon} ${weatherData.temp}°F — ${weatherData.desc}, wind ${weatherData.wind} mph`
     : 'Weather data unavailable';
@@ -4191,17 +4233,18 @@ CONTEXT:
 - Tasks today: ${tasks || 'None specified — give general encouragement'}
 - Deadlines/appointments: ${deadlines || 'None specified'}
 - APA library references: ${refCount}
-${incPCCN ? `- PCCN renewal: ${pccnSummary}\n` : ''}- Regent coursework (next 7 days): ${regentSummary}
+${incPCCN ? `- PCCN renewal: ${pccnSummary}\n` : ''}${incCNE ? `- CNE certification (NLN): ${cneSummary}\n` : ''}- Regent coursework (next 7 days): ${regentSummary}
 ${notesForPrompt()}
 ${incWx ? `- Weather: ${weatherSummary}` : ''}
 
-If GEMMA NOTES are present, use them: fold their current status and recent log entries into PRIORITIES, PCCN and DOCTORAL CORNER, and prefer them over any figure above that they contradict.
+If GEMMA NOTES are present, use them: fold their current status and recent log entries into PRIORITIES, PCCN, CNE and DOCTORAL CORNER, and prefer them over any figure above that they contradict.
 
 BRIEFING STRUCTURE — include each section clearly:
 1. GREETING — warm, personal, time-appropriate opening (2-3 sentences)
 ${incWx ? '2. WEATHER — brief practical note on the weather today (1-2 sentences)' : ''}
 ${incPri ? '3. PRIORITIES — prioritized task list with brief reasoning (3-5 bullet points)' : ''}
 ${incPCCN ? `4. PCCN RENEWAL — state total CERPs remaining, which category minimums are still open (A, B, C), days to the Dec 31 deadline, and this week\'s pace target. Point out that the flexible remainder can be Category A, which is easiest to find. If behind pace, say so plainly and suggest one concrete activity for the most-needed category (for A: a free AACN online CE or a module of the Adult CCRN review course, which double-counts as CCRN prep). No cheerleading — be direct (2-3 sentences)` : ''}
+${incCNE ? '4b. CNE CERTIFICATION — one or two sentences: days to the exam week, the current phase and its next action. Before Dec 21, keep it to one line and do not suggest CNE studying, because PCCN renewal comes first. From Jan 11 on, mention the Feb 8 application gate. No cheerleading.' : ''}
 ${incRes ? '5. DOCTORAL CORNER — first state what is due at Regent today and in the next few days, from the Regent coursework context above, with exact dates; flag anything due today or tomorrow first. Then one specific, actionable doctoral tip related to his PhD coursework at Regent and his research interest in cognitive offloading and clinical judgment (3-4 sentences)' : ''}
 ${incNurs ? '6. NURSING INSIGHT — one current, evidence-based nursing education thought or clinical education tip (2-3 sentences)' : ''}
 ${incQuote ? '7. SCHOLARLY QUOTE — one inspiring quote from an educational psychologist, nursing theorist, or educator with attribution' : ''}
