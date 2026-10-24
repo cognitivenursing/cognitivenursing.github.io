@@ -2441,9 +2441,9 @@ function unlockAmeliaAudio() {
   if (p && p.then) p.then(() => { ameliaUnlocked = true; if (ameliaAudio.src === SILENT_WAV) ameliaAudio.pause(); }).catch(() => {});
   else ameliaUnlocked = true;
 }
-ameliaAudio.addEventListener('playing', () => { if (ameliaAudio.src !== SILENT_WAV) orbSetState('speaking'); });
+ameliaAudio.addEventListener('playing', () => { if (ameliaAudio.src !== SILENT_WAV) { orbSetState('speaking'); if (typeof pauseWakeWord === 'function') pauseWakeWord(); } });
 ['ended','pause'].forEach(ev => ameliaAudio.addEventListener(ev, () => {
-  if (ameliaAudio.src !== SILENT_WAV && !window.speechSynthesis.speaking) orbSetState(micActive ? 'listening' : 'idle');
+  if (ameliaAudio.src !== SILENT_WAV && !window.speechSynthesis.speaking) { orbSetState(micActive ? 'listening' : 'idle'); if (typeof resumeWakeWord === 'function' && !micActive) resumeWakeWord(); }
 }));
 ['pointerdown','keydown','touchstart'].forEach(ev =>
   document.addEventListener(ev, unlockAmeliaAudio, { capture: true, passive: true }));
@@ -2681,6 +2681,7 @@ async function speak(text) {
   if (selVoice) u.voice = selVoice;
   u.rate = VOICE_RATE; u.pitch = VOICE_PITCH; u.volume = VOICE_VOL;
   u.onboundary = () => { ORB.kick = 0.85; };
+  pauseWakeWord();
   u.onstart = () => {
     document.getElementById('micBtn').classList.add('speaking');
     setVS('speaking', 'Gemma speaking…');
@@ -2688,7 +2689,7 @@ async function speak(text) {
   };
   u.onend = () => {
     document.getElementById('micBtn').classList.remove('speaking');
-    setTimeout(() => { if (!ameliaIsTalking()) orbSetState(micActive ? 'listening' : 'idle'); }, 50);
+    setTimeout(() => { if (!ameliaIsTalking()) { orbSetState(micActive ? 'listening' : 'idle'); if (!micActive) resumeWakeWord(); } }, 50);
     if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
     else setVS('', 'ready');
   };
@@ -2779,6 +2780,16 @@ async function initMic() {
 }
 
 function onSpeech(e) {
+  if (!wakeDebounce) {
+    let heard = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) heard += ' ' + e.results[i][0].transcript;
+    if (isWakePhrase(heard)) {
+      wakeDebounce = true; setTimeout(() => { wakeDebounce = false; }, 5000);
+      finalTx = ''; interimTx = ''; document.getElementById('chatInp').value = '';
+      triggerMorningBriefing();
+      return;
+    }
+  }
   interimTx = '';
   for (let i = e.resultIndex; i < e.results.length; i++) {
     if (e.results[i].isFinal) finalTx += e.results[i][0].transcript + ' ';
@@ -2806,7 +2817,9 @@ function startMic() {
   document.getElementById('micBtn').classList.add('listening');
   setVS('listening', 'listening…');
   document.getElementById('micHint').textContent = 'speaking — pause to send';
-  if (recognition) try { recognition.start(); } catch(e) {}
+  pauseWakeWord();                                   // one recognizer at a time
+  setWakePill('off', 'Wake-up paused while the mic is on');
+  if (recognition) setTimeout(() => { if (micActive) try { recognition.start(); } catch(e) {} }, 250);
   animWave();
 }
 
@@ -2816,6 +2829,7 @@ function stopMic() {
   setVS('', 'mic off');
   document.getElementById('micHint').textContent = 'click mic to activate';
   if (recognition) try { recognition.stop(); } catch(e) {}
+  resumeWakeWord();
   cancelAnimationFrame(waveFrame);
   wbars.forEach(b => { b.style.height = '2px'; b.style.background = 'var(--border2)'; });
 }
@@ -3848,28 +3862,85 @@ function updateDateTimeWidget() {
 }
 
 // ── WAKE WORD ──
-let wakeWordActive  = false;
+// One phrase-spotter that stays honest: the pill says whether it is really listening.
+// Browsers allow only one speech recognizer at a time, so it steps aside while the
+// chat mic is on (the chat recognizer checks for the phrase itself) and while Amelia talks.
+let wakeWordActive  = false;      // user wants wake word on
 let wakeRecognition = null;
+let wakeRunning     = false;      // recognizer actually running
+let wakeNeedsClick  = false;
+let wakeRestartTimer = null;
+
+const WAKE_RE = /\b(good\s*morning|morning|hey|hi|ok(ay)?)[\s,.!]*(gemma|jemma|gema|jemmah|gemma's|emma)\b/;
+function isWakePhrase(text) {
+  const t = String(text || '').toLowerCase().replace(/[^a-z\s']/g, ' ').replace(/\s+/g, ' ');
+  return WAKE_RE.test(t);
+}
+
+function setWakePill(state, label) {
+  const ind = document.getElementById('wakeIndicator');
+  if (!ind) return;
+  ind.style.display = 'flex';
+  ind.classList.toggle('active', state === 'on');
+  ind.style.opacity = state === 'off' ? '0.75' : '1';
+  ind.style.pointerEvents = state === 'click' ? 'auto' : 'none';
+  ind.style.cursor = state === 'click' ? 'pointer' : 'default';
+  const lab = document.getElementById('wakeLabel');
+  if (lab) lab.textContent = label;
+}
+
+function wakeCanRun() { return wakeWordActive && !micActive && !(typeof ameliaIsTalking === 'function' && ameliaIsTalking()); }
 
 function startWakeWord() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return;
-  wakeRecognition = new SR();
-  wakeRecognition.continuous   = true;
-  wakeRecognition.interimResults = true;
-  wakeRecognition.lang         = 'en-US';
-  wakeRecognition.onresult     = checkWakeWord;
-  wakeRecognition.onend        = () => { if (wakeWordActive) try { wakeRecognition.start(); } catch(e) {} };
-  wakeRecognition.onerror      = () => {};
-  try { wakeRecognition.start(); } catch(e) {}
+  if (!SR) { setWakePill('off', 'Voice wake-up is not supported in this browser'); return; }
   wakeWordActive = true;
-  const ind = document.getElementById('wakeIndicator');
-  if (ind) { ind.style.display = 'flex'; ind.classList.add('active'); }
+  if (!wakeRecognition) {
+    wakeRecognition = new SR();
+    wakeRecognition.continuous     = true;
+    wakeRecognition.interimResults = true;
+    wakeRecognition.lang           = 'en-US';
+    wakeRecognition.onstart  = () => { wakeRunning = true; wakeNeedsClick = false; setWakePill('on', 'listening for "Good morning Gemma"'); };
+    wakeRecognition.onresult = checkWakeWord;
+    wakeRecognition.onerror  = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        wakeNeedsClick = true;
+        setWakePill('click', 'Click here to turn on "Good morning Gemma"');
+      } else if (e.error === 'audio-capture') {
+        setWakePill('off', 'Microphone not available for wake-up');
+      }
+      // no-speech / aborted / network: onend restarts quietly
+    };
+    wakeRecognition.onend = () => {
+      wakeRunning = false;
+      clearTimeout(wakeRestartTimer);
+      if (wakeCanRun() && !wakeNeedsClick) wakeRestartTimer = setTimeout(wakeTryStart, 300);
+      else if (wakeWordActive && micActive) setWakePill('off', 'Wake-up paused while the mic is on');
+    };
+  }
+  wakeTryStart();
 }
+
+function wakeTryStart() {
+  if (!wakeRecognition || wakeRunning || !wakeCanRun()) return;
+  try { wakeRecognition.start(); }
+  catch(e) { if (!wakeRunning) { wakeNeedsClick = true; setWakePill('click', 'Click here to turn on "Good morning Gemma"'); } }
+}
+
+// Any click or key press can (re)start it — Safari needs one before it will listen
+['pointerdown','keydown'].forEach(ev => document.addEventListener(ev, () => {
+  if (wakeWordActive && !wakeRunning && wakeCanRun()) { wakeNeedsClick = false; wakeTryStart(); }
+}, { capture: true, passive: true }));
+
+function pauseWakeWord() {
+  clearTimeout(wakeRestartTimer);
+  if (wakeRecognition && wakeRunning) try { wakeRecognition.abort(); } catch(e) {}
+}
+function resumeWakeWord() { if (wakeWordActive) { clearTimeout(wakeRestartTimer); wakeRestartTimer = setTimeout(wakeTryStart, 400); } }
 
 function stopWakeWord() {
   wakeWordActive = false;
-  if (wakeRecognition) try { wakeRecognition.stop(); } catch(e) {}
+  pauseWakeWord();
   const ind = document.getElementById('wakeIndicator');
   if (ind) { ind.style.display = 'none'; ind.classList.remove('active','triggered'); }
 }
@@ -3878,16 +3949,19 @@ let wakeDebounce = false;
 function checkWakeWord(e) {
   if (wakeDebounce) return;
   let transcript = '';
-  for (let i = e.resultIndex; i < e.results.length; i++) {
-    transcript += e.results[i][0].transcript.toLowerCase();
-  }
-  const triggers = ['good morning gemma', 'morning gemma', 'good morning, gemma', 'hey gemma good morning'];
-  if (triggers.some(t => transcript.includes(t))) {
+  for (let i = 0; i < e.results.length; i++) transcript += ' ' + e.results[i][0].transcript;
+  if (isWakePhrase(transcript)) {
     wakeDebounce = true;
     setTimeout(() => { wakeDebounce = false; }, 5000);
+    try { wakeRecognition.abort(); } catch(err) {}      // clear what it heard
     triggerMorningBriefing();
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ind = document.getElementById('wakeIndicator');
+  if (ind) ind.addEventListener('click', () => { wakeNeedsClick = false; wakeTryStart(); });
+});
 
 function triggerMorningBriefing() {
   const ind = document.getElementById('wakeIndicator');
@@ -3905,7 +3979,7 @@ function triggerMorningBriefing() {
     setTimeout(() => {
       ind.classList.remove('triggered');
       ind.classList.add('active');
-      document.getElementById('wakeLabel').textContent = 'listening for "Good morning Gemma"';
+      if (wakeRunning) setWakePill('on', 'listening for "Good morning Gemma"');
     }, 4000);
   }
   // Switch to briefing panel and generate
