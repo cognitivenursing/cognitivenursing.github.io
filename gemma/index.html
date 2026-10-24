@@ -2354,6 +2354,23 @@ function resolveVoice() {
   selVoice = v || null;
 }
 
+// Amelia's audio player. Browsers only allow audio that starts from a click or key press;
+// the briefing speaks after a long wait, so the player is unlocked on the first
+// interaction and reused for every clip.
+const ameliaAudio = new Audio();
+ameliaAudio.preload = 'auto';
+let ameliaUnlocked = false;
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+function unlockAmeliaAudio() {
+  if (ameliaUnlocked) return;
+  ameliaAudio.src = SILENT_WAV;
+  const p = ameliaAudio.play();
+  if (p && p.then) p.then(() => { ameliaUnlocked = true; ameliaAudio.pause(); }).catch(() => {});
+  else ameliaUnlocked = true;
+}
+['pointerdown','keydown','touchstart'].forEach(ev =>
+  document.addEventListener(ev, unlockAmeliaAudio, { capture: true, passive: true }));
+
 async function speak(text) {
   if (!autoSpeak || !text) return;
   window.speechSynthesis.cancel();
@@ -2380,7 +2397,9 @@ async function speak(text) {
       if (resp.ok) {
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
+        const audio = ameliaAudio;
+        audio.pause();
+        audio.src = url;
         audio.onended = () => {
           document.getElementById('micBtn').classList.remove('speaking');
           URL.revokeObjectURL(url);
@@ -2410,6 +2429,8 @@ async function speak(text) {
     document.getElementById('micBtn').classList.remove('speaking');
   }
 
+  if (!session) ameliaNotice('Amelia unavailable: you are not signed in to Gemma\'s server. Sign out and back in. Using the browser voice.');
+
   // Fallback to browser TTS
   if (!selVoice) resolveVoice();
   const u = new SpeechSynthesisUtterance(text);
@@ -2429,10 +2450,26 @@ async function speak(text) {
 }
 
 let lastAmeliaNotice = '';
+function showAmeliaToast(msg) {
+  let t = document.getElementById('ameliaToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'ameliaToast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:min(560px,calc(100vw - 32px));font-size:12px;font-family:var(--font-mono);color:var(--amber);background:var(--amber-bg,#2a2010);border:0.5px solid rgba(242,184,92,0.45);border-radius:10px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,0.35);cursor:pointer;';
+    t.onclick = () => { t.style.display = 'none'; };
+    document.body.appendChild(t);
+  }
+  t.textContent = msg + '  (click to dismiss)';
+  t.style.display = 'block';
+  clearTimeout(showAmeliaToast.timer);
+  showAmeliaToast.timer = setTimeout(() => { t.style.display = 'none'; }, 12000);
+}
+
 function ameliaNotice(msg) {
   console.warn(msg);
   if (msg === lastAmeliaNotice) return;   // show each problem once per session
   lastAmeliaNotice = msg;
+  showAmeliaToast(msg);
   const msgs = document.getElementById('msgs');
   if (!msgs) return;
   const n = document.createElement('div');
