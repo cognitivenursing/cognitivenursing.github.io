@@ -1966,6 +1966,27 @@ body{
             <div class="briefing-widget-detail" id="briefLibraryCount">Visit APA Library to add sources</div>
           </div>
 
+          <!-- PCCN RENEWAL TRACKER -->
+          <div class="briefing-widget">
+            <div class="briefing-widget-title">PCCN Renewal · due Dec 31</div>
+            <div class="briefing-widget-main" id="pccnRemaining">—</div>
+            <div class="briefing-widget-sub" id="pccnSub">Category A CERPs to go</div>
+            <div class="nti-progress"><div class="nti-progress-fill" id="pccnProgressFill"></div></div>
+            <div class="briefing-widget-detail" id="pccnDetail">Loading…</div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2);margin-top:2px;">
+              Cat A done since Oct 23:
+              <input type="number" id="pccnDoneInput" min="0" max="60" step="0.25" value="0"
+                     onchange="savePCCNProgress(this.value)"
+                     style="width:64px;background:var(--navy2,transparent);color:var(--text);border:0.5px solid var(--border2);border-radius:6px;padding:3px 6px;font-size:11px;"/>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- REGENT THIS WEEK -->
+        <div class="briefing-widget" style="margin-bottom:20px;">
+          <div class="briefing-widget-title">This Week at Regent · EDU 600 &amp; EFND 706</div>
+          <div id="regentWeek" style="font-size:12.5px;color:var(--text2);line-height:1.6;">Loading…</div>
         </div>
 
         <!-- TASKS INPUT -->
@@ -2014,6 +2035,9 @@ body{
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
                   <input type="checkbox" id="briefIncludeWeather" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Include weather summary
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+                  <input type="checkbox" id="briefIncludePCCN" checked style="accent-color:var(--teal2);width:14px;height:14px;"/> Include PCCN renewal tracker
                 </label>
               </div>
             </div>
@@ -3248,6 +3272,175 @@ function weatherCodeToDesc(code) {
   return { icon: '🌡️', desc: 'Unknown' };
 }
 
+// ── PCCN RENEWAL TRACKER ──
+// Baseline set Oct 23 2026: ~60 Category A CERPs still needed.
+// Hours are logged on the AACN transcript; enter the running total here.
+const PCCN = {
+  needA:    60,
+  start:    new Date('2026-10-23T00:00:00'),
+  target:   new Date('2026-12-15T00:00:00'),   // finish early, leave a buffer
+  deadline: new Date('2026-12-31T23:59:59'),
+  storeKey: 'gemma_pccn_cat_a_done'
+};
+
+function getPCCNDone() {
+  try { return Math.max(0, parseFloat(localStorage.getItem(PCCN.storeKey)) || 0); }
+  catch(e) { return 0; }
+}
+
+function savePCCNProgress(val) {
+  const n = Math.min(PCCN.needA, Math.max(0, parseFloat(val) || 0));
+  try { localStorage.setItem(PCCN.storeKey, String(n)); } catch(e) {}
+  updatePCCNTracker();
+  updateRegentWidget();
+}
+
+function getPCCNStatus() {
+  const msDay = 1000 * 60 * 60 * 24;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const done  = getPCCNDone();
+  const left  = Math.max(0, PCCN.needA - done);
+  const daysToDeadline = Math.ceil((PCCN.deadline - today) / msDay);
+  const daysToTarget   = Math.ceil((PCCN.target - today) / msDay);
+  const weeksToTarget  = Math.max(daysToTarget / 7, 0);
+  const perWeek = left === 0 ? 0 : (weeksToTarget >= 1 ? left / weeksToTarget : left);
+  // Where you "should" be if pacing evenly from Oct 23 to Dec 15
+  const totalSpan = (PCCN.target - PCCN.start) / msDay;
+  const elapsed   = Math.min(totalSpan, Math.max(0, (today - PCCN.start) / msDay));
+  const expected  = PCCN.needA * (elapsed / totalSpan);
+  const behind    = done + 0.01 < expected - 3;   // more than ~3 CERPs behind even pace
+  return { done, left, daysToDeadline, daysToTarget, perWeek, expected, behind };
+}
+
+function updatePCCNTracker() {
+  const st = getPCCNStatus();
+  const input = document.getElementById('pccnDoneInput');
+  if (input && document.activeElement !== input) input.value = st.done;
+  const pct = Math.min(100, (st.done / PCCN.needA) * 100);
+  document.getElementById('pccnProgressFill').style.width = pct + '%';
+
+  const main = document.getElementById('pccnRemaining');
+  const sub  = document.getElementById('pccnSub');
+  const det  = document.getElementById('pccnDetail');
+
+  if (st.left === 0) {
+    main.textContent = '✓';
+    sub.textContent  = 'Category A complete — submit renewal';
+    det.textContent  = st.daysToDeadline + ' days to Dec 31 deadline';
+    return;
+  }
+  main.textContent = (Math.round(st.left * 4) / 4).toLocaleString();
+  sub.textContent  = 'Category A CERPs to go';
+  if (st.daysToDeadline < 0) {
+    det.textContent = 'Deadline passed — check AACN inactive-status options';
+  } else if (st.daysToTarget <= 0) {
+    det.textContent = 'Past Dec 15 target · ' + st.daysToDeadline + ' days to deadline';
+  } else {
+    det.textContent = '~' + st.perWeek.toFixed(1) + '/wk to finish by Dec 15 · ' +
+      st.daysToDeadline + ' days to deadline' + (st.behind ? ' · BEHIND PACE' : '');
+  }
+}
+
+// ── REGENT COURSEWORK (Fall 2026 Session B, Oct 26 – Dec 19) ──
+// Source: EDU 600 syllabus (Galloway) and EFND 706 syllabus + Assignments & Tasks (Finn), Fall 2026.
+// All times 11:59 pm ET unless noted. Verify against Canvas — syllabi can change.
+const REGENT_DUE = [
+  // EDU 600 Graduate Foundations for Education (2 cr, Pass/Fail ≥70%)
+  { c:'EDU 600', d:'2026-10-28', t:'Syllabus Quiz', w:'1%' },
+  { c:'EDU 600', d:'2026-11-01', t:'Library Assessment (Library Research Guide Modules 1–5, Practice Exercises 1–2)', w:'12%' },
+  { c:'EDU 600', d:'2026-11-08', t:'RUwrite (grammar & punctuation)', w:'12%' },
+  { c:'EDU 600', d:'2026-11-15', t:'Academic Research Paper — First Draft', w:'20%' },
+  { c:'EDU 600', d:'2026-11-22', t:'APA Formatting Test', w:'15%' },
+  { c:'EDU 600', d:'2026-11-25', t:'Research Paper — Second Draft posted for peer review', w:'10% w/ peer review' },
+  { c:'EDU 600', d:'2026-11-29', t:'Peer Review Discussion posted', w:'10% w/ 2nd draft' },
+  { c:'EDU 600', d:'2026-12-15', t:'Academic Research Paper — Final Draft', w:'30%' },
+  { c:'EDU 600', d:'2026-12-15', t:'Extra credit: Writing Lab appointment (optional)', w:'+2.5%' },
+  // EFND 706 Christian Worldview for Educators (3 cr). Posts 500–600 words; responses 300–400 words, Sun–Tue only.
+  { c:'EFND 706', d:'2026-10-28', t:'"Say Hello" discussion', w:'' },
+  { c:'EFND 706', d:'2026-10-28', t:'Live class 6:30 pm ET', w:'', time:'6:30 pm' },
+  { c:'EFND 706', d:'2026-10-31', t:'DB 1: Gospel of Luke — initial post (500–600 words)', w:'' },
+  { c:'EFND 706', d:'2026-11-03', t:'DB 1 responses (300–400 words, post Sun–Tue)', w:'' },
+  { c:'EFND 706', d:'2026-11-07', t:'DB 2: Regent Foundations — initial post', w:'' },
+  { c:'EFND 706', d:'2026-11-09', t:'Reflective Journal 1 (submit no sooner than Sat)', w:'' },
+  { c:'EFND 706', d:'2026-11-10', t:'DB 2 responses (Sun–Tue)', w:'' },
+  { c:'EFND 706', d:'2026-11-14', t:'DB 3: The Creeds — initial post', w:'' },
+  { c:'EFND 706', d:'2026-11-16', t:'Optional live class 7:00 pm ET (replaces DB 3 responses)', w:'', time:'7:00 pm' },
+  { c:'EFND 706', d:'2026-11-17', t:'DB 3 responses (Sun–Tue) unless you attend the 11/16 live class', w:'' },
+  { c:'EFND 706', d:'2026-11-21', t:'Final Book Review', w:'25%' },
+  { c:'EFND 706', d:'2026-11-23', t:'Reflective Journal 2 (no sooner than Sat)', w:'' },
+  { c:'EFND 706', d:'2026-12-07', t:'Reflective Journal 3 (no sooner than Sat)', w:'' },
+  { c:'EFND 706', d:'2026-12-12', t:'Final Christian Worldview in Education Project', w:'30%' },
+  { c:'EFND 706', d:'2026-12-16', t:'Reflective Journal 4 (prompt live Mon PM)', w:'' }
+];
+
+// EFND 706 course weeks run Wednesday → Tuesday
+const EFND_WEEKS = [
+  { s:'2026-10-26', e:'2026-10-27', n:'Intro', r:'Syllabus, Handouts & Helps folder; course intro video' },
+  { s:'2026-10-28', e:'2026-11-03', n:'Week 1', r:'Gospel of Luke; Plantinga ch. 1–3 (Longing & Hope, Creation, The Fall); Week 1 video' },
+  { s:'2026-11-04', e:'2026-11-10', n:'Week 2', r:'Plantinga ch. 4–5 + Epilogue; Pazmiño ch. 1–2; Regent Statement of Faith, SOE Conceptual Framework, Preamble/Mission/Vision; Cox; Swezey & Ross; book review prep video (Fri)' },
+  { s:'2026-11-11', e:'2026-11-17', n:'Week 3', r:'Apostles\' & Nicene Creeds; Ryken ch. 1–3; Dockery & Wax pp. 1–18; book review prep' },
+  { s:'2026-11-18', e:'2026-11-24', n:'Week 4', r:'Ryken ch. 4–6; Dockery & Wax pp. 19–36; intro to CWV project' },
+  { s:'2026-11-25', e:'2026-12-01', n:'Week 5', r:'Pazmiño ch. 3, 4, 7 + appendices; Dockery & Wax pp. 201–265 and 293–323; CWV project prep' },
+  { s:'2026-12-02', e:'2026-12-08', n:'Week 6', r:'Dockery article; Dockery & Wax pp. 41–99; CWV project wrap-up' },
+  { s:'2026-12-09', e:'2026-12-15', n:'Week 7', r:'Dockery & Wax pp. 101–121 and 127–172' },
+  { s:'2026-12-16', e:'2026-12-19', n:'Week 8', r:'Any outstanding readings; course wrap-up' }
+];
+
+function regentDate(str) { const [y,m,d] = str.split('-').map(Number); return new Date(y, m-1, d); }
+
+function getRegentStatus(daysAhead = 7) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const horizon = new Date(today); horizon.setDate(horizon.getDate() + daysAhead);
+  const start = regentDate('2026-10-26'), end = regentDate('2026-12-19');
+  const upcoming = REGENT_DUE
+    .map(x => ({ ...x, date: regentDate(x.d) }))
+    .filter(x => x.date >= today && x.date <= horizon)
+    .sort((a,b) => a.date - b.date);
+  const wk = EFND_WEEKS.find(w => today >= regentDate(w.s) && today <= regentDate(w.e));
+  const nextEdu = REGENT_DUE.map(x => ({ ...x, date: regentDate(x.d) }))
+    .filter(x => x.c === 'EDU 600' && x.date >= today).sort((a,b)=>a.date-b.date)[0];
+  return { today, before: today < start, after: today > end, upcoming, wk, nextEdu };
+}
+
+function fmtRegentDay(date, today) {
+  const diff = Math.round((date - today) / 86400000);
+  const label = date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  if (diff === 0) return 'TODAY';
+  if (diff === 1) return 'Tomorrow';
+  return label;
+}
+
+function updateRegentWidget() {
+  const el = document.getElementById('regentWeek');
+  if (!el) return;
+  const st = getRegentStatus(7);
+  if (st.after) { el.textContent = 'Session B is over. Add Spring 2027 courses when you have the syllabi.'; return; }
+  const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  let html = '';
+  if (st.before) html += '<div style="margin-bottom:8px;color:var(--brass2);">Classes start Monday, Oct 26. Check Canvas announcements and do the EDU 600 syllabus quiz early.</div>';
+  html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:4px 0 4px;">Due in the next 7 days</div>';
+  if (!st.upcoming.length) {
+    html += '<div>Nothing due this week.</div>';
+  } else {
+    html += st.upcoming.map(x =>
+      `<div style="display:flex;gap:10px;"><span style="min-width:92px;font-family:var(--font-mono);font-size:11px;color:${fmtRegentDay(x.date, st.today)==='TODAY'?'var(--brass2)':'var(--text3)'};">${fmtRegentDay(x.date, st.today)}</span>` +
+      `<span><strong style="color:var(--text);">${x.c}</strong> · ${esc(x.t)}${x.w ? ' <span style="color:var(--text3);">(' + x.w + ')</span>' : ''}${x.time ? '' : ' <span style="color:var(--text3);">11:59 pm</span>'}</span></div>`).join('');
+  }
+  const big = REGENT_DUE.map(x => ({ ...x, date: regentDate(x.d) }))
+    .filter(x => parseInt(x.w) >= 20 && x.date > new Date(st.today.getTime() + 7*86400000))
+    .sort((a,b)=>a.date-b.date).slice(0,2);
+  if (big.length) {
+    html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 4px;">Major work coming up</div>';
+    html += big.map(x => `<div>${x.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <strong style="color:var(--text);">${x.c}</strong> ${esc(x.t)} (${x.w}) — ${Math.round((x.date - st.today)/86400000)} days</div>`).join('');
+  }
+  if (st.wk) {
+    html += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 4px;">EFND 706 ' + st.wk.n + ' readings (Wed–Tue)</div>';
+    html += '<div>' + esc(st.wk.r) + '</div>';
+  }
+  html += '<div style="font-size:10.5px;color:var(--text3);margin-top:10px;">From the Fall 2026 syllabi · confirm dates in Canvas</div>';
+  el.innerHTML = html;
+}
+
 // ── DATE / TIME WIDGET ──
 function updateDateTimeWidget() {
   const now  = new Date();
@@ -3336,12 +3529,16 @@ let briefingGenerated = false;
 async function generateBriefing() {
   briefingGenerated = true;
   updateDateTimeWidget();
+  updatePCCNTracker();
+  updateRegentWidget();
   updateBriefingLibraryCount();
   fetchWeather();
 }
 
 async function generateBriefingManual() {
   updateDateTimeWidget();
+  updatePCCNTracker();
+  updateRegentWidget();
   updateBriefingLibraryCount();
 
   const tasks     = document.getElementById('briefingTasks').value.trim();
@@ -3352,6 +3549,7 @@ async function generateBriefingManual() {
   const incRes    = document.getElementById('briefIncludeResearch').checked;
   const incNurs   = document.getElementById('briefIncludeNursing').checked;
   const incWx     = document.getElementById('briefIncludeWeather').checked;
+  const incPCCN   = document.getElementById('briefIncludePCCN').checked;
   const doSpeak   = document.getElementById('briefSpeak').checked;
 
   document.getElementById('briefingLoading').style.display = 'block';
@@ -3372,9 +3570,22 @@ async function generateBriefingManual() {
   const refCount  = apaLibrary.length;
 
 
+  const regent = getRegentStatus(7);
+  const regentSummary = regent.after ? 'Fall Session B complete.'
+    : (regent.upcoming.length
+        ? regent.upcoming.map(x => `${fmtRegentDay(x.date, regent.today)}: ${x.c} — ${x.t}${x.w ? ' (' + x.w + ')' : ''}`).join('; ')
+        : 'Nothing due in the next 7 days.')
+      + (regent.wk ? ` | EFND 706 ${regent.wk.n} readings: ${regent.wk.r}` : '')
+      + (regent.before ? ' | Classes have not started yet (start Mon Oct 26).' : '');
+  const pccn = getPCCNStatus();
+  const pccnSummary = pccn.left === 0
+    ? `All 60 Category A CERPs complete; renewal application still to submit (${pccn.daysToDeadline} days to Dec 31 deadline)`
+    : `${pccn.done} of 60 Category A CERPs done since Oct 23; ${pccn.left} to go; ${pccn.daysToDeadline} days to the Dec 31 deadline; target finish Dec 15 needs ~${pccn.perWeek.toFixed(1)} per week; ${pccn.behind ? 'BEHIND even pace (expected ~' + Math.round(pccn.expected) + ' by now)' : 'on or ahead of pace'}`;
+
   const weatherSummary = weatherData
     ? `${weatherData.icon} ${weatherData.temp}°F — ${weatherData.desc}, wind ${weatherData.wind} mph`
     : 'Weather data unavailable';
+
 
   const system = `You are Gemma — Ashley Cooke's personal scholarly AI assistant and daily companion. You are delivering his morning briefing in Amelia's voice — warm, measured, British academic English with genuine care and encouragement. Address Ashley directly as "you" or "Ashley." This briefing is the first thing he hears each morning. Make it feel like a trusted mentor and colleague greeting him for the day. Be specific, practical, and uplifting.`;
 
@@ -3385,13 +3596,15 @@ CONTEXT:
 - Tasks today: ${tasks || 'None specified — give general encouragement'}
 - Deadlines/appointments: ${deadlines || 'None specified'}
 - APA library references: ${refCount}
+${incPCCN ? `- PCCN renewal: ${pccnSummary}\n` : ''}- Regent coursework (next 7 days): ${regentSummary}
 ${incWx ? `- Weather: ${weatherSummary}` : ''}
 
 BRIEFING STRUCTURE — include each section clearly:
 1. GREETING — warm, personal, time-appropriate opening (2-3 sentences)
 ${incWx ? '2. WEATHER — brief practical note on the weather today (1-2 sentences)' : ''}
 ${incPri ? '3. PRIORITIES — prioritized task list with brief reasoning (3-5 bullet points)' : ''}
-${incRes ? '5. DOCTORAL CORNER — one specific, actionable doctoral tip or encouragement related to his PhD coursework at Regent and his research interest in cognitive offloading and clinical judgment (3-4 sentences)' : ''}
+${incPCCN ? `4. PCCN RENEWAL — state the Category A CERPs remaining, days to the Dec 31 deadline, and this week\'s pace target. If behind pace, say so plainly and suggest one concrete AACN Category A activity he could finish today (e.g., a free AACN online CE or a module of the Adult CCRN review course, which double-counts as CCRN prep). No cheerleading — be direct (2-3 sentences)` : ''}
+${incRes ? '5. DOCTORAL CORNER — first state what is due at Regent today and in the next few days, from the Regent coursework context above, with exact dates; flag anything due today or tomorrow first. Then one specific, actionable doctoral tip related to his PhD coursework at Regent and his research interest in cognitive offloading and clinical judgment (3-4 sentences)' : ''}
 ${incNurs ? '6. NURSING INSIGHT — one current, evidence-based nursing education thought or clinical education tip (2-3 sentences)' : ''}
 ${incQuote ? '7. SCHOLARLY QUOTE — one inspiring quote from an educational psychologist, nursing theorist, or educator with attribution' : ''}
 8. CLOSING — warm send-off that energizes Ashley for the day ahead (2 sentences)
