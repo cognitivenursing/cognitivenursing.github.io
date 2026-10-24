@@ -2434,7 +2434,19 @@ const ameliaAudio = new Audio();
 ameliaAudio.preload = 'auto';
 let ameliaUnlocked = false;
 const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+let ameliaCtx = null, ameliaSrc = null, ameliaStartAt = 0, ameliaPending = null;
+function getAmeliaCtx() {
+  if (!ameliaCtx) { try { ameliaCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+  return ameliaCtx;
+}
 function unlockAmeliaAudio() {
+  const ctx = getAmeliaCtx();
+  if (ctx && ctx.state !== 'running') {
+    ctx.resume().then(() => {
+      try { const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch(e) {}
+      if (ameliaPending) { const p = ameliaPending; ameliaPending = null; playAmeliaBuffer(p.buf, p.env); }
+    }).catch(() => {});
+  } else if (ctx && ameliaPending) { const p = ameliaPending; ameliaPending = null; playAmeliaBuffer(p.buf, p.env); }
   if (ameliaUnlocked) return;
   ameliaAudio.src = SILENT_WAV;
   const p = ameliaAudio.play();
@@ -2454,7 +2466,6 @@ ameliaAudio.addEventListener('playing', () => { if (ameliaAudio.src !== SILENT_W
 // with playback. The browser voice falls back to word-boundary pulses.
 const ORB = { state:'idle', level:0, target:0, kick:0, rings:[], env:null, envRate:60, t0:performance.now(), raf:0 };
 const ORB_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let orbDecodeCtx = null;
 
 function orbSetState(st) {
   if (ORB.state === st) return;
@@ -2471,10 +2482,16 @@ function orbSetState(st) {
   orbStart();
 }
 
-async function orbBuildEnvelope(blob) {
+async function decodeAmelia(blob) {
   try {
-    if (!orbDecodeCtx) orbDecodeCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = await orbDecodeCtx.decodeAudioData(await blob.arrayBuffer());
+    const ctx = getAmeliaCtx(); if (!ctx) return null;
+    const ab = await blob.arrayBuffer();
+    const buf = await new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); });
+    return { buf, env: envelopeFromBuffer(buf) };
+  } catch(e) { return null; }
+}
+function envelopeFromBuffer(buf) {
+  {
     const data = buf.getChannelData(0), hop = Math.floor(buf.sampleRate / ORB.envRate);
     const env = new Float32Array(Math.ceil(data.length / hop));
     let peak = 1e-4;
@@ -2485,10 +2502,37 @@ async function orbBuildEnvelope(blob) {
     }
     for (let i = 0; i < env.length; i++) env[i] = Math.min(1, env[i] / (peak * 0.8));
     return env;
-  } catch(e) { return null; }
+  }
+}
+
+// Plays through the page's audio engine, which stays unlocked after one click,
+// so a briefing started by voice can still be heard.
+function ameliaFinished() {
+  ameliaSrc = null;
+  document.getElementById('micBtn')?.classList.remove('speaking');
+  if (micActive) { setVS('listening', 'listening…'); if (recognition) try { recognition.start(); } catch(e) {} }
+  else { setVS('', 'ready'); if (typeof resumeWakeWord === 'function') resumeWakeWord(); }
+}
+function playAmeliaBuffer(buf, env) {
+  const ctx = getAmeliaCtx();
+  if (!ctx || ctx.state !== 'running') return false;
+  try { if (ameliaSrc) { ameliaSrc.onended = null; ameliaSrc.stop(); } } catch(e) {}
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.connect(ctx.destination);
+  src.onended = () => { if (ameliaSrc === src) ameliaFinished(); };
+  ameliaSrc = src; ameliaStartAt = ctx.currentTime;
+  const toast = document.getElementById('ameliaToast'); if (toast && /Click anywhere/.test(toast.textContent)) toast.style.display = 'none';
+  document.getElementById('micBtn')?.classList.add('speaking');
+  setVS('speaking', 'Amelia speaking…');
+  ORB.env = env;                                   // after setVS, which clears it on state change
+  if (typeof pauseWakeWord === 'function') pauseWakeWord();
+  src.start(0);
+  return true;
 }
 
 function stopAmelia() {
+  ameliaPending = null;
+  if (ameliaSrc) { const s = ameliaSrc; ameliaSrc = null; try { s.onended = null; s.stop(); } catch(e) {} }
   try { ameliaAudio.pause(); } catch(e) {}
   window.speechSynthesis.cancel();
   document.getElementById('micBtn')?.classList.remove('speaking');
@@ -2497,8 +2541,9 @@ function stopAmelia() {
 
 function orbFrameLevel() {
   if (ORB.state === 'speaking') {
-    if (ORB.env && !ameliaAudio.paused) {
-      const i = Math.floor(ameliaAudio.currentTime * ORB.envRate);
+    if (ORB.env && (ameliaSrc || !ameliaAudio.paused)) {
+      const pos = ameliaSrc ? ameliaCtx.currentTime - ameliaStartAt : ameliaAudio.currentTime;
+      const i = Math.floor(pos * ORB.envRate);
       return ORB.env[Math.min(ORB.env.length - 1, i)] || 0;
     }
     ORB.kick *= 0.9;                       // browser voice: pulse on each word
@@ -2639,7 +2684,13 @@ async function speak(text) {
 
       if (resp.ok) {
         const blob = await resp.blob();
-        ORB.env = await orbBuildEnvelope(blob);
+        const dec = await decodeAmelia(blob);
+        if (dec) {
+          const ctx = getAmeliaCtx();
+          if (ctx.state !== 'running') { try { await Promise.race([ctx.resume(), new Promise(r => setTimeout(r, 400))]); } catch(e) {} }
+          if (playAmeliaBuffer(dec.buf, dec.env)) return;
+        }
+        ORB.env = dec ? dec.env : null;
         const url = URL.createObjectURL(blob);
         const audio = ameliaAudio;
         audio.pause();
@@ -2655,7 +2706,17 @@ async function speak(text) {
           setVS('', 'ready');
         };
         try { await audio.play(); return; }
-        catch(e) { ameliaNotice(e.name === 'NotAllowedError' ? 'Your browser blocked Amelia\'s audio. Click anywhere on the page, then try again.' : 'Amelia\'s audio could not play (' + e.name + '). Using the browser voice.'); }
+        catch(e) {
+          if (e.name === 'NotAllowedError' && dec) {
+            // Hold her voice and play it on the next click instead of switching to the Mac voice
+            ameliaPending = dec;
+            document.getElementById('micBtn').classList.remove('speaking');
+            setVS('', 'click to hear Amelia');
+            showAmeliaToast('Amelia is ready. Click anywhere on the page to hear her.');
+            return;
+          }
+          ameliaNotice('Amelia\'s audio could not play (' + e.name + '). Using the browser voice.');
+        }
       } else if (resp.status === 401) {
         document.getElementById('micBtn').classList.remove('speaking');
         sessionExpired();
@@ -2739,7 +2800,7 @@ function toggleWebSearch() {
 }
 
 function ameliaIsTalking() {
-  return (!ameliaAudio.paused && !ameliaAudio.ended && ameliaAudio.src !== SILENT_WAV) || window.speechSynthesis.speaking;
+  return !!ameliaSrc || (!ameliaAudio.paused && !ameliaAudio.ended && ameliaAudio.src !== SILENT_WAV) || window.speechSynthesis.speaking;
 }
 function setVS(cls, txt) {
   const st = { speaking:'speaking', listening:'listening', processing:'thinking' }[cls] || 'idle';
