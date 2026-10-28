@@ -2544,6 +2544,7 @@ function envelopeFromBuffer(buf) {
       env[i] = Math.sqrt(sum / Math.max(1, s1 - s0)); if (env[i] > peak) peak = env[i];
     }
     for (let i = 0; i < env.length; i++) env[i] = Math.min(1, env[i] / (peak * 0.8));
+    env.peak = peak;
     return env;
   }
 }
@@ -2728,15 +2729,17 @@ async function speak(text) {
       if (resp.ok) {
         const blob = await resp.blob();
         const dec = await decodeAmelia(blob);
-        if (dec) {
-          const ctx = getAmeliaCtx();
-          if (ctx.state !== 'running') { try { await Promise.race([ctx.resume(), new Promise(r => setTimeout(r, 400))]); } catch(e) {} }
-          if (playAmeliaBuffer(dec.buf, dec.env)) return;
+        if (dec && dec.env.peak < 0.002) {
+          ameliaNotice('Amelia\'s clip came back silent from ElevenLabs (' + blob.size + ' bytes). Using the browser voice.');
+          throw { handled: true };
         }
+        // Play through a normal audio element first (the same path YouTube uses);
+        // the page's audio engine is only the fallback for voice-started briefings.
         ORB.env = dec ? dec.env : null;
         const url = URL.createObjectURL(blob);
         const audio = ameliaAudio;
         audio.pause();
+        audio.muted = false; audio.volume = 1;
         audio.src = url;
         audio.onended = () => {
           document.getElementById('micBtn').classList.remove('speaking');
@@ -2751,6 +2754,9 @@ async function speak(text) {
         try { await audio.play(); return; }
         catch(e) {
           if (e.name === 'NotAllowedError' && dec) {
+            const ctx = getAmeliaCtx();
+            if (ctx && ctx.state !== 'running') { try { await Promise.race([ctx.resume(), new Promise(r => setTimeout(r, 400))]); } catch(e2) {} }
+            if (playAmeliaBuffer(dec.buf, dec.env)) return;
             // Hold her voice and play it on the next click instead of switching to the Mac voice
             ameliaPending = dec;
             document.getElementById('micBtn').classList.remove('speaking');
@@ -2772,7 +2778,7 @@ async function speak(text) {
         ameliaNotice('Amelia unavailable: ' + why + '. Using the browser voice.');
       }
     } catch(e) {
-      ameliaNotice('Amelia unavailable: could not reach ElevenLabs (' + e.message + '). Using the browser voice.');
+      if (!e || !e.handled) ameliaNotice('Amelia unavailable: could not reach ElevenLabs (' + e.message + '). Using the browser voice.');
     }
     document.getElementById('micBtn').classList.remove('speaking');
   }
