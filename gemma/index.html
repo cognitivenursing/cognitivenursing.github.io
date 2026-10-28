@@ -2715,7 +2715,12 @@ async function speak(text) {
       if (micActive && recognition) try { recognition.stop(); } catch(e) {}
 
       trackElevenLabs(text);
-      const resp = await fetch(API_BASE + '/tts', {
+      const ttsAbort = new AbortController();
+      const ttsTimer = setTimeout(() => ttsAbort.abort(), 30000);
+      let resp;
+      try {
+      resp = await fetch(API_BASE + '/tts', {
+        signal: ttsAbort.signal,
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -2725,11 +2730,21 @@ async function speak(text) {
           voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
         })
       });
+      } catch(fe) {
+        ameliaNotice(fe.name === 'AbortError'
+          ? 'Amelia unavailable: Gemma\'s server took more than 30 seconds to send her audio. Using the browser voice.'
+          : 'Amelia unavailable: could not reach Gemma\'s server (' + fe.message + '). Using the browser voice.');
+        throw { handled: true };
+      } finally { clearTimeout(ttsTimer); }
 
       if (resp.ok) {
         const blob = await resp.blob();
         const dec = await decodeAmelia(blob);
-        if (dec && dec.env.peak < 0.002) {
+        if (!dec) {
+          ameliaNotice('Amelia\'s audio could not be read (' + (blob.type || resp.headers.get('content-type') || 'no type') + ', ' + blob.size + ' bytes). Using the browser voice.');
+          throw { handled: true };
+        }
+        if (dec.env.peak < 0.002) {
           ameliaNotice('Amelia\'s clip came back silent from ElevenLabs (' + blob.size + ' bytes). Using the browser voice.');
           throw { handled: true };
         }
@@ -2750,8 +2765,12 @@ async function speak(text) {
         audio.onerror = () => {
           document.getElementById('micBtn').classList.remove('speaking');
           setVS('', 'ready');
+          ameliaNotice('Amelia\'s audio failed while playing (error ' + (audio.error ? audio.error.code : '?') + ').');
         };
-        try { await audio.play(); return; }
+        try {
+          await Promise.race([audio.play(), new Promise((_, rej) => setTimeout(() => rej({ name: 'PlayTimeout' }), 8000))]);
+          return;
+        }
         catch(e) {
           if (e.name === 'NotAllowedError' && dec) {
             const ctx = getAmeliaCtx();
