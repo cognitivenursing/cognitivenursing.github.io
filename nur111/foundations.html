@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Clinical Judgment Foundations</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: one 720px reading column, navy masthead, sticky jump-nav, four fixed-meaning callouts */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --s1:2rem; --s2:1.5rem; --s3:1.1875rem; --s4:1.0625rem; --s5:.875rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--s4);line-height:1.65}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0} p{margin:0}
+.label{font-size:var(--s5);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.mast{background:var(--navy);color:var(--navy-fg)}
+.mast .wrap{padding-block:2.5rem 2rem;display:grid;gap:.75rem}
+.mast .label{opacity:.8} .mast h1{font-size:var(--s1);font-weight:800} .mast p{opacity:.9;max-width:58ch}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:var(--s5);opacity:.85}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav .wrap{display:flex;gap:.25rem;overflow-x:auto;padding-block:.5rem}
+nav a{flex:none;font-size:var(--s5);font-weight:600;color:var(--head);text-decoration:none;padding:.4rem .7rem;border-radius:4px}
+nav a:hover,nav a:focus-visible{background:var(--concept-bg);outline:none}
+main .wrap{display:grid;gap:3rem;padding-block:2.5rem 3rem}
+main .wrap > footer{margin-top:-1rem}
+section{display:grid;gap:1.25rem;scroll-margin-top:4rem;min-width:0}
+section > h2{font-size:var(--s2);font-weight:700;color:var(--head);padding-bottom:.5rem;border-bottom:2px solid var(--rule)}
+h3{font-size:var(--s3);font-weight:700}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
+.num{font-variant-numeric:tabular-nums}
+.obj{counter-reset:o;list-style:none;padding:0;gap:.75rem}
+.obj li{counter-increment:o;display:grid;grid-template-columns:2rem 1fr;gap:.5rem}
+.obj li::before{content:counter(o);font-weight:800;color:var(--navy-fg);background:var(--navy);width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;font-size:var(--s5);margin-top:.15rem}
+.obj .verb{font-weight:700}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 .35rem;margin-left:.35rem;vertical-align:1px}
+.co{border-radius:12px;padding:1.25rem 1.25rem 1.35rem;display:grid;gap:.6rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:var(--s3);line-height:1.5}
+.voice cite{font-style:normal;font-size:var(--s5);color:var(--muted)}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:var(--s5)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;border:1px solid}
+.legend .concept,.legend .pearl,.legend .voice,.legend .flag{border-radius:999px;border-width:1px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:var(--s5)}
+th,td{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.tbl.wide table{min-width:600px}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .75rem;display:grid;gap:.1rem}
+.v span{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:var(--s3);font-variant-numeric:tabular-nums} .v.alert b{color:var(--flag)}
+details{border:1px solid var(--rule);border-radius:8px;padding:.75rem 1rem}
+summary{cursor:pointer;font-weight:600;color:var(--head)}
+summary:focus-visible{outline:2px solid var(--head);outline-offset:3px}
+details[open] summary{margin-bottom:.6rem}
+details .ans{display:grid;gap:.5rem}
+.opts{list-style:upper-alpha;padding-left:1.5rem}
+.loop{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-size:var(--s5);font-weight:600}
+.loop span{border:1px solid var(--concept-edge);background:var(--bg);border-radius:6px;padding:.3rem .6rem}
+.loop i{font-style:normal;color:var(--muted)}
+.steps{counter-reset:s;list-style:none;padding:0;gap:.75rem}
+.steps li{display:grid;gap:.15rem;padding-left:.9rem;border-left:2px solid var(--concept-edge)}
+.steps b{color:var(--head)}
+.check{display:grid;gap:.6rem;list-style:none;padding:0}
+.check label{display:grid;grid-template-columns:1.25rem 1fr;gap:.6rem;align-items:start;cursor:pointer}
+.check input{width:1.1rem;height:1.1rem;margin-top:.3rem;accent-color:var(--navy)}
+.check input:focus-visible{outline:2px solid var(--head);outline-offset:2px}
+.small{font-size:var(--s5);color:var(--muted)}
+footer{font-size:.8125rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem;max-width:90ch;scroll-margin-top:4rem}
+footer ul{margin:0;padding-left:1.125rem;display:block}
+a{color:var(--head)}
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="label">Clinical Decision Making · Managing Care · NUR 111</p>
+    <h1>Clinical Judgment Foundations</h1>
+    <p>Learn the language of the nursing process and the NCSBN Clinical Judgment Measurement Model so you can use it on a real patient in class.</p>
+    <div class="meta"><span>Audience: ADN students, first semester</span><span>Format: pre-class, self-paced</span><span>Time: about 40 minutes</span><span>Due: before class on November 4</span></div>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <div class="wrap">
+    <a href="#objectives">Objectives</a>
+    <a href="#judgment">Thinking terms</a>
+    <a href="#process">Nursing process</a>
+    <a href="#cjmm">CJMM</a>
+    <a href="#example">Worked example</a>
+    <a href="#factors">What shapes it</a>
+    <a href="#managing">Managing care</a>
+    <a href="#team">The team</a>
+    <a href="#check">Check yourself</a>
+    <a href="#ready">Ready?</a>
+    <a href="#sources">Sources</a>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <div class="legend" aria-label="Callout legend">
+    <span class="co concept">Key concept</span>
+    <span class="co pearl">Clinical pearl</span>
+    <span class="co voice">Patient vignette</span>
+    <span class="co flag">Safety flag</span>
+  </div>
+
+  <section id="objectives">
+    <h2>Objectives</h2>
+    <p>By the end of this page, you should be able to:</p>
+    <ol class="obj">
+      <li><span><span class="verb">Define</span> critical thinking, clinical reasoning, clinical judgment, and clinical decision making, and explain why they matter for patient safety.<span class="tag">Recognize cues</span></span></li>
+      <li><span><span class="verb">List</span> the five steps of the nursing process and describe how the PN role differs from the RN role.<span class="tag">Recognize cues</span></span></li>
+      <li><span><span class="verb">Describe</span> the six cognitive functions of the CJMM and match each to a nursing process step.<span class="tag">Analyze cues</span></span></li>
+      <li><span><span class="verb">Explain</span> why clinical judgment is a loop, and name environmental and individual factors that shape it.<span class="tag">Evaluate outcomes</span></span></li>
+      <li><span><span class="verb">Define</span> care management and describe the nurse's part in safe, cost-effective care.<span class="tag">Recognize cues</span></span></li>
+      <li><span><span class="verb">Identify</span> what each member of the care team contributes.<span class="tag">Recognize cues</span></span></li>
+    </ol>
+    <p class="small">This page does not teach care for any specific condition, and it does not teach the full delegation process. Delegation is taught in NUR 211–213. In class on November 4 you will apply everything here to one patient.</p>
+  </section>
+
+  <section id="judgment">
+    <h2>Four thinking terms</h2>
+    <p>Most errors new nurses make are thinking errors, not skill errors. In NCSBN's research on entry-level practice, a large share of errors by new nurses traced back to poor clinical decision making, and few employers were satisfied with new graduates' decision-making skills. That is why NCLEX now measures clinical judgment directly.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">Term</th><th scope="col">What it means</th><th scope="col">Time frame</th></tr></thead>
+        <tbody>
+          <tr><td><b>Critical thinking</b></td><td>Purposeful, logical thinking. You question assumptions and consider alternatives.</td><td>Any situation, clinical or not</td></tr>
+          <tr><td><b>Clinical reasoning</b></td><td>Working through one patient's data: sorting what is relevant and deciding what it means.</td><td>One patient, one situation</td></tr>
+          <tr><td><b>Clinical judgment</b></td><td>The decisions that come out of reasoning, shaped by experience, the patient's context, and the team. It builds over time.</td><td>Across a shift, a stay, a career</td></tr>
+          <tr><td><b>Clinical decision making</b></td><td>Choosing an action from the options you generated. It is the point where judgment becomes something you do.</td><td>The moment of choice</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>Judgment comes from practice, not from reading. Every case study, clinical day, and reflection adds to it. Right now you will write your thinking down step by step. With experience, the same steps will run in seconds.</p>
+    </div>
+  </section>
+
+  <section id="process">
+    <h2>The nursing process</h2>
+    <p>The nursing process is the framework you already document in. It has five steps.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">Step</th><th scope="col">What you do</th><th scope="col">The question you ask</th></tr></thead>
+        <tbody>
+          <tr><td><b>Assessment</b></td><td>Collect, organize, validate, and document subjective and objective data.</td><td>What is going on with this patient?</td></tr>
+          <tr><td><b>Analysis</b></td><td>Compare findings to expected ranges, find patterns, and name the problems and risks.</td><td>What does it mean, and what matters most?</td></tr>
+          <tr><td><b>Planning</b></td><td>Set measurable goals and choose evidence-based interventions.</td><td>What outcome do I want, and how will I get there?</td></tr>
+          <tr><td><b>Implementation</b></td><td>Carry out the plan, document it, and supervise care you assign.</td><td>What do I do now, and who does it?</td></tr>
+          <tr><td><b>Evaluation</b></td><td>Check the patient's response and revise the plan.</td><td>Did it work? How do I know?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p><b>Where it came from.</b> Ida Jean Orlando studied nurse–patient interactions in the late 1950s and published her deliberative nursing process in 1961. Yura and Walsh described a four-step process in 1967, and nursing diagnosis was later added as a separate step, which gave us the five steps above.</p>
+    </div>
+    <h3>RN and PN roles</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">RN</th><th scope="col">PN</th></tr></thead>
+        <tbody>
+          <tr><td>Uses all five steps.</td><td>Works in four: data collection, planning, implementation, and evaluation, under RN supervision.</td></tr>
+          <tr><td>Does the initial and complex assessments, names the problems, and builds and changes the care plan.</td><td>Collects data on stable patients, contributes to the plan, gives care within scope, and reports findings to the RN.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="cjmm">
+    <h2>The Clinical Judgment Measurement Model</h2>
+    <p>NCSBN built the Clinical Judgment Measurement Model (CJMM) to measure clinical judgment on NCLEX. ATI materials sometimes call it the "Clinical Judgment Action Model." It is the same model, and your outcomes and NCLEX use the name CJMM. The model has five layers, numbered 0 to 4.</p>
+    <div class="tbl wide">
+      <table>
+        <thead><tr><th scope="col">Layer</th><th scope="col">What it holds</th><th scope="col">In plain terms</th></tr></thead>
+        <tbody>
+          <tr><td class="num"><b>0</b></td><td>Client needs and clinical decisions</td><td>A patient needs something, and a decision has to be made.</td></tr>
+          <tr><td class="num"><b>1</b></td><td>Clinical judgment</td><td>The whole process, taken as one thing.</td></tr>
+          <tr><td class="num"><b>2</b></td><td>Form hypotheses, refine hypotheses, evaluate</td><td>The loop. You keep testing what you think is happening.</td></tr>
+          <tr><td class="num"><b>3</b></td><td>Six cognitive functions</td><td>The thinking steps NCLEX items test. This is the layer you will use most.</td></tr>
+          <tr><td class="num"><b>4</b></td><td>Environmental and individual factors</td><td>Everything around you and in you that shapes the decision.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Layer 3: the six functions</h3>
+    <div class="tbl wide">
+      <table>
+        <thead><tr><th scope="col">CJMM function</th><th scope="col">What you do</th><th scope="col">The question</th><th scope="col">Nursing process</th></tr></thead>
+        <tbody>
+          <tr><td><b>Recognize cues</b></td><td>Pick out the data that matter from the history, the exam, labs, and the room.</td><td>What matters most right now?</td><td>Assessment</td></tr>
+          <tr><td><b>Analyze cues</b></td><td>Link cues to each other and to the patient's condition.</td><td>What could these cues mean together?</td><td>Analysis</td></tr>
+          <tr><td><b>Prioritize hypotheses</b></td><td>Rank the possible problems by urgency and risk.</td><td>Which problem is most urgent, and why?</td><td>Analysis</td></tr>
+          <tr><td><b>Generate solutions</b></td><td>Set the outcome you want and choose the actions that get there.</td><td>What should happen, and what will I do?</td><td>Planning</td></tr>
+          <tr><td><b>Take action</b></td><td>Carry out the highest-priority actions, including reporting.</td><td>What do I do first?</td><td>Implementation</td></tr>
+          <tr><td><b>Evaluate outcomes</b></td><td>Compare what happened with what you expected.</td><td>Did it work? What now?</td><td>Evaluation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p><b>It is a loop, not a line.</b> When an outcome is not met, you go back to recognizing cues with the new information. Layer 2 runs underneath the whole time: you form hypotheses from the cues, refine them as you prioritize and plan, and evaluate them against what happens.</p>
+      <div class="loop" aria-label="Loop of the six functions">
+        <span>Recognize</span><i>→</i><span>Analyze</span><i>→</i><span>Prioritize</span><i>→</i><span>Generate</span><i>→</i><span>Take action</span><i>→</i><span>Evaluate</span><i>↺ back to Recognize</i>
+      </div>
+    </div>
+
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p><b>A cue is not a hypothesis.</b> "SpO₂ dropped from 96% to 92%" is a cue: you can see it. "She has pneumonia" is a hypothesis: you are guessing what the cues mean. Students often skip straight to a hypothesis and then only look for cues that support it. Name the cues first.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example</h2>
+    <p>Read the vignette, then follow one pass through the six functions. Everything here comes from a basic assessment you already know how to do.</p>
+    <div class="co voice">
+      <p class="label">Patient vignette</p>
+      <blockquote>"My bottom is sore. Can you hand me the TV remote?"</blockquote>
+      <cite>Mr. Ellis, 74, fictional composite. He is weak after an illness and has been in bed most of the past two days. At 0800 you help him with his bath. He has been lying on his back since 0200.</cite>
+    </div>
+    <div class="vitals">
+      <div class="v alert"><span>Sacrum</span><b>Red</b></div>
+      <div class="v alert"><span>Press test</span><b>Stays red</b></div>
+      <div class="v"><span>Brief</span><b>Damp</b></div>
+      <div class="v"><span>Position</span><b>Back since 0200</b></div>
+    </div>
+    <ol class="steps">
+      <li><b>Recognize cues</b><span>A red area over the sacrum that stays red when you press it, a sore bottom, a damp brief, and six hours on his back.</span></li>
+      <li><b>Analyze cues</b><span>Pressure from lying in one position, plus moisture, plus redness that does not blanch. Together these point to early pressure damage. Redness on intact skin that does not blanch is how a stage 1 pressure injury is defined.</span></li>
+      <li><b>Prioritize hypotheses</b><span>The skin comes before the TV remote. Pressure damage can get worse within hours, and it is preventable. Hand him the remote after you turn him.</span></li>
+      <li><b>Generate solutions</b><span>Goal: no new or larger red areas at the next skin check. Actions: turn him off his sacrum, clean and dry the skin, change the brief, start a turning schedule, and report to the RN or instructor.</span></li>
+      <li><b>Take action</b><span>Turn him to his side with pillows, clean and dry the area, change the brief, and tell the RN now.</span></li>
+      <li><b>Evaluate outcomes</b><span>Check the area again at the next turn. If it is still red or larger, report again; the RN may add a pressure-relieving surface. Then loop back: why did this happen? Six hours without turning is the cue for the plan.</span></li>
+    </ol>
+    <div class="co flag">
+      <p class="label">Safety flag</p>
+      <p>Redness that does not blanch when pressed is a must-report finding. Tell the RN or instructor during the shift, not at the end of the day, and do not massage the red area.</p>
+    </div>
+  </section>
+
+  <section id="factors">
+    <h2>What shapes your judgment</h2>
+    <p>Layer 4 of the model names the factors that make the same nurse decide differently on different days.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">Environmental factors</th><th scope="col">Individual factors</th></tr></thead>
+        <tbody>
+          <tr><td>The setting and its safety hazards</td><td>Your knowledge base</td></tr>
+          <tr><td>Staffing levels and available resources</td><td>Your level of experience and skill</td></tr>
+          <tr><td>The medical record and what it contains</td><td>Cognitive load: how much you are holding in your head</td></tr>
+          <tr><td>Task complexity and time pressure</td><td>Stress and fatigue</td></tr>
+          <tr><td>Consequences and risks of the decision</td><td>Cultural considerations and your own assumptions</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The patient adds a third layer of difficulty. Several conditions, many medications, and overlapping signs make cues harder to read. A side effect of one drug can look like dehydration, for example.</p>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>Fatigue raises the risk of error. When you notice you are rushing or tired, slow down on the steps that carry the most risk: medication checks, the cues that changed, and the call you are unsure about making.</p>
+    </div>
+  </section>
+
+  <section id="managing">
+    <h2>Managing care</h2>
+    <p><b>Care management</b> is coordinating people, time, and supplies so each patient gets safe, high-quality care without waste. It is clinical judgment applied to resources.</p>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p><b>Cost-effective care does not mean cheaper care.</b> It means getting the best outcome for the resources used. Skipping a needed turn to save time is not cost-effective. A pressure injury costs far more than the turn would have.</p>
+    </div>
+    <h3>Ways nurses reduce waste</h3>
+    <ul>
+      <li><b>Check before you duplicate.</b> Look for a lab already drawn or a test already done before collecting another.</li>
+      <li><b>Open only what you need.</b> An opened, unused supply kit is thrown away.</li>
+      <li><b>Cluster care.</b> Coordinate visits so the patient isn't woken or moved repeatedly and staff time isn't spent waiting.</li>
+      <li><b>Prevent complications.</b> Turning, mobility, lung expansion, and fall precautions prevent the most expensive outcomes: extra hospital days.</li>
+      <li><b>Communicate changes early.</b> A discharge, transport, or consult that is no longer needed should be canceled.</li>
+    </ul>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>The most expensive waste on any unit is a preventable complication. Prevention is the cost-effective intervention.</p>
+    </div>
+  </section>
+
+  <section id="team">
+    <h2>The care team</h2>
+    <p>Each team member brings something the others can't. Knowing who does what keeps care coordinated and keeps tasks with the person allowed to do them.</p>
+    <div class="tbl wide">
+      <table>
+        <thead><tr><th scope="col">Team member</th><th scope="col">What they contribute</th></tr></thead>
+        <tbody>
+          <tr><td><b>Registered nurse (RN)</b></td><td>Assessment, care planning, initial teaching, evaluation, and coordinating the team. Accountable for the care assigned to others.</td></tr>
+          <tr><td><b>Licensed practical nurse (LPN)</b></td><td>Care for stable patients with predictable outcomes, including medications and data collection, within state scope. Reinforces teaching and reports to the RN.</td></tr>
+          <tr><td><b>Unlicensed assistive personnel (UAP)</b></td><td>Routine tasks such as vital signs, hygiene, mobility help, and intake and output. Reports findings to the nurse.</td></tr>
+          <tr><td><b>Case manager</b></td><td>Discharge planning, insurance, and community resources. Moves the patient safely to the next setting.</td></tr>
+          <tr><td><b>Charge nurse</b></td><td>Assignments, bed flow, and help when a patient's condition changes.</td></tr>
+          <tr><td><b>Pharmacist</b></td><td>Medication review, dosing, interactions, and alternatives.</td></tr>
+          <tr><td><b>Physical therapist</b></td><td>Mobility, strength, and safe-movement plans.</td></tr>
+          <tr><td><b>Respiratory therapist</b></td><td>Oxygen, airway treatments, and breathing exercises.</td></tr>
+          <tr><td><b>Provider</b></td><td>Medical diagnosis, orders, and the medical plan.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="co flag">
+      <p class="label">Safety flag</p>
+      <p>Assessment, initial teaching, evaluation, and care of an unstable patient stay with the RN. A UAP can measure a vital sign, but the RN decides what it means. You will learn the full delegation process in later courses.</p>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check yourself</h2>
+    <p>Answer each question in your head, then open it to see the answer and why each choice is right or wrong. These are for practice only.</p>
+
+    <details>
+      <summary>1. A nurse works through one patient's lab results and vital signs during a single shift and decides what they mean. What is this called?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>Critical thinking</li><li>Clinical reasoning</li><li>Clinical judgment</li><li>Nursing diagnosis</li>
+        </ol>
+        <p><b>Answer: B.</b></p>
+        <ul>
+          <li><b>A.</b> Critical thinking is broader. It applies to any situation, clinical or not.</li>
+          <li><b>B. Correct.</b> Clinical reasoning is thinking through one patient's data in one situation.</li>
+          <li><b>C.</b> Clinical judgment is wider. It is the decisions that come out of reasoning and build over time.</li>
+          <li><b>D.</b> A nursing diagnosis is a product of analysis, not the thinking process itself.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>2. Which of these is a cue, not a hypothesis?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>"She has pneumonia."</li><li>"Her SpO₂ fell from 96% to 92% overnight."</li><li>"She is at risk for falls."</li><li>"I should call the provider."</li>
+        </ol>
+        <p><b>Answer: B.</b></p>
+        <ul>
+          <li><b>A.</b> A guess about what cues mean. That is a hypothesis.</li>
+          <li><b>B. Correct.</b> It is an observed piece of data. You can see it on the monitor.</li>
+          <li><b>C.</b> A risk is a conclusion drawn from cues, so it is a hypothesis about a potential problem.</li>
+          <li><b>D.</b> That is an action, from Take action.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>3. The Analysis step of the nursing process holds which CJMM functions?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>Recognize cues only</li><li>Analyze cues and Prioritize hypotheses</li><li>Generate solutions and Take action</li><li>Evaluate outcomes</li>
+        </ol>
+        <p><b>Answer: B.</b></p>
+        <ul>
+          <li><b>A.</b> Recognize cues matches Assessment.</li>
+          <li><b>B. Correct.</b> Analysis covers both making sense of cues and ranking the problems. New nurses most often skip the ranking.</li>
+          <li><b>C.</b> These match Planning and Implementation.</li>
+          <li><b>D.</b> This matches Evaluation.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4. A patient's goal was not met at the recheck. Where does clinical judgment go next?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>Document "goal not met" and continue the same plan</li><li>Back to Recognize cues with the new data</li><li>Straight to a new intervention</li><li>Wait for the next scheduled assessment</li>
+        </ol>
+        <p><b>Answer: B.</b></p>
+        <ul>
+          <li><b>A.</b> Repeating a plan that failed ignores the evaluation.</li>
+          <li><b>B. Correct.</b> The model is a loop. New data may change what you think is happening.</li>
+          <li><b>C.</b> Choosing a new action before rethinking the cues repeats the same thinking error.</li>
+          <li><b>D.</b> A failed outcome is a reason to reassess now, not later.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>5. Which action is cost-effective care?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>Opening a new supply kit each shift in case it is needed</li><li>Checking whether a lab was already drawn before collecting another</li><li>Skipping a scheduled turn to save time</li><li>Asking for extra tests to be thorough</li>
+        </ol>
+        <p><b>Answer: B.</b></p>
+        <ul>
+          <li><b>A.</b> Unused opened supplies are thrown away.</li>
+          <li><b>B. Correct.</b> It avoids duplicate cost, blood loss, and discomfort.</li>
+          <li><b>C.</b> A missed turn risks a pressure injury, which costs far more.</li>
+          <li><b>D.</b> Tests without a reason add cost and burden without better outcomes.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>6. A patient who lives alone can no longer go home today as planned. Which team member reworks the discharge plan?</summary>
+      <div class="ans">
+        <ol class="opts">
+          <li>UAP</li><li>Pharmacist</li><li>Case manager</li><li>Respiratory therapist</li>
+        </ol>
+        <p><b>Answer: C.</b></p>
+        <ul>
+          <li><b>A.</b> Discharge planning is outside UAP scope.</li>
+          <li><b>B.</b> The pharmacist reviews medications, not discharge arrangements.</li>
+          <li><b>C. Correct.</b> The case manager coordinates discharge and resources. The RN keeps the case manager informed.</li>
+          <li><b>D.</b> The respiratory therapist manages breathing treatments and oxygen.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section id="ready">
+    <h2>Ready for class?</h2>
+    <p>Check each statement you can honestly say. Anything left unchecked is what to review before November 4.</p>
+    <ul class="check">
+      <li><label for="r1"><input type="checkbox" id="r1"><span>I can explain the difference between clinical reasoning and clinical judgment.</span></label></li>
+      <li><label for="r2"><input type="checkbox" id="r2"><span>I can name the five nursing process steps and the six CJMM functions, and match them.</span></label></li>
+      <li><label for="r3"><input type="checkbox" id="r3"><span>I can tell a cue from a hypothesis in a patient example.</span></label></li>
+      <li><label for="r4"><input type="checkbox" id="r4"><span>I can explain what happens in the model when an outcome is not met.</span></label></li>
+      <li><label for="r5"><input type="checkbox" id="r5"><span>I can name three ways a nurse reduces waste without lowering quality.</span></label></li>
+      <li><label for="r6"><input type="checkbox" id="r6"><span>I can say what an RN, LPN, UAP, and case manager each contribute.</span></label></li>
+    </ul>
+    <p class="small">Your checks are saved only in this browser.</p>
+    <div class="co concept">
+      <p class="label">Next</p>
+      <p>Bring this page's language to class. On November 4 you will work one patient from first look to condition change, using every function on this page.</p>
+    </div>
+  </section>
+
+  <footer id="sources">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>This page covers terms and frameworks only. Condition-specific care and the delegation process are taught in later courses. Turning schedules and pressure-relieving surfaces follow facility protocol. The vignette is a fictional composite, and the practice items are formative and are not exam items. Checklist progress is saved only in this browser.</p>
+    <p>Guideline points checked October 2026:</p>
+    <ul>
+      <li>ATI Nursing, Clinical Judgment Process (learning module section).</li>
+      <li>NCSBN. NCSBN Clinical Judgment Measurement Model, Next Generation NCLEX News, Summer 2020. (Layers 0–4 and the six cognitive functions)</li>
+      <li>OpenStax. Fundamentals of Nursing, 43.1 Clinical Judgment Measure Model. (Layer 2 loop)</li>
+      <li>Dickison, P. Assessment of Nursing Clinical Judgment. AACN, 2017. (Errors and employer satisfaction with new graduates)</li>
+      <li>National Pressure Injury Advisory Panel. Pressure injury staging definitions. (Stage 1: intact skin with non-blanchable redness)</li>
+      <li>EBSCO Research Starters, Ida Jean Orlando; Morales Serrano and Morales Serrano, Epistemología del Proceso de Enfermería, 2007. (History of the nursing process)</li>
+    </ul>
+  </footer>
+
+</div>
+</main>
+
+<script>
+(function(){
+  var KEY="nur111-cjf-ready";
+  var saved={};
+  try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}")||{}; }catch(e){ saved={}; }
+  document.querySelectorAll('.check input').forEach(function(box){
+    if(saved[box.id]) box.checked=true;
+    box.addEventListener('change',function(){
+      saved[box.id]=box.checked;
+      try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){}
+    });
+  });
+})();
+</script>
+</body>
+</html>

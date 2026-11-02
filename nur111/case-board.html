@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Mrs. Moore Case Board</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: projector board. Persistent CJMM strip on top, one stage at a time below, faculty reveal under each prompt. Same navy/teal system as the module pages, scaled up. */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+html{font-size:clamp(15px,1.15vw + 6px,24px)}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0} p{margin:0}
+.label{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--navy);color:var(--navy-fg)}
+.top .wrap{padding-block:.6rem;display:grid;gap:.5rem}
+.toprow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
+.toprow .label{opacity:.85}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem}
+.strip span{font-size:.72rem;font-weight:700;text-align:center;padding:.4rem .25rem;border-radius:6px;border:1px solid rgba(255,255,255,.28);opacity:.6;line-height:1.2}
+.strip span.on{background:var(--navy-fg);color:var(--navy);opacity:1;border-color:var(--navy-fg)}
+@media (max-width:620px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+main .wrap{padding-block:1.75rem 6rem;display:grid;gap:1.5rem}
+.stagehead{display:grid;gap:.35rem}
+.stagehead .label{color:var(--head)}
+.stagehead h1{font-size:2.1rem;font-weight:800}
+.prompt{font-size:1.35rem;font-weight:600;max-width:60ch}
+.body{display:grid;gap:1.1rem;min-width:0}
+.body p,.body li{font-size:1.05rem}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.35rem}
+
+.patient{border:1px solid var(--rule);border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;background:var(--concept-bg)}
+.patient h3{font-size:1.25rem}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .8rem;display:grid;gap:.1rem;background:var(--bg)}
+.v span{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.v small{font-size:.8rem;color:var(--muted)}
+.v.alert b{color:var(--flag)}
+
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.tbl.wide table{min-width:640px}
+
+.co{border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:1.15rem;line-height:1.45}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+
+.reveal{border-top:2px dashed var(--rule);padding-top:1.1rem;display:grid;gap:1rem}
+.reveal .label{color:var(--head)}
+
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px)}
+.controls .wrap{padding-block:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.pips{display:flex;flex-wrap:wrap;gap:.3rem}
+.pips button{width:1.4rem;height:.55rem;border-radius:2px;border:0;padding:0;background:var(--rule);cursor:pointer}
+.pips button.done{background:var(--head)}
+.pips button.cur{background:var(--navy);outline:2px solid var(--head);outline-offset:1px}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap}
+button.b{font:inherit;font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;cursor:pointer;border:1.5px solid var(--rule);background:var(--bg);color:var(--fg)}
+button.b.primary{background:var(--navy);color:var(--navy-fg);border-color:var(--navy)}
+button.b:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1rem}
+.two > *{min-width:0}
+.loop{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-weight:600}
+.loop span{border:1px solid var(--concept-edge);background:var(--bg);border-radius:6px;padding:.3rem .6rem}
+.loop i{font-style:normal;color:var(--muted)}
+.small{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="toprow">
+      <span class="label">NUR 111 · Clinical Decision Making + Managing Care · Case board</span>
+      <span class="label" id="clock"></span>
+    </div>
+    <div class="strip" id="strip" aria-label="CJMM functions">
+      <span data-f="rc">Recognize cues</span><span data-f="ac">Analyze cues</span><span data-f="ph">Prioritize hypotheses</span><span data-f="gs">Generate solutions</span><span data-f="ta">Take action</span><span data-f="eo">Evaluate outcomes</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="stage" aria-live="polite"></div>
+  <div class="wrap">
+  <footer id="sources" style="font-size:.7rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;padding-bottom:5rem;display:flex;flex-direction:column;gap:.5rem;max-width:90ch">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>The case is fictional and formative and is not an exam item. Diet orders, fluid targets, and fall-precaution protocols vary by facility and are left general. The student reflection is fictional. Stage position is saved only in this browser. Use the arrow keys to move between stages and R to reveal.</p>
+    <p>Guideline points checked October 2026:</p>
+    <ul style="margin:0;padding-left:1.125rem;display:block">
+      <li>ATI Nursing, Clinical Judgment Process (learning module section).</li>
+      <li>NCSBN. NCSBN Clinical Judgment Measurement Model, Next Generation NCLEX News, Summer 2020. (Model layers and functions)</li>
+      <li>Hooper L et al. Water-loss dehydration and aging. Mechanisms of Ageing and Development, 2014. (Weakened thirst in older adults)</li>
+    </ul>
+  </footer>
+  </div>
+</main>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="pips" id="pips" aria-label="Stages"></div>
+    <span class="count" id="count"></span>
+    <div class="btns">
+      <button class="b" id="prev" type="button">Previous</button>
+      <button class="b" id="rev" type="button">Reveal debrief</button>
+      <button class="b primary" id="next" type="button">Next stage</button>
+    </div>
+  </div>
+</div>
+
+<template id="vit0800">
+  <div class="patient">
+    <h3>Helen Moore, 81 · Day 2, admitted with weakness after a stomach virus · 0800</h3>
+    <p>Vomiting and diarrhea stopped yesterday morning. IV fluids running. Lives alone, walks with a cane, wears a hearing aid in her right ear.</p>
+    <div class="vitals">
+      <div class="v"><span>Temp</span><b>36.9 °C</b><small>98.4 °F</small></div>
+      <div class="v"><span>HR</span><b>98</b><small>88 last evening</small></div>
+      <div class="v"><span>RR</span><b>18</b><small>/min</small></div>
+      <div class="v"><span>BP</span><b>106/62</b><small>usually about 130/80</small></div>
+      <div class="v"><span>SpO₂</span><b>97%</b><small>room air</small></div>
+      <div class="v"><span>Pain</span><b>0/10</b></div>
+    </div>
+  </div>
+</template>
+
+<template id="chart">
+  <div class="co voice"><p class="label">What she says</p><blockquote>"I got dizzy when I sat up to go to the bathroom. I didn't want to bother anybody."</blockquote></div>
+  <div class="tbl wide"><table>
+    <thead><tr><th scope="col">Area</th><th scope="col">Finding at 0800</th></tr></thead>
+    <tbody>
+      <tr><td><b>Night note</b></td><td>Found sitting on the edge of the bed at 0500. Call light on the bedside table, out of reach.</td></tr>
+      <tr><td><b>Mouth and skin</b></td><td>Lips and mouth dry. Skin intact. Sacrum slightly pink, blanches when pressed.</td></tr>
+      <tr><td><b>Intake and output</b></td><td>Drank 240 mL since 1800 yesterday. Voided once overnight: small amount, dark yellow.</td></tr>
+      <tr><td><b>Breakfast</b></td><td>A few bites of toast.</td></tr>
+      <tr><td><b>Lungs and belly</b></td><td>Lungs clear. Bowel sounds present. No vomiting or diarrhea since yesterday morning.</td></tr>
+      <tr><td><b>The room</b></td><td>Bed in the high position. Regular socks. Hearing aid in the drawer. Full pitcher of ice water from last night. She says, "I don't like cold water."</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<script>
+(function(){
+  var T=function(id){return document.getElementById(id).innerHTML;};
+  var stages=[
+    {f:[],tag:"Cold open · 8 min",title:"First look",
+     prompt:"60 seconds alone, 60 with your partner. What do you notice? What worries you?",
+     body:T("vit0800")+T("chart"),
+     reveal:"<div class='co concept'><p class='label'>Faculty</p><p>Write their words under <b>Notice</b> and <b>Worried about</b>. Don't correct anything yet. Praise anyone who noticed the room, not just the numbers.</p></div>"},
+
+    {f:[],tag:"Build the model · 12 min",title:"Match the nursing process to the CJMM",
+     prompt:"With your partner, lay out the 11 cards. Match each nursing process step to its CJMM function or functions. Then draw the loop.",
+     body:"<p class='small'>Cards: Assessment, Analysis, Planning, Implementation, Evaluation · Recognize cues, Analyze cues, Prioritize hypotheses, Generate solutions, Take action, Evaluate outcomes</p>",
+     reveal:"<div class='tbl'><table><thead><tr><th>Nursing process</th><th>CJMM Layer 3</th></tr></thead><tbody><tr><td>Assessment</td><td>Recognize cues</td></tr><tr><td>Analysis</td><td>Analyze cues · Prioritize hypotheses</td></tr><tr><td>Planning</td><td>Generate solutions</td></tr><tr><td>Implementation</td><td>Take action</td></tr><tr><td>Evaluation</td><td>Evaluate outcomes</td></tr></tbody></table></div>"+
+       "<div class='co concept'><p class='label'>It is a loop</p><div class='loop'><span>Recognize</span><i>→</i><span>Analyze</span><i>→</i><span>Prioritize</span><i>→</i><span>Generate</span><i>→</i><span>Take action</span><i>→</i><span>Evaluate</span><i>↺ back to Recognize</i></div><p>Layer 2 runs underneath: form hypotheses, refine them, evaluate them.</p></div>"+
+       "<div class='tbl'><table><thead><tr><th>Layer</th><th>Holds</th></tr></thead><tbody><tr><td>0</td><td>Client needs and clinical decisions</td></tr><tr><td>1</td><td>Clinical judgment</td></tr><tr><td>2</td><td>Form, refine, and evaluate hypotheses</td></tr><tr><td>3</td><td>The six functions above</td></tr><tr><td>4</td><td>Environmental and individual factors</td></tr></tbody></table></div>"},
+
+    {f:["rc"],tag:"Case part 1 · Recognize cues",title:"What matters right now?",
+     prompt:"Circle every cue that matters. Cross out what is normal or expected. Don't forget the room.",
+     body:T("vit0800")+T("chart"),
+     reveal:"<div class='two'><div class='co flag'><p class='label'>Cues that matter</p><ul><li>Dizzy on sitting up, and she gets up alone</li><li>Call light out of reach, bed high, regular socks</li><li>HR up 10; BP well below her usual</li><li>Only 240 mL overnight; won't drink the water</li><li>Small amount of dark yellow urine</li><li>Dry lips and mouth</li><li>Hearing aid out</li><li>Eating very little</li></ul></div><div class='co concept'><p class='label'>Normal or expected</p><ul><li>Temp, RR, SpO₂</li><li>Lungs clear, pain 0/10</li><li>Vomiting and diarrhea resolved</li><li>Pink sacrum that blanches: normal now, worth watching</li></ul></div></div>"},
+
+    {f:["ac"],tag:"Case part 1 · Analyze cues",title:"Which cues go together?",
+     prompt:"Group the cues into clusters. Name what each cluster could mean. Look back at the board: which words were cues, and which were already labels?",
+     body:T("vit0800"),
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Cluster</th><th>Cues</th><th>Could mean</th></tr></thead><tbody>"+
+       "<tr><td><b>Fluids</b></td><td>Low intake, dark scant urine, dry mouth, HR up, BP below usual, dizziness</td><td>She is low on fluid</td></tr>"+
+       "<tr><td><b>Safety</b></td><td>Dizzy, gets up alone, call light out of reach, bed high, regular socks, age 81, can't hear</td><td>High risk for a fall</td></tr>"+
+       "<tr><td><b>Communication</b></td><td>Hearing aid in the drawer</td><td>May not hear instructions</td></tr>"+
+       "<tr><td><b>Nutrition</b></td><td>A few bites of toast</td><td>Not eating enough</td></tr>"+
+       "<tr><td><b>Skin</b></td><td>Pink sacrum that blanches, in bed, eating little</td><td>Fine now, but at risk</td></tr>"+
+       "</tbody></table></div>"},
+
+    {f:["ac","ph"],tag:"Case part 1 · Actual vs. potential, then lifespan",title:"Actual or potential? Does age change it?",
+     prompt:"List her actual problems and her potential problems. Then: the same dry mouth and dark urine in three people. Who worries you most?",
+     body:"<div class='tbl wide'><table><thead><tr><th>Person</th><th>Context</th></tr></thead><tbody><tr><td>Mia, 18 months</td><td>Two days of diarrhea</td></tr><tr><td>Jordan, 25</td><td>Worked outside all day</td></tr><tr><td>Mrs. Moore, 81</td><td>After a stomach virus</td></tr></tbody></table></div>",
+     reveal:"<div class='two'><div class='co concept'><p class='label'>Actual: cues present now</p><ul><li>Not enough fluid</li><li>Communication barrier</li><li>Poor food intake</li></ul></div><div class='co concept'><p class='label'>Potential: risk, hasn't happened</p><ul><li>Falls</li><li>Skin breakdown</li><li>Malnutrition if intake stays low</li></ul></div></div>"+
+       "<div class='tbl wide'><table><thead><tr><th>Person</th><th>What changes the judgment</th></tr></thead><tbody><tr><td>Mia, 18 months</td><td>Fluid runs out fast. Look for fewer wet diapers, no tears, fussiness or sleepiness. She can't ask for a drink.</td></tr><tr><td>Jordan, 25</td><td>Likely mild. He feels thirsty and can drink on his own.</td></tr><tr><td>Mrs. Moore, 81</td><td>Thirst weakens with age, so she may not feel thirsty. Dizziness turns low fluid into a fall risk.</td></tr></tbody></table></div>"},
+
+    {f:["ph"],tag:"Case part 1 · Prioritize hypotheses",title:"What could hurt her first?",
+     prompt:"Rank her problems. Defend your number one.",
+     body:"<p>Use Maslow and ABCs. Ask what could happen in the next five minutes.</p>",
+     reveal:"<ol><li><b>Fall prevention.</b> A potential problem, but the harm is close and severe. She is dizzy and gets up alone.</li><li><b>Fluids.</b> The problem behind the dizziness.</li><li><b>Communication.</b> Third in rank, first in time: putting the hearing aid in takes 30 seconds and makes everything else work.</li><li><b>Nutrition and skin.</b></li></ol><div class='co pearl'><p class='label'>If a pair put fluids first</p><p>Ask: what happens if she stands up while you go get the juice?</p></div>"},
+
+    {f:["gs"],tag:"Case part 1 · Generate solutions",title:"Goal and actions",
+     prompt:"Write one measurable goal and three nursing actions within your scope as a student. Half of you will write \"encourage fluids.\" With what?",
+     body:"<div class='co voice'><p class='label'>She told you</p><blockquote>\"I don't like cold water.\"</blockquote></div>",
+     reveal:"<div class='two'><div class='co concept'><p class='label'>Sample goals</p><ul><li>She does not fall during the shift.</li><li>She drinks at least 480 mL by 1200, unless the RN sets a different target.</li></ul></div><div class='co concept'><p class='label'>Actions within scope</p><ul><li>Put her hearing aid in</li><li>Call light in reach; teach her to call first, and have her say it back</li><li>Bed low and locked; non-skid socks</li><li>Sit a minute before standing; assist with a gait belt</li><li>Offer drinks she likes, after checking her diet order</li><li>Record intake and output</li><li>Report the dizziness and BP to the RN now</li><li>Reposition every 2 hours</li></ul></div></div>"+
+       "<div class='co pearl'><p class='label'>The ice-water trap</p><p>Refilling the pitcher is the textbook answer, and it fails. She told you she doesn't like cold water. Listening to the patient is part of Recognize cues.</p></div>"},
+
+    {f:["ta","eo"],tag:"Case part 1 · Take action, evaluate",title:"1000 recheck",
+     prompt:"Met, partly met, or not met? Defend it.",
+     body:"<div class='patient'><h3>1000 · hearing aid in, warm tea and juice offered, sat on the edge of the bed before standing</h3><div class='vitals'><div class='v'><span>Drank</span><b>360 mL</b><small>since 0800</small></div><div class='v'><span>Voided</span><b>200 mL</b><small>light yellow</small></div><div class='v'><span>Dizziness</span><b>None</b><small>with standing slowly</small></div><div class='v'><span>HR</span><b>90</b></div><div class='v'><span>BP</span><b>114/66</b></div></div></div>",
+     reveal:"<ul><li><b>Fall goal: met so far.</b></li><li><b>Fluid goal: on track, not yet met.</b> 360 of 480 mL.</li><li><b>Plan:</b> keep offering drinks she likes and keep recording intake and output.</li></ul>"},
+
+    {f:[],tag:"Case part 2 · Managing care · 10 min",title:"Who does what?",
+     prompt:"It's 0930. Her team is an RN, an LPN, and a UAP, with a case manager, PT, and a dietitian available. Assign each task and say why.",
+     body:"<ol><li>Take her 1000 vital signs</li><li>Assess her dizziness and decide whether she is safe to walk</li><li>Help her to the bathroom</li><li>Record her intake and output</li><li>Teach her to call before getting up</li><li>Give scheduled oral meds to a stable patient next door</li><li>Plan for going home alone with a cane</li><li>Check her walking and cane use</li><li>Find foods and drinks she will take within her diet</li></ol>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Task</th><th>Who</th><th>Why</th></tr></thead><tbody>"+
+       "<tr><td>1 Vital signs</td><td>UAP</td><td>Within UAP scope. RN says which changes to report.</td></tr>"+
+       "<tr><td>2 Assess dizziness</td><td>RN</td><td>Assessment and judgment stay with the RN.</td></tr>"+
+       "<tr><td>3 Bathroom</td><td>UAP, after RN sets the plan</td><td>Routine task. Gait belt; sit before standing.</td></tr>"+
+       "<tr><td>4 Intake and output</td><td>UAP records, RN reviews</td><td>Measuring is routine. Deciding what it means is not.</td></tr>"+
+       "<tr><td>5 Teaching</td><td>RN teaches; LPN and UAP remind</td><td>Initial teaching is the RN's.</td></tr>"+
+       "<tr><td>6 Oral meds, stable patient</td><td>LPN</td><td>Stable, predictable, within LPN scope.</td></tr>"+
+       "<tr><td>7 Going home alone</td><td>Case manager</td><td>Discharge planning. RN informs.</td></tr>"+
+       "<tr><td>8 Walking and cane</td><td>Physical therapist</td><td>Mobility expertise.</td></tr>"+
+       "<tr><td>9 Foods and drinks</td><td>Dietitian; nurse checks diet order</td><td>Nutrition expertise.</td></tr>"+
+       "</tbody></table></div><div class='co flag'><p class='label'>Stays with the RN</p><p>Assessment, initial teaching, evaluation, and the unstable patient.</p></div>"},
+
+    {f:[],tag:"Case part 2 · Find the waste · 10 min",title:"Find the waste",
+     prompt:"3 minutes. List every waste you can find at her bedside at 0930.",
+     body:"<div class='co voice'><p class='label'>The bedside at 0930</p><ul><li>A full pitcher of ice water. It has been refilled every shift.</li><li>Three opened packs of non-skid socks in the drawer. Regular socks on her feet.</li><li>The UAP and the student both took her 0800 vital signs.</li><li>The breakfast tray, nearly untouched, is about to go in the trash.</li></ul></div>",
+     reveal:"<ol><li><b>Ice water.</b> Wasted staff time, and the goal still isn't met. Ask what she'll drink.</li><li><b>Opened socks.</b> Supply waste, and the safety measure never reached her feet.</li><li><b>Double vitals.</b> Duplicated work from unclear communication.</li><li><b>Breakfast tray.</b> Order what she will actually eat.</li></ol><div class='co pearl'><p class='label'>The point</p><p>The most expensive waste would be a preventable fall: a hip fracture means surgery, a longer stay, and maybe never living alone again.</p></div>"},
+
+    {f:["eo","rc"],tag:"Case part 3 · Dizzy again · 15 min",title:"1130: the loop comes back",
+     prompt:"What do you do first? Then write an SBAR to the RN. One partner plays the RN.",
+     body:"<div class='co voice'><p class='label'>The UAP reports</p><blockquote>\"She stood up fast to go to the bathroom and said the room was spinning. I helped her sit back down. She didn't fall.\"</blockquote></div><div class='patient'><h3>1130</h3><div class='vitals'><div class='v alert'><span>HR</span><b>102</b></div><div class='v alert'><span>BP</span><b>104/60</b><small>usually about 130/80</small></div><div class='v'><span>Last drink</span><b>1000</b></div></div></div>",
+     reveal:"<div class='co flag'><p class='label'>First</p><ol><li>Stay with her. Keep her sitting or lying down.</li><li>Call light in reach, bed low.</li><li>Report to the RN or instructor now. Use the call light; don't leave her.</li><li>Recheck vital signs when the RN asks. Chart after.</li></ol></div>"+
+       "<div class='tbl wide'><table><thead><tr><th></th><th>Model SBAR, student to RN</th></tr></thead><tbody>"+
+       "<tr><td><b>S</b></td><td>I'm [name], the student nurse caring for Mrs. Moore in 418. She got dizzy when she stood up just now. She didn't fall. HR 102, BP 104/60.</td></tr>"+
+       "<tr><td><b>B</b></td><td>She's 81, admitted with weakness after a stomach virus, IV fluids running. Her usual BP is about 130/80. At 1000 she was better after drinking tea and juice.</td></tr>"+
+       "<tr><td><b>A</b></td><td>I think she is still low on fluid, and she's at high risk of falling.</td></tr>"+
+       "<tr><td><b>R</b></td><td>Can you come assess her? Should she use a bedside commode for now? Do you want me to recheck her vitals in 15 minutes?</td></tr>"+
+       "</tbody></table></div>"},
+
+    {f:[],tag:"Flawed-reasoning critique · 12 min",title:"What went wrong here?",
+     prompt:"Label each sentence with a CJMM function. What did this student do well? What would you do differently?",
+     body:"<div class='co voice'><p class='label'>A student's reflection (fictional)</p><blockquote>\"When I went in at 0800, Mrs. Moore told me she felt dizzy. I told her to stay in bed and went to get her breakfast tray. When I came back she was sitting on the edge of the bed. I refilled her water pitcher and told her she needed to drink more. Before I left at the end of the day, I charted that she was dizzy.\"</blockquote></div>",
+     reveal:"<div class='two'><div class='co flag'><p class='label'>What went wrong</p><ol><li><b>No analysis.</b> Heard \"dizzy\" and never asked why or checked the room.</li><li><b>The safety gap.</b> \"Stay in bed\" is not a plan. Call light, bed, and socks never fixed, and she was left alone.</li><li><b>No reporting.</b> Charting at the end of the day is not reporting.</li></ol></div><div class='co concept'><p class='label'>What went well</p><p>Listened when she said she was dizzy, and thought about fluids.</p><p class='label'>Layer 4</p><p>Wanting to finish tasks, not wanting to bother the RN, not yet knowing what dizziness can mean. Which of these affected you today?</p></div></div>"},
+
+    {f:[],tag:"Exit ticket · 5 min",title:"Before you go",
+     prompt:"Answer on your own. These are not graded.",
+     body:"<ol><li>A patient tells you her mouth is dry, and you notice her urine is dark yellow. You decide these belong together. Which CJMM function did you just use, and what comes next?</li><li>Name one task in Mrs. Moore's care a UAP could do and one that must stay with the RN. Why does the RN keep it?</li><li>Name one decision you made today that you would change. Which CJMM function did it belong to?</li></ol>",
+     reveal:"<div class='co concept'><p class='label'>Faculty</p><p>Collect tickets. Sort by misconception tonight and open the next class with the most common one.</p></div>"}
+  ];
+
+  var stageEl=document.getElementById('stage'), pipsEl=document.getElementById('pips'),
+      countEl=document.getElementById('count'), prevB=document.getElementById('prev'),
+      nextB=document.getElementById('next'), revB=document.getElementById('rev'),
+      strip=document.querySelectorAll('#strip span'), clock=document.getElementById('clock');
+  var KEY='nur111-caseboard-moore', st={i:0,shown:{}};
+  try{ var s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&typeof s.i==='number') st=s; }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+
+  stages.forEach(function(s,k){
+    var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','Stage '+k+': '+s.title);
+    b.addEventListener('click',function(){ go(k); }); pipsEl.appendChild(b);
+  });
+
+  function render(){
+    var s=stages[st.i], shown=!!st.shown[st.i];
+    stageEl.innerHTML="<div class='stagehead'><span class='label'>Stage "+st.i+" · "+s.tag+"</span><h1>"+s.title+"</h1></div>"+
+      "<p class='prompt'>"+s.prompt+"</p><div class='body'>"+s.body+"</div>"+
+      "<div class='reveal' id='revealbox'"+(shown?"":" hidden")+"><span class='label'>Debrief</span>"+s.reveal+"</div>";
+    strip.forEach(function(el){ el.classList.toggle('on', s.f.indexOf(el.dataset.f)>-1); });
+    Array.prototype.forEach.call(pipsEl.children,function(b,k){
+      b.className=(k===st.i?'cur':(k<st.i?'done':'')); b.setAttribute('aria-current',k===st.i?'step':'false');
+    });
+    countEl.textContent='Stage '+st.i+' of '+(stages.length-1);
+    clock.textContent=s.tag.split('·')[0].trim();
+    prevB.disabled=st.i===0; nextB.disabled=st.i===stages.length-1;
+    revB.textContent=shown?'Hide debrief':'Reveal debrief';
+    revB.setAttribute('aria-pressed',shown?'true':'false');
+  }
+  function go(k){ st.i=Math.max(0,Math.min(stages.length-1,k)); save(); render(); window.scrollTo(0,0); }
+  prevB.addEventListener('click',function(){ go(st.i-1); });
+  nextB.addEventListener('click',function(){ go(st.i+1); });
+  revB.addEventListener('click',function(){ st.shown[st.i]=!st.shown[st.i]; save(); render();
+    if(st.shown[st.i]){ var r=document.getElementById('revealbox'); if(r) r.scrollIntoView({block:'start'}); } });
+  document.addEventListener('keydown',function(e){
+    if(e.target.closest && e.target.closest('input,textarea')) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); go(st.i+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(st.i-1); }
+    else if(e.key==='r'||e.key==='R'){ revB.click(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
