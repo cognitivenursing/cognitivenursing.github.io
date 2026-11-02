@@ -33,7 +33,7 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--s4);line-height:1.65}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
-.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0} p{margin:0}
 .label{font-size:var(--s5);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .mast{background:var(--navy);color:var(--navy-fg)}
@@ -47,6 +47,8 @@ nav a:hover,nav a:focus-visible{background:var(--concept-bg);outline:none}
 main .wrap{display:grid;gap:3rem;padding-block:2.5rem 3rem}
 main .wrap > footer{margin-top:-1rem}
 section{display:grid;gap:1.25rem;scroll-margin-top:4rem;min-width:0}
+section > p,section > ul,section > ol,.steps,.check{max-width:78ch}
+.co p{max-width:90ch}
 section > h2{font-size:var(--s2);font-weight:700;color:var(--head);padding-bottom:.5rem;border-bottom:2px solid var(--rule)}
 h3{font-size:var(--s3);font-weight:700}
 ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
