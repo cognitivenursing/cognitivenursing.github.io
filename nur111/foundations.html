@@ -101,6 +101,27 @@ footer{font-size:.8125rem;line-height:1.55;color:var(--muted);border-top:1px sol
 footer ul{margin:0;padding-left:1.125rem;display:block}
 a{color:var(--head)}
 @media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+.cjfig{margin:.25rem 0 0;display:grid;gap:.5rem;--cj-seg:#0F5F86;--cj-badge:#1B3270;--cj-phase:#DCE6F0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}}
+:root[data-theme="dark"] .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}
+.cjfig-svg{width:100%;max-width:640px;height:auto;margin:0 auto;display:block;font-family:var(--font)}
+.cjfig-seg{fill:var(--cj-seg);stroke:var(--concept-bg);stroke-width:5}
+.cjfig-phase{fill:var(--cj-phase);stroke:var(--concept-bg);stroke-width:5}
+.cjfig-ptext{fill:var(--fg);font-size:15px;font-weight:600}
+.cjfig-stext{fill:#fff;font-size:16px;font-weight:700}
+.cjfig-badge{fill:var(--cj-badge);stroke:#fff;stroke-width:2}
+.cjfig-num{fill:#fff;font-size:16px;font-weight:800}
+.cjfig-flow{fill:none;stroke:var(--muted);stroke-width:2.5}
+.cjfig-ahfill{fill:var(--muted)}
+.cjfig-ret{fill:none;stroke:var(--flag);stroke-width:7;stroke-linecap:round}
+.cjfig-ahred{fill:var(--flag)}
+.cjfig-dia{fill:var(--bg);stroke:var(--muted);stroke-width:2}
+.cjfig-small{fill:var(--fg);font-size:14px;font-weight:600}
+.cjfig-lab{fill:var(--fg);font-size:16px;font-weight:600}
+.cjfig-redlab{fill:var(--flag);font-size:16px;font-weight:700}
+.cjfig-center{fill:var(--fg);font-size:26px;font-weight:700}
+.cjfig-tiny{fill:var(--muted);font-size:12px;font-weight:600}
+.cjfig figcaption{font-size:.8125rem;color:var(--muted);text-align:center}
 </style>
 </head>
 <body>
@@ -239,9 +260,57 @@ a{color:var(--head)}
     <div class="co concept">
       <p class="label">Key concept</p>
       <p><b>It is a loop, not a line.</b> When an outcome is not met, you go back to recognizing cues with the new information. Layer 2 runs underneath the whole time: you form hypotheses from the cues, refine them as you prioritize and plan, and evaluate them against what happens.</p>
-      <div class="loop" aria-label="Loop of the six functions">
-        <span>Recognize</span><i>→</i><span>Analyze</span><i>→</i><span>Prioritize</span><i>→</i><span>Generate</span><i>→</i><span>Take action</span><i>→</i><span>Evaluate</span><i>↺ back to Recognize</i>
-      </div>
+      <figure class="cjfig">
+<svg class="cjfig-svg" viewBox="170 -34 680 700" role="img" aria-labelledby="cjfig-t cjfig-d">
+<title id="cjfig-t">Clinical judgment is a loop, not a line</title>
+<desc id="cjfig-d">Six steps arranged clockwise in a ring: 1 Recognize cues, 2 Analyze cues, 3 Prioritize hypotheses, 4 Generate solutions, 5 Take action, 6 Evaluate outcomes. After step 6, a decision asks whether the outcome was met. Yes: continue the plan. Not met: a red arrow returns to step 1, Recognize cues, with new information. An inner ring shows Layer 2 running underneath the whole time: Form hypotheses under steps 1 and 2, Refine hypotheses under steps 3 and 4, and Evaluate hypotheses under steps 5 and 6.</desc>
+<defs><marker id="cjfig-ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="cjfig-ahfill"/></marker><marker id="cjfig-ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" class="cjfig-ahred"/></marker></defs>
+<path d="M425.0 220.1 A150 150 0 0 1 650.0 350.0 L604.0 350.0 A104 104 0 0 0 448.0 259.9 Z" class="cjfig-phase"/>
+<path d="M650.0 350.0 A150 150 0 0 1 425.0 479.9 L448.0 440.1 A104 104 0 0 0 604.0 350.0 Z" class="cjfig-phase"/>
+<path d="M425.0 479.9 A150 150 0 0 1 425.0 220.1 L448.0 259.9 A104 104 0 0 0 448.0 440.1 Z" class="cjfig-phase"/>
+<path id="cjfig-p0" d="M441.7 230.5 A133 133 0 0 1 632.7 340.7" fill="none"/>
+<text class="cjfig-ptext"><textPath href="#cjfig-p0" startOffset="50%" text-anchor="middle">Form hypotheses</textPath></text>
+<path id="cjfig-p1" d="M447.0 458.8 A121 121 0 0 0 620.7 358.4" fill="none"/>
+<text class="cjfig-ptext"><textPath href="#cjfig-p1" startOffset="50%" text-anchor="middle">Refine hypotheses</textPath></text>
+<path id="cjfig-p2" d="M425.6 460.3 A133 133 0 0 1 425.6 239.7" fill="none"/>
+<text class="cjfig-ptext"><textPath href="#cjfig-p2" startOffset="50%" text-anchor="middle">Evaluate hypotheses</textPath></text>
+<path d="M366.0 117.9 A268 268 0 0 1 634.0 117.9 L579.0 213.2 A158 158 0 0 0 421.0 213.2 Z" class="cjfig-seg"/>
+<path d="M634.0 117.9 A268 268 0 0 1 768.0 350.0 L658.0 350.0 A158 158 0 0 0 579.0 213.2 Z" class="cjfig-seg"/>
+<path d="M768.0 350.0 A268 268 0 0 1 634.0 582.1 L579.0 486.8 A158 158 0 0 0 658.0 350.0 Z" class="cjfig-seg"/>
+<path d="M634.0 582.1 A268 268 0 0 1 366.0 582.1 L421.0 486.8 A158 158 0 0 0 579.0 486.8 Z" class="cjfig-seg"/>
+<path d="M366.0 582.1 A268 268 0 0 1 232.0 350.0 L342.0 350.0 A158 158 0 0 0 421.0 486.8 Z" class="cjfig-seg"/>
+<path d="M232.0 350.0 A268 268 0 0 1 366.0 117.9 L421.0 213.2 A158 158 0 0 0 342.0 350.0 Z" class="cjfig-seg"/>
+<circle cx="500.0" cy="107.0" r="15" class="cjfig-badge"/><text x="500.0" y="112.5" text-anchor="middle" class="cjfig-num">1</text>
+<text class="cjfig-stext" x="500.0" y="144.0" text-anchor="middle">Recognize<tspan x="500.0" dy="20">cues</tspan></text>
+<circle cx="684.5" cy="213.5" r="15" class="cjfig-badge"/><text x="684.5" y="219.0" text-anchor="middle" class="cjfig-num">2</text>
+<text class="cjfig-stext" x="684.5" y="250.5" text-anchor="middle">Analyze<tspan x="684.5" dy="20">cues</tspan></text>
+<circle cx="684.5" cy="426.5" r="15" class="cjfig-badge"/><text x="684.5" y="432.0" text-anchor="middle" class="cjfig-num">3</text>
+<text class="cjfig-stext" x="684.5" y="463.5" text-anchor="middle">Prioritize<tspan x="684.5" dy="20">hypotheses</tspan></text>
+<circle cx="500.0" cy="533.0" r="15" class="cjfig-badge"/><text x="500.0" y="538.5" text-anchor="middle" class="cjfig-num">4</text>
+<text class="cjfig-stext" x="500.0" y="570.0" text-anchor="middle">Generate<tspan x="500.0" dy="20">solutions</tspan></text>
+<circle cx="315.5" cy="426.5" r="15" class="cjfig-badge"/><text x="315.5" y="432.0" text-anchor="middle" class="cjfig-num">5</text>
+<text class="cjfig-stext" x="315.5" y="463.5" text-anchor="middle">Take<tspan x="315.5" dy="20">action</tspan></text>
+<circle cx="315.5" cy="213.5" r="15" class="cjfig-badge"/><text x="315.5" y="219.0" text-anchor="middle" class="cjfig-num">6</text>
+<text class="cjfig-stext" x="315.5" y="250.5" text-anchor="middle">Evaluate<tspan x="315.5" dy="20">outcomes</tspan></text>
+<path d="M565.7 65.5 A292 292 0 0 1 713.6 150.9" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M779.2 264.6 A292 292 0 0 1 779.2 435.4" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M713.6 549.1 A292 292 0 0 1 565.7 634.5" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M434.3 634.5 A292 292 0 0 1 286.4 549.1" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M220.8 435.4 A292 292 0 0 1 220.8 264.6" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M286.4 150.9 A292 292 0 0 1 316.2 123.1" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<path d="M339.0 25.1 L385.0 71.1 L339.0 117.1 L293.0 71.1 Z" class="cjfig-dia"/>
+<text x="339.0" y="68.1" text-anchor="middle" class="cjfig-small">Outcome<tspan x="339.0" dy="17">met?</tspan></text>
+<path d="M345.0 21.1 Q359.0 -4.9 391.0 -4.9" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
+<text x="331.0" y="11.1" text-anchor="end" class="cjfig-small">Yes</text>
+<text x="399.0" y="0.1" class="cjfig-lab">Continue the plan</text>
+<path d="M381.0 65.1 Q439.0 37.1 494.0 70.0" class="cjfig-ret" marker-end="url(#cjfig-ahr)"/>
+<text x="534.0" y="24.0" class="cjfig-redlab">Not met: back to Recognize</text>
+<text x="534.0" y="44.0" class="cjfig-redlab">cues with new information</text>
+<text x="500" y="336" text-anchor="middle" class="cjfig-center">A loop,<tspan x="500" dy="30">not a line</tspan></text>
+<text x="500" y="394" text-anchor="middle" class="cjfig-tiny">Inner ring: Layer 2,<tspan x="500" dy="15">running the whole time</tspan></text>
+</svg>
+<figcaption>Adapted from the NCSBN Clinical Judgment Measurement Model.</figcaption>
+</figure>
     </div>
 
     <div class="co pearl">
