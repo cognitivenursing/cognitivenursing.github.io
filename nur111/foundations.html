@@ -201,6 +201,13 @@ a{color:var(--head)}
   @keyframes cjglow{from{opacity:.55}to{opacity:1}}
 }
 .cj-tour span b{color:inherit}
+.cj-cap{background:#14181E;color:#fff;border-radius:10px;padding:.8rem 1rem;display:grid;gap:.25rem;box-shadow:0 6px 18px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12)}
+.cj-cap-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9FD3EE}
+.cj-cap p{margin:0;font-size:var(--s4);line-height:1.5;font-weight:600;max-width:none}
+@media (prefers-reduced-motion: no-preference){.cj-cap:not([hidden]){animation:cjcapin .25s ease-out}@keyframes cjcapin{from{opacity:0;transform:translateY(6px)}}}
+.cj-transcript{background:var(--bg);border:1px solid var(--concept-edge)}
+.cj-transcript h4{margin:.75rem 0 .25rem;font-size:var(--s4);color:var(--head)}
+.cj-transcript p{margin:0;font-size:var(--s5);line-height:1.6;max-width:none}
 .cj-status{font-size:var(--s5);color:var(--muted);margin:0}
 @media (min-width:860px){
   .cjfig{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:1.5rem;align-items:center}
@@ -474,13 +481,26 @@ a{color:var(--head)}
   <p class="cj-tour" id="cj-tour"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Audio tour available: turn <b>Sound</b> on, then press <b>Walk the loop</b>.</span></p>
   <div class="cj-controls">
     <button type="button" class="cj-btn" id="cj-sound" aria-pressed="false">Sound: off</button>
+    <button type="button" class="cj-btn" id="cj-cc" aria-pressed="true">Captions: on</button>
     <button type="button" class="cj-btn primary" id="cj-walk">Walk the loop</button>
     <button type="button" class="cj-btn" id="cj-prev">Back</button>
     <button type="button" class="cj-btn" id="cj-next">Next step</button>
     <button type="button" class="cj-btn" id="cj-all">Show all</button>
   </div>
   <div class="cj-info" id="cj-info" aria-live="polite"></div>
+  <div class="cj-cap" id="cj-cap" aria-hidden="true" hidden><span class="cj-cap-label">Caption</span><p id="cj-cap-text"></p></div>
   <p class="cj-status" id="cj-status" hidden></p>
+<details class="cj-transcript"><summary>Read the audio tour transcript</summary>
+<h4>Introduction</h4><p>Clinical judgment is a loop, not a line. Nurses work through six steps: recognize cues, analyze cues, prioritize hypotheses, generate solutions, take action, and evaluate outcomes. Then comes a decision: was the outcome met? If it was, you continue the plan and keep watching. If it wasn&#x27;t, you go back to the beginning with what you just learned. Let&#x27;s walk the loop once with Mr. Ellis, a patient who has been in bed most of the past two days.</p>
+<h4>Step 1: Recognize cues</h4><p>Step one: recognize cues. Ask yourself, what matters most right now? Pick out the data that matter, from the history, your assessment, the labs, and the room itself. For Mr. Ellis, three cues stand out: a red area over his sacrum that stays red when you press it, a damp brief, and six hours on his back without turning. This step is part of forming hypotheses in Layer 2, and it matches assessment in the nursing process.</p>
+<h4>Step 2: Analyze cues</h4><p>Step two: analyze cues. Ask, what could these cues mean together? Link the cues to each other and to the patient&#x27;s condition. For Mr. Ellis, pressure from lying in one position, plus moisture, plus redness that does not blanch, all point to the same thing: early pressure damage. You are still forming hypotheses here, and in the nursing process, this is analysis.</p>
+<h4>Step 3: Prioritize hypotheses</h4><p>Step three: prioritize hypotheses. Ask, which problem is most urgent, and why? Rank the possible problems by urgency and risk. Mr. Ellis asked you for the TV remote, but his skin comes first. Pressure damage can get worse within hours, and it is preventable. Prioritizing begins refining hypotheses in Layer 2. In the nursing process, it is still part of analysis.</p>
+<h4>Step 4: Generate solutions</h4><p>Step four: generate solutions. Ask, what should happen, and what will I do? Set the outcome you want, then choose the actions that will get you there. For Mr. Ellis, the goal is no new or larger red areas at the next skin check. The plan is to turn him off his sacrum, clean and dry the skin, and report to the RN This step finishes refining hypotheses, and it matches planning in the nursing process.</p>
+<h4>Step 5: Take action</h4><p>Step five: take action. Ask, what do I do first? Carry out the highest-priority actions, and remember that reporting is an action, too. For Mr. Ellis, you turn him to his side with pillows, clean and dry the area, change his brief, and tell the RN now, not at the end of the shift. Taking action begins evaluating hypotheses in Layer 2. In the nursing process, it is implementation.</p>
+<h4>Step 6: Evaluate outcomes</h4><p>Step six: evaluate outcomes. Ask, did it work, and what now? Compare what actually happened with what you expected. For Mr. Ellis, you check the red area again at his next turn. Is it smaller, the same, or larger? Evaluating outcomes completes the Layer 2 loop, and it matches evaluation in the nursing process.</p>
+<h4>The decision: Outcome met?</h4><p>Now the decision: was the outcome met? If yes, continue the plan and keep watching, because patients change. If not, the loop sends you back to step one, recognize cues, with the new information you just gathered. For Mr. Ellis, if the area is still red or has gotten larger at the next turn, you report again and start back at recognize cues.</p>
+<h4>Closing</h4><p>That is why clinical judgment is a loop, not a line. Each time around, you are working with better information than the time before. Look for this loop every time you care for a patient: in clinical, in simulation, and on the NCLEX.</p>
+</details>
 </div>
 </figure>
     </div>
@@ -754,6 +774,26 @@ a{color:var(--head)}
   var walkBtn=document.getElementById('cj-walk'), soundBtn=document.getElementById('cj-sound');
   var cur=-1, timer=null, walking=false, soundOn=false, missing=false;
   var audio=new Audio(); audio.preload='none';
+  var CAP={"cj-0": ["Clinical judgment is a loop, not a line.", "Nurses work through six steps: recognize cues, analyze cues, prioritize hypotheses, generate solutions, take action, and evaluate outcomes.", "Then comes a decision: was the outcome met?", "If it was, you continue the plan and keep watching.", "If it wasn't, you go back to the beginning with what you just learned.", "Let's walk the loop once with Mr. Ellis, a patient who has been in bed most of the past two days."], "cj-1": ["Step one: recognize cues.", "Ask yourself, what matters most right now?", "Pick out the data that matter, from the history, your assessment, the labs, and the room itself.", "For Mr. Ellis, three cues stand out: a red area over his sacrum that stays red when you press it, a damp brief, and six hours on his back without turning.", "This step is part of forming hypotheses in Layer 2, and it matches assessment in the nursing process."], "cj-2": ["Step two: analyze cues.", "Ask, what could these cues mean together?", "Link the cues to each other and to the patient's condition.", "For Mr. Ellis, pressure from lying in one position, plus moisture, plus redness that does not blanch, all point to the same thing: early pressure damage.", "You are still forming hypotheses here, and in the nursing process, this is analysis."], "cj-3": ["Step three: prioritize hypotheses.", "Ask, which problem is most urgent, and why?", "Rank the possible problems by urgency and risk.", "Mr. Ellis asked you for the TV remote, but his skin comes first.", "Pressure damage can get worse within hours, and it is preventable.", "Prioritizing begins refining hypotheses in Layer 2.", "In the nursing process, it is still part of analysis."], "cj-4": ["Step four: generate solutions.", "Ask, what should happen, and what will I do?", "Set the outcome you want, then choose the actions that will get you there.", "For Mr. Ellis, the goal is no new or larger red areas at the next skin check.", "The plan is to turn him off his sacrum, clean and dry the skin, and report to the RN This step finishes refining hypotheses, and it matches planning in the nursing process."], "cj-5": ["Step five: take action.", "Ask, what do I do first?", "Carry out the highest-priority actions, and remember that reporting is an action, too.", "For Mr. Ellis, you turn him to his side with pillows, clean and dry the area, change his brief, and tell the RN now, not at the end of the shift.", "Taking action begins evaluating hypotheses in Layer 2.", "In the nursing process, it is implementation."], "cj-6": ["Step six: evaluate outcomes.", "Ask, did it work, and what now?", "Compare what actually happened with what you expected.", "For Mr. Ellis, you check the red area again at his next turn.", "Is it smaller, the same, or larger?", "Evaluating outcomes completes the Layer 2 loop, and it matches evaluation in the nursing process."], "cj-7": ["Now the decision: was the outcome met?", "If yes, continue the plan and keep watching, because patients change.", "If not, the loop sends you back to step one, recognize cues, with the new information you just gathered.", "For Mr. Ellis, if the area is still red or has gotten larger at the next turn, you report again and start back at recognize cues."], "cj-8": ["That is why clinical judgment is a loop, not a line.", "Each time around, you are working with better information than the time before.", "Look for this loop every time you care for a patient: in clinical, in simulation, and on the NCLEX."]}, capOn=true, capList=[], capW=[], capTot=0, capIdx=-1;
+  try{ if(localStorage.getItem('nur111-captions')==='off') capOn=false; }catch(e){}
+  var capBox=document.getElementById('cj-cap'), capText=document.getElementById('cj-cap-text'), capBtn=document.getElementById('cj-cc');
+  function capSetBtn(){ capBtn.setAttribute('aria-pressed',capOn?'true':'false'); capBtn.textContent='Captions: '+(capOn?'on':'off'); }
+  function capHide(){ capBox.hidden=true; capIdx=-1; }
+  function capStart(name){ capList=CAP[name]||[]; capW=capList.map(function(s){return s.length+18;}); capTot=capW.reduce(function(a,b){return a+b;},0); capIdx=-1; capUpdate(); }
+  function capUpdate(){
+    if(!capOn||!capList.length||audio.paused&&audio.currentTime===0){ if(!capOn) capHide(); }
+    if(!capOn||!capList.length) return;
+    var d=audio.duration, t=audio.currentTime, i=0;
+    if(d&&isFinite(d)){ var pos=t/d*capTot, acc=0; for(i=0;i<capW.length;i++){ acc+=capW[i]; if(pos<acc) break; } if(i>=capList.length) i=capList.length-1; }
+    if(i!==capIdx){ capIdx=i; capText.textContent=capList[i]; }
+    capBox.hidden=false;
+  }
+  audio.addEventListener('timeupdate',capUpdate);
+  audio.addEventListener('playing',capUpdate);
+  audio.addEventListener('ended',capHide);
+  audio.addEventListener('error',capHide);
+  capBtn.addEventListener('click',function(){ capOn=!capOn; try{localStorage.setItem('nur111-captions',capOn?'on':'off');}catch(e){} capSetBtn(); if(!capOn) capHide(); else if(!audio.paused) capUpdate(); });
+  capSetBtn();
   var BASE='audio/', HOWTO='<p class="cj-eyebrow">How to use this figure</p><p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below. Turn <b>Sound</b> on to hear each step explained.</p>';
   function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
   function show(i){
@@ -772,14 +812,14 @@ a{color:var(--head)}
     info.innerHTML='<p class="cj-eyebrow">Walking the loop</p><h4>Clinical judgment is a loop, not a line</h4><p>Six steps, one decision, and a path back to the start whenever the outcome is not met.</p>';
   }
   function showBack(){ show(0); info.querySelector('.cj-eyebrow').textContent='Not met: back to Step 1 with new information'; }
-  function stopAudio(){ audio.onended=null; audio.onerror=null; try{audio.pause();}catch(e){} }
+  function stopAudio(){ audio.onended=null; audio.onerror=null; try{audio.pause();}catch(e){} capHide(); }
   function note(t){ status.textContent=t; status.hidden=!t; }
   function play(name, done){
     stopAudio(); if(!soundOn||missing){ if(done) timer=setTimeout(done,3200); return; }
     var fallback=function(){ missing=true; note('Audio for this page has not been added yet. The walkthrough continues without sound.'); if(done) timer=setTimeout(done,3200); };
     audio.onended=function(){ if(done) timer=setTimeout(done,400); };
     audio.onerror=fallback;
-    audio.src=BASE+name+'.mp3';
+    audio.src=BASE+name+'.mp3'; capStart(name);
     var p=audio.play(); if(p&&p.catch) p.catch(function(e){ if(e&&e.name==='NotAllowedError'){ note('Tap Sound again to allow audio.'); if(done) timer=setTimeout(done,3200);} else fallback(); });
   }
   function stopWalk(){ walking=false; if(timer){clearTimeout(timer);timer=null;} stopAudio(); walkBtn.textContent='Walk the loop'; }
