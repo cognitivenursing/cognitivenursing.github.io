@@ -190,6 +190,17 @@ a{color:var(--head)}
 .cj-left{display:grid;gap:.5rem;min-width:0}
 .cj-panel{min-width:0;align-content:start}
 .cj-btn[aria-pressed="true"]{background:var(--concept-bg);border-color:var(--head);color:var(--head)}
+.cj-tour{margin:0;display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:var(--s4);color:var(--head);--shine:#5FB8E6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cj-tour{--shine:#FFFFFF}}
+:root[data-theme="dark"] .cj-tour{--shine:#FFFFFF}
+.cj-tour svg{flex:none}
+@media (prefers-reduced-motion: no-preference){
+  .cj-tour:not(.done) span{background:linear-gradient(100deg,var(--head) 0%,var(--head) 40%,var(--shine) 50%,var(--head) 60%,var(--head) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:cjshine 2.6s linear infinite}
+  .cj-tour:not(.done) svg{animation:cjglow 1.3s ease-in-out infinite alternate}
+  @keyframes cjshine{from{background-position:100% 0}to{background-position:-150% 0}}
+  @keyframes cjglow{from{opacity:.55}to{opacity:1}}
+}
+.cj-tour span b{color:inherit}
 .cj-status{font-size:var(--s5);color:var(--muted);margin:0}
 @media (min-width:860px){
   .cjfig{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:1.5rem;align-items:center}
@@ -460,12 +471,13 @@ a{color:var(--head)}
 <figcaption>Adapted from the NCSBN Clinical Judgment Measurement Model.</figcaption>
 </div>
 <div class="cj-panel">
+  <p class="cj-tour" id="cj-tour"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Audio tour available: turn <b>Sound</b> on, then press <b>Walk the loop</b>.</span></p>
   <div class="cj-controls">
+    <button type="button" class="cj-btn" id="cj-sound" aria-pressed="false">Sound: off</button>
     <button type="button" class="cj-btn primary" id="cj-walk">Walk the loop</button>
     <button type="button" class="cj-btn" id="cj-prev">Back</button>
     <button type="button" class="cj-btn" id="cj-next">Next step</button>
     <button type="button" class="cj-btn" id="cj-all">Show all</button>
-    <button type="button" class="cj-btn" id="cj-sound" aria-pressed="false">Sound: off</button>
   </div>
   <div class="cj-info" id="cj-info" aria-live="polite"></div>
   <p class="cj-status" id="cj-status" hidden></p>
@@ -795,7 +807,7 @@ a{color:var(--head)}
     info.innerHTML=HOWTO;
   });
   soundBtn.addEventListener('click',function(){
-    soundOn=!soundOn; soundBtn.setAttribute('aria-pressed',soundOn?'true':'false'); soundBtn.textContent='Sound: '+(soundOn?'on':'off');
+    soundOn=!soundOn; var tour=document.getElementById('cj-tour'); if(tour&&soundOn) tour.classList.add('done'); soundBtn.setAttribute('aria-pressed',soundOn?'true':'false'); soundBtn.textContent='Sound: '+(soundOn?'on':'off');
     if(!soundOn){ stopAudio(); note(''); } else { missing=false; note(''); if(cur>=0&&!walking) play('cj-'+(cur+1),null); }
   });
   info.innerHTML=HOWTO;
