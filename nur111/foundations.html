@@ -133,7 +133,7 @@ a{color:var(--head)}
 .cjl-ahred{fill:var(--flag)}
 .cjl-headred{fill:var(--flag)}
 .cjl figcaption{font-size:var(--s5);color:var(--muted);text-align:center}
-.cjfig{margin:.25rem 0 0;display:grid;gap:.75rem;--cj-seg:#0F5F86;--cj-badge:#1B3270;--cj-phase:#DCE6F0}
+.cjfig{margin:.25rem 0 0;display:grid;gap:1rem;--cj-seg:#0F5F86;--cj-badge:#1B3270;--cj-phase:#DCE6F0}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}}
 :root[data-theme="dark"] .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}
 .cjfig-svg{width:100%;max-width:640px;height:auto;margin:0 auto;display:block;font-family:var(--font)}
@@ -177,6 +177,15 @@ a{color:var(--head)}
 .cj-info dt{font-weight:700}
 .cj-info dd{margin:0}
 .cj-info .cj-ex dt{color:var(--voice-ink)}
+.cj-left{display:grid;gap:.5rem;min-width:0}
+.cj-panel{min-width:0;align-content:start}
+.cj-btn[aria-pressed="true"]{background:var(--concept-bg);border-color:var(--head);color:var(--head)}
+.cj-status{font-size:var(--s5);color:var(--muted);margin:0}
+@media (min-width:860px){
+  .cjfig{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:1.5rem;align-items:center}
+  .cj-controls{justify-content:flex-start}
+  .cj-info{min-height:17rem;align-content:start}
+}
 </style>
 </head>
 <body>
@@ -403,6 +412,7 @@ a{color:var(--head)}
       <p class="label">Key concept</p>
       <p><b>It is a loop, not a line.</b> When an outcome is not met, you go back to recognizing cues with the new information. Layer 2 runs underneath the whole time: you form hypotheses from the cues, refine them as you prioritize and plan, and evaluate them against what happens.</p>
       <figure class="cjfig">
+<div class="cj-left">
 <svg class="cjfig-svg" viewBox="170 -34 680 700" role="group" aria-labelledby="cjfig-t cjfig-d">
 <title id="cjfig-t">Clinical judgment is a loop, not a line</title>
 <desc id="cjfig-d">Six steps arranged clockwise in a ring: 1 Recognize cues, 2 Analyze cues, 3 Prioritize hypotheses, 4 Generate solutions, 5 Take action, 6 Evaluate outcomes. After step 6, a decision asks whether the outcome was met. Yes: continue the plan. Not met: a red arrow returns to step 1, Recognize cues, with new information. An inner ring shows Layer 2 running underneath the whole time: Form hypotheses under steps 1 and 2, Refine hypotheses under steps 3 and 4, and Evaluate hypotheses under steps 5 and 6. Each step is a button that shows details below the figure.</desc>
@@ -430,17 +440,17 @@ a{color:var(--head)}
 <text x="500" y="394" text-anchor="middle" class="cjfig-tiny">Inner ring: Layer 2,<tspan x="500" dy="15">running the whole time</tspan></text>
 </svg>
 <figcaption>Adapted from the NCSBN Clinical Judgment Measurement Model.</figcaption>
+</div>
 <div class="cj-panel">
   <div class="cj-controls">
     <button type="button" class="cj-btn primary" id="cj-walk">Walk the loop</button>
     <button type="button" class="cj-btn" id="cj-prev">Back</button>
     <button type="button" class="cj-btn" id="cj-next">Next step</button>
     <button type="button" class="cj-btn" id="cj-all">Show all</button>
+    <button type="button" class="cj-btn" id="cj-sound" aria-pressed="false">Sound: off</button>
   </div>
-  <div class="cj-info" id="cj-info" aria-live="polite">
-    <p class="cj-eyebrow">How to use this figure</p>
-    <p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below.</p>
-  </div>
+  <div class="cj-info" id="cj-info" aria-live="polite"></div>
+  <p class="cj-status" id="cj-status" hidden></p>
 </div>
 </figure>
     </div>
@@ -704,43 +714,67 @@ a{color:var(--head)}
   var fig=document.querySelector('.cjfig'); if(!fig) return;
   var D=[{"name": "Recognize cues", "ask": "What matters most right now?", "do": "Pick out the data that matter from the history, the exam, labs, and the room.", "phase": "Form hypotheses", "np": "Assessment", "ex": "A red area on his sacrum that stays red when pressed, a damp brief, and six hours on his back."}, {"name": "Analyze cues", "ask": "What could these cues mean together?", "do": "Link cues to each other and to the patient's condition.", "phase": "Form hypotheses", "np": "Analysis", "ex": "Pressure, moisture, and redness that does not blanch point to early pressure damage."}, {"name": "Prioritize hypotheses", "ask": "Which problem is most urgent, and why?", "do": "Rank the possible problems by urgency and risk.", "phase": "Refine hypotheses", "np": "Analysis", "ex": "The skin comes before the TV remote. Pressure damage can get worse within hours."}, {"name": "Generate solutions", "ask": "What should happen, and what will I do?", "do": "Set the outcome you want and choose the actions that get there.", "phase": "Refine hypotheses", "np": "Planning", "ex": "Goal: no new or larger red areas at the next skin check. Plan: turn, clean, dry, report."}, {"name": "Take action", "ask": "What do I do first?", "do": "Carry out the highest-priority actions, including reporting.", "phase": "Evaluate hypotheses", "np": "Implementation", "ex": "Turn him to his side with pillows, clean and dry the skin, and tell the RN now."}, {"name": "Evaluate outcomes", "ask": "Did it work? What now?", "do": "Compare what happened with what you expected.", "phase": "Evaluate hypotheses", "np": "Evaluation", "ex": "Check the area again at the next turn."}, {"name": "Outcome met?", "ask": "Did the patient reach the goal?", "do": "Yes: continue the plan and keep watching. Not met: go back to Recognize cues with the new information, and the loop starts again.", "phase": "Evaluate hypotheses", "np": "Evaluation", "ex": "Still red or larger at the next turn? Report again and start back at Recognize cues."}];
   var steps=[].slice.call(fig.querySelectorAll('.cj-step')), phases=[].slice.call(fig.querySelectorAll('.cj-phase'));
-  var info=document.getElementById('cj-info'), ret=fig.querySelector('.cj-ret');
-  var walkBtn=document.getElementById('cj-walk'), cur=-1, timer=null;
+  var info=document.getElementById('cj-info'), ret=fig.querySelector('.cj-ret'), status=document.getElementById('cj-status');
+  var walkBtn=document.getElementById('cj-walk'), soundBtn=document.getElementById('cj-sound');
+  var cur=-1, timer=null, walking=false, soundOn=false, missing=false;
+  var audio=new Audio(); audio.preload='none';
+  var BASE='audio/', HOWTO='<p class="cj-eyebrow">How to use this figure</p><p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below. Turn <b>Sound</b> on to hear each step explained.</p>';
   function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
   function show(i){
     cur=i; fig.classList.add('sel-on'); fig.classList.toggle('dec-on', i===6);
-    steps.forEach(function(s){ s.classList.toggle('on', +s.dataset.step===i); s.setAttribute('aria-pressed', +s.dataset.step===i?'true':'false'); });
+    steps.forEach(function(s){ var on=+s.dataset.step===i; s.classList.toggle('on',on); s.setAttribute('aria-pressed',on?'true':'false'); });
     var ph=Math.min(2,Math.floor(i/2)); phases.forEach(function(p){ p.classList.toggle('on', +p.dataset.phase===ph); });
-    var d=D[i], label = i<6 ? 'Step '+(i+1)+' of 6' : 'Decision';
+    var d=D[i], label=i<6?'Step '+(i+1)+' of 6':'Decision';
     info.innerHTML='<p class="cj-eyebrow">'+label+' · Layer 2: '+esc(d.phase)+' · Nursing process: '+esc(d.np)+'</p>'+
       '<h4>'+esc(d.name)+'</h4><dl><dt>Ask</dt><dd>'+esc(d.ask)+'</dd><dt>Do</dt><dd>'+esc(d.do)+'</dd></dl>'+
       '<dl class="cj-ex"><dt>Mr. Ellis</dt><dd>'+esc(d.ex)+'</dd></dl>';
     if(i===6){ ret.classList.remove('pulse'); void ret.getBBox(); ret.classList.add('pulse'); }
   }
-  function clearSel(){
-    stopWalk(); cur=-1; fig.classList.remove('sel-on','dec-on');
+  function showIntro(){
+    cur=-1; fig.classList.remove('sel-on','dec-on');
     steps.concat(phases).forEach(function(s){ s.classList.remove('on'); s.removeAttribute('aria-pressed'); });
-    info.innerHTML='<p class="cj-eyebrow">How to use this figure</p><p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below.</p>';
+    info.innerHTML='<p class="cj-eyebrow">Walking the loop</p><h4>Clinical judgment is a loop, not a line</h4><p>Six steps, one decision, and a path back to the start whenever the outcome is not met.</p>';
   }
-  function stopWalk(){ if(timer){clearInterval(timer);timer=null;} walkBtn.textContent='Walk the loop'; }
-  function walk(){
-    if(timer){ stopWalk(); return; }
-    var i=0; show(0); walkBtn.textContent='Pause';
-    timer=setInterval(function(){
-      i++;
-      if(i<=6){ show(i); }
-      else if(i===7){ show(0); info.querySelector('.cj-eyebrow').textContent='Not met: back to Step 1 with new information'; }
-      else { stopWalk(); }
-    }, 3200);
+  function showBack(){ show(0); info.querySelector('.cj-eyebrow').textContent='Not met: back to Step 1 with new information'; }
+  function stopAudio(){ audio.onended=null; audio.onerror=null; try{audio.pause();}catch(e){} }
+  function note(t){ status.textContent=t; status.hidden=!t; }
+  function play(name, done){
+    stopAudio(); if(!soundOn||missing){ if(done) timer=setTimeout(done,3200); return; }
+    var fallback=function(){ missing=true; note('Audio for this page has not been added yet. The walkthrough continues without sound.'); if(done) timer=setTimeout(done,3200); };
+    audio.onended=function(){ if(done) timer=setTimeout(done,400); };
+    audio.onerror=fallback;
+    audio.src=BASE+name+'.mp3';
+    var p=audio.play(); if(p&&p.catch) p.catch(function(e){ if(e&&e.name==='NotAllowedError'){ note('Tap Sound again to allow audio.'); if(done) timer=setTimeout(done,3200);} else fallback(); });
   }
+  function stopWalk(){ walking=false; if(timer){clearTimeout(timer);timer=null;} stopAudio(); walkBtn.textContent='Walk the loop'; }
+  var SEQ=['intro',0,1,2,3,4,5,6,'back'];
+  function runWalk(k){
+    if(!walking) return;
+    if(k>=SEQ.length){ stopWalk(); return; }
+    var it=SEQ[k];
+    if(it==='intro'){ if(!soundOn||missing){ runWalk(k+1); return; } showIntro(); play('cj-0',function(){runWalk(k+1);}); }
+    else if(it==='back'){ showBack(); play('cj-8',function(){ stopWalk(); }); }
+    else { show(it); play('cj-'+(it+1),function(){runWalk(k+1);}); }
+  }
+  function walk(){ if(walking){ stopWalk(); return; } walking=true; walkBtn.textContent='Pause'; runWalk(0); }
+  function pick(i){ stopWalk(); show(i); if(soundOn) play('cj-'+(i+1),null); }
   steps.forEach(function(s){
-    s.addEventListener('click',function(){ stopWalk(); show(+s.dataset.step); });
-    s.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); stopWalk(); show(+s.dataset.step); } });
+    s.addEventListener('click',function(){ pick(+s.dataset.step); });
+    s.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(+s.dataset.step); } });
   });
   walkBtn.addEventListener('click',walk);
-  document.getElementById('cj-next').addEventListener('click',function(){ stopWalk(); show(cur<0?0:(cur+1)%7); });
-  document.getElementById('cj-prev').addEventListener('click',function(){ stopWalk(); show(cur<=0?6:cur-1); });
-  document.getElementById('cj-all').addEventListener('click',clearSel);
+  document.getElementById('cj-next').addEventListener('click',function(){ pick(cur<0?0:(cur+1)%7); });
+  document.getElementById('cj-prev').addEventListener('click',function(){ pick(cur<=0?6:cur-1); });
+  document.getElementById('cj-all').addEventListener('click',function(){
+    stopWalk(); cur=-1; fig.classList.remove('sel-on','dec-on');
+    steps.concat(phases).forEach(function(s){ s.classList.remove('on'); s.removeAttribute('aria-pressed'); });
+    info.innerHTML=HOWTO;
+  });
+  soundBtn.addEventListener('click',function(){
+    soundOn=!soundOn; soundBtn.setAttribute('aria-pressed',soundOn?'true':'false'); soundBtn.textContent='Sound: '+(soundOn?'on':'off');
+    if(!soundOn){ stopAudio(); note(''); } else { missing=false; note(''); if(cur>=0&&!walking) play('cj-'+(cur+1),null); }
+  });
+  info.innerHTML=HOWTO;
 })();
 </script>
 </body>
