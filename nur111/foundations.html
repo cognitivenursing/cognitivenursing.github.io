@@ -57,6 +57,9 @@ ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
 .obj li{counter-increment:o;display:grid;grid-template-columns:2rem 1fr;gap:.5rem}
 .obj li::before{content:counter(o);font-weight:800;color:var(--navy-fg);background:var(--navy);width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;font-size:var(--s5);margin-top:.15rem}
 .obj .verb{font-weight:700}
+.outcomes-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:1.25rem;align-items:stretch}
+.outcomes-pair > section{border:1px solid var(--rule);border-radius:12px;padding:1.25rem 1.25rem 1.4rem;align-content:start;min-width:0}
+.outcomes-pair > section > h2{font-size:var(--s3)}
 .obj .lvl{font-style:italic;color:var(--muted);font-size:var(--s5)}
 
 .tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 .35rem;margin-left:.35rem;vertical-align:1px}
@@ -164,6 +167,7 @@ a{color:var(--head)}
     <span class="co flag">Safety flag</span>
   </div>
 
+  <div class="outcomes-pair">
   <section id="outcomes-cdm">
     <h2>Clinical Decision Making: Learning Outcomes</h2>
     <p>Upon completion of this module, the student will be able to:</p>
@@ -195,6 +199,7 @@ a{color:var(--head)}
     </ol>
     <p class="small">This page prepares you for outcomes 1 through 5. In class you will work on outcomes 5 through 8. For outcome 7, this course focuses on which team member is allowed to do a task; the full delegation process is taught in later courses.</p>
   </section>
+  </div>
 
   <section id="judgment">
     <h2>Four thinking terms</h2>
