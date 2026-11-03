@@ -60,6 +60,10 @@ ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
 .outcomes-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:1.25rem;align-items:stretch}
 .outcomes-pair > section{border:1px solid var(--rule);border-radius:12px;padding:1.25rem 1.25rem 1.4rem;align-content:start;min-width:0}
 .outcomes-pair > section > h2{font-size:var(--s3)}
+.exm{margin:0;display:grid;gap:.4rem;padding:.75rem .9rem;background:var(--concept-bg);border:1px solid var(--concept-edge);border-radius:8px;font-size:var(--s5)}
+.exm div{display:grid;grid-template-columns:5.5rem 1fr;gap:.15rem .5rem}
+.exm dt{font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--head);font-size:.75rem;padding-top:.15rem}
+.exm dd{margin:0;font-weight:600;grid-column:2}
 .obj .lvl{font-style:italic;color:var(--muted);font-size:var(--s5)}
 
 .tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 .35rem;margin-left:.35rem;vertical-align:1px}
@@ -229,6 +233,7 @@ a{color:var(--head)}
   <div class="outcomes-pair">
   <section id="outcomes-cdm">
     <h2>Clinical Decision Making: Learning Outcomes</h2>
+    <dl class="exm"><div><dt>Concept</dt><dd>Clinical Decision Making</dd></div><div><dt>Exemplar</dt><dd>Nursing Process/Clinical Judgment Model</dd></div></dl>
     <p>Upon completion of this module, the student will be able to:</p>
     <ol class="obj">
       <li><span><span class="verb">Define</span> clinical decision making and explain its importance in providing safe, effective care across the lifespan. <span class="lvl">(Knowledge)</span></span></li>
@@ -245,6 +250,7 @@ a{color:var(--head)}
 
   <section id="outcomes-mc">
     <h2>Managing Care: Learning Outcomes</h2>
+    <dl class="exm"><div><dt>Concept</dt><dd>Managing Care</dd></div><div><dt>Exemplars</dt><dd>Cost Effective Care</dd><dd>Role of intradisciplinary team</dd></div></dl>
     <p>Upon completion of this module, the student will be able to:</p>
     <ol class="obj">
       <li><span><span class="verb">Define</span> care management and its importance in providing safe, quality, and cost-effective nursing care across the lifespan. <span class="lvl">(Knowledge)</span></span></li>
