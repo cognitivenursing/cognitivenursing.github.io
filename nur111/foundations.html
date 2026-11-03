@@ -37,12 +37,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0} p{margin:0}
 .label{font-size:var(--s5);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .mast{background:var(--navy);color:var(--navy-fg)}
-.mast .wrap{padding-block:2.5rem 2rem;display:grid;gap:1.5rem}
+.mast .wrap{padding-block:2.5rem 2rem;display:grid;gap:1.25rem}
 .mast-main{display:grid;gap:.75rem;min-width:0}
-.mast-author{display:grid;gap:.35rem;align-content:end}
-.mast .mast-name{font-size:var(--s1);font-weight:800;line-height:1.15;opacity:1;max-width:none}
+.mast-main > p:not(.label){max-width:none}
+.mast-author{display:flex;flex-wrap:wrap;align-items:baseline;gap:.25rem 1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.25)}
+.mast .mast-name{font-size:var(--s2);font-weight:800;line-height:1.2;opacity:1;max-width:none}
 .mast .mast-title{font-size:var(--s4);opacity:.85;max-width:none}
-@media (min-width:860px){.mast .wrap{grid-template-columns:minmax(0,1fr) auto;align-items:end}.mast-author{text-align:right}}
 .mast .label{opacity:.8} .mast h1{font-size:var(--s1);font-weight:800} .mast p{opacity:.9;max-width:58ch}
 .meta{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:var(--s5);opacity:.85}
 nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
