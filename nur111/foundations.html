@@ -133,27 +133,50 @@ a{color:var(--head)}
 .cjl-ahred{fill:var(--flag)}
 .cjl-headred{fill:var(--flag)}
 .cjl figcaption{font-size:var(--s5);color:var(--muted);text-align:center}
-.cjfig{margin:.25rem 0 0;display:grid;gap:.5rem;--cj-seg:#0F5F86;--cj-badge:#1B3270;--cj-phase:#DCE6F0}
+.cjfig{margin:.25rem 0 0;display:grid;gap:.75rem;--cj-seg:#0F5F86;--cj-badge:#1B3270;--cj-phase:#DCE6F0}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}}
 :root[data-theme="dark"] .cjfig{--cj-seg:#1D6C94;--cj-badge:#2C4A9E;--cj-phase:#2A3440}
 .cjfig-svg{width:100%;max-width:640px;height:auto;margin:0 auto;display:block;font-family:var(--font)}
-.cjfig-seg{fill:var(--cj-seg);stroke:var(--concept-bg);stroke-width:5}
+.cjfig-seg{fill:var(--cj-seg);stroke:var(--concept-bg);stroke-width:5;transition:filter .2s}
 .cjfig-phase{fill:var(--cj-phase);stroke:var(--concept-bg);stroke-width:5}
 .cjfig-ptext{fill:var(--fg);font-size:15px;font-weight:600}
-.cjfig-stext{fill:#fff;font-size:16px;font-weight:700}
+.cjfig-stext{fill:#fff;font-size:16px;font-weight:700;pointer-events:none}
 .cjfig-badge{fill:var(--cj-badge);stroke:#fff;stroke-width:2}
-.cjfig-num{fill:#fff;font-size:16px;font-weight:800}
+.cjfig-num{fill:#fff;font-size:16px;font-weight:800;pointer-events:none}
 .cjfig-flow{fill:none;stroke:var(--muted);stroke-width:2.5}
 .cjfig-ahfill{fill:var(--muted)}
 .cjfig-ret{fill:none;stroke:var(--flag);stroke-width:7;stroke-linecap:round}
-.cjfig-ahred{fill:var(--flag)}
-.cjfig-dia{fill:var(--bg);stroke:var(--muted);stroke-width:2}
+.cjfig-headred{fill:var(--flag)}
+.cjfig-dia{fill:var(--bg);stroke:var(--muted);stroke-width:2;transition:stroke .2s}
 .cjfig-small{fill:var(--fg);font-size:14px;font-weight:600}
 .cjfig-lab{fill:var(--fg);font-size:16px;font-weight:600}
 .cjfig-redlab{fill:var(--flag);font-size:16px;font-weight:700}
 .cjfig-center{fill:var(--fg);font-size:26px;font-weight:700}
 .cjfig-tiny{fill:var(--muted);font-size:12px;font-weight:600}
 .cjfig figcaption{font-size:var(--s4);color:var(--muted);text-align:center}
+.cj-step{cursor:pointer;outline:none}
+.cj-step:hover .cjfig-seg{filter:brightness(1.2)}
+.cj-step:focus-visible .cjfig-seg{stroke:var(--fg);stroke-width:4}
+.cj-dec:hover .cjfig-dia,.cj-dec:focus-visible .cjfig-dia{stroke:var(--fg);stroke-width:3}
+.cj-step,.cj-phase,.cj-ret,.cj-yes,.cj-flow{transition:opacity .25s}
+.cjfig.sel-on .cj-step:not(.on),.cjfig.sel-on .cj-phase:not(.on){opacity:.3}
+.cjfig.sel-on:not(.dec-on) .cj-ret,.cjfig.sel-on:not(.dec-on) .cj-yes{opacity:.3}
+.cj-step.on .cjfig-seg{filter:brightness(1.15)}
+.cj-dec.on .cjfig-dia{stroke:var(--flag);stroke-width:3.5}
+@media (prefers-reduced-motion: no-preference){.cj-ret.pulse .cjfig-ret{animation:cjpulse 1s ease-in-out 2}@keyframes cjpulse{50%{stroke-width:11}}}
+.cj-panel{display:grid;gap:.75rem}
+.cj-controls{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.cj-btn{font:inherit;font-size:var(--s5);font-weight:700;padding:.5rem .9rem;border-radius:8px;border:1.5px solid var(--concept-edge);background:var(--bg);color:var(--fg);cursor:pointer}
+.cj-btn.primary{background:var(--navy);border-color:var(--navy);color:var(--navy-fg)}
+.cj-btn:focus-visible{outline:3px solid var(--head);outline-offset:2px}
+.cj-info{background:var(--bg);border:1px solid var(--concept-edge);border-radius:10px;padding:1rem 1.15rem;display:grid;gap:.4rem;min-height:9.5rem;max-width:none!important}
+.cj-info p{max-width:none}
+.cj-eyebrow{font-size:var(--s5);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--head)}
+.cj-info h4{margin:0;font-size:var(--s3)}
+.cj-info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.25rem .75rem}
+.cj-info dt{font-weight:700}
+.cj-info dd{margin:0}
+.cj-info .cj-ex dt{color:var(--voice-ink)}
 </style>
 </head>
 <body>
@@ -380,55 +403,45 @@ a{color:var(--head)}
       <p class="label">Key concept</p>
       <p><b>It is a loop, not a line.</b> When an outcome is not met, you go back to recognizing cues with the new information. Layer 2 runs underneath the whole time: you form hypotheses from the cues, refine them as you prioritize and plan, and evaluate them against what happens.</p>
       <figure class="cjfig">
-<svg class="cjfig-svg" viewBox="170 -34 680 700" role="img" aria-labelledby="cjfig-t cjfig-d">
+<svg class="cjfig-svg" viewBox="170 -34 680 700" role="group" aria-labelledby="cjfig-t cjfig-d">
 <title id="cjfig-t">Clinical judgment is a loop, not a line</title>
-<desc id="cjfig-d">Six steps arranged clockwise in a ring: 1 Recognize cues, 2 Analyze cues, 3 Prioritize hypotheses, 4 Generate solutions, 5 Take action, 6 Evaluate outcomes. After step 6, a decision asks whether the outcome was met. Yes: continue the plan. Not met: a red arrow returns to step 1, Recognize cues, with new information. An inner ring shows Layer 2 running underneath the whole time: Form hypotheses under steps 1 and 2, Refine hypotheses under steps 3 and 4, and Evaluate hypotheses under steps 5 and 6.</desc>
-<defs><marker id="cjfig-ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="cjfig-ahfill"/></marker><marker id="cjfig-ahr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" class="cjfig-ahred"/></marker></defs>
-<path d="M425.0 220.1 A150 150 0 0 1 650.0 350.0 L604.0 350.0 A104 104 0 0 0 448.0 259.9 Z" class="cjfig-phase"/>
-<path d="M650.0 350.0 A150 150 0 0 1 425.0 479.9 L448.0 440.1 A104 104 0 0 0 604.0 350.0 Z" class="cjfig-phase"/>
-<path d="M425.0 479.9 A150 150 0 0 1 425.0 220.1 L448.0 259.9 A104 104 0 0 0 448.0 440.1 Z" class="cjfig-phase"/>
-<path id="cjfig-p0" d="M441.7 230.5 A133 133 0 0 1 632.7 340.7" fill="none"/>
-<text class="cjfig-ptext"><textPath href="#cjfig-p0" startOffset="50%" text-anchor="middle">Form hypotheses</textPath></text>
-<path id="cjfig-p1" d="M447.0 458.8 A121 121 0 0 0 620.7 358.4" fill="none"/>
-<text class="cjfig-ptext"><textPath href="#cjfig-p1" startOffset="50%" text-anchor="middle">Refine hypotheses</textPath></text>
-<path id="cjfig-p2" d="M425.6 460.3 A133 133 0 0 1 425.6 239.7" fill="none"/>
-<text class="cjfig-ptext"><textPath href="#cjfig-p2" startOffset="50%" text-anchor="middle">Evaluate hypotheses</textPath></text>
-<path d="M366.0 117.9 A268 268 0 0 1 634.0 117.9 L579.0 213.2 A158 158 0 0 0 421.0 213.2 Z" class="cjfig-seg"/>
-<path d="M634.0 117.9 A268 268 0 0 1 768.0 350.0 L658.0 350.0 A158 158 0 0 0 579.0 213.2 Z" class="cjfig-seg"/>
-<path d="M768.0 350.0 A268 268 0 0 1 634.0 582.1 L579.0 486.8 A158 158 0 0 0 658.0 350.0 Z" class="cjfig-seg"/>
-<path d="M634.0 582.1 A268 268 0 0 1 366.0 582.1 L421.0 486.8 A158 158 0 0 0 579.0 486.8 Z" class="cjfig-seg"/>
-<path d="M366.0 582.1 A268 268 0 0 1 232.0 350.0 L342.0 350.0 A158 158 0 0 0 421.0 486.8 Z" class="cjfig-seg"/>
-<path d="M232.0 350.0 A268 268 0 0 1 366.0 117.9 L421.0 213.2 A158 158 0 0 0 342.0 350.0 Z" class="cjfig-seg"/>
-<circle cx="500.0" cy="107.0" r="15" class="cjfig-badge"/><text x="500.0" y="112.5" text-anchor="middle" class="cjfig-num">1</text>
-<text class="cjfig-stext" x="500.0" y="144.0" text-anchor="middle">Recognize<tspan x="500.0" dy="20">cues</tspan></text>
-<circle cx="684.5" cy="213.5" r="15" class="cjfig-badge"/><text x="684.5" y="219.0" text-anchor="middle" class="cjfig-num">2</text>
-<text class="cjfig-stext" x="684.5" y="250.5" text-anchor="middle">Analyze<tspan x="684.5" dy="20">cues</tspan></text>
-<circle cx="684.5" cy="426.5" r="15" class="cjfig-badge"/><text x="684.5" y="432.0" text-anchor="middle" class="cjfig-num">3</text>
-<text class="cjfig-stext" x="684.5" y="463.5" text-anchor="middle">Prioritize<tspan x="684.5" dy="20">hypotheses</tspan></text>
-<circle cx="500.0" cy="533.0" r="15" class="cjfig-badge"/><text x="500.0" y="538.5" text-anchor="middle" class="cjfig-num">4</text>
-<text class="cjfig-stext" x="500.0" y="570.0" text-anchor="middle">Generate<tspan x="500.0" dy="20">solutions</tspan></text>
-<circle cx="315.5" cy="426.5" r="15" class="cjfig-badge"/><text x="315.5" y="432.0" text-anchor="middle" class="cjfig-num">5</text>
-<text class="cjfig-stext" x="315.5" y="463.5" text-anchor="middle">Take<tspan x="315.5" dy="20">action</tspan></text>
-<circle cx="315.5" cy="213.5" r="15" class="cjfig-badge"/><text x="315.5" y="219.0" text-anchor="middle" class="cjfig-num">6</text>
-<text class="cjfig-stext" x="315.5" y="250.5" text-anchor="middle">Evaluate<tspan x="315.5" dy="20">outcomes</tspan></text>
+<desc id="cjfig-d">Six steps arranged clockwise in a ring: 1 Recognize cues, 2 Analyze cues, 3 Prioritize hypotheses, 4 Generate solutions, 5 Take action, 6 Evaluate outcomes. After step 6, a decision asks whether the outcome was met. Yes: continue the plan. Not met: a red arrow returns to step 1, Recognize cues, with new information. An inner ring shows Layer 2 running underneath the whole time: Form hypotheses under steps 1 and 2, Refine hypotheses under steps 3 and 4, and Evaluate hypotheses under steps 5 and 6. Each step is a button that shows details below the figure.</desc>
+<defs><marker id="cjfig-ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="cjfig-ahfill"/></marker></defs>
+<g class="cj-phase" data-phase="0"><path d="M425.0 220.1 A150 150 0 0 1 650.0 350.0 L604.0 350.0 A104 104 0 0 0 448.0 259.9 Z" class="cjfig-phase"/><path id="cjfig-p0" d="M441.7 230.5 A133 133 0 0 1 632.7 340.7" fill="none"/><text class="cjfig-ptext"><textPath href="#cjfig-p0" startOffset="50%" text-anchor="middle">Form hypotheses</textPath></text></g>
+<g class="cj-phase" data-phase="1"><path d="M650.0 350.0 A150 150 0 0 1 425.0 479.9 L448.0 440.1 A104 104 0 0 0 604.0 350.0 Z" class="cjfig-phase"/><path id="cjfig-p1" d="M447.0 458.8 A121 121 0 0 0 620.7 358.4" fill="none"/><text class="cjfig-ptext"><textPath href="#cjfig-p1" startOffset="50%" text-anchor="middle">Refine hypotheses</textPath></text></g>
+<g class="cj-phase" data-phase="2"><path d="M425.0 479.9 A150 150 0 0 1 425.0 220.1 L448.0 259.9 A104 104 0 0 0 448.0 440.1 Z" class="cjfig-phase"/><path id="cjfig-p2" d="M425.6 460.3 A133 133 0 0 1 425.6 239.7" fill="none"/><text class="cjfig-ptext"><textPath href="#cjfig-p2" startOffset="50%" text-anchor="middle">Evaluate hypotheses</textPath></text></g>
+<g class="cj-step" data-step="0" tabindex="0" role="button" aria-label="Step 1: Recognize cues"><path d="M366.0 117.9 A268 268 0 0 1 634.0 117.9 L579.0 213.2 A158 158 0 0 0 421.0 213.2 Z" class="cjfig-seg"/><circle cx="500.0" cy="107.0" r="15" class="cjfig-badge"/><text x="500.0" y="112.5" text-anchor="middle" class="cjfig-num">1</text><text class="cjfig-stext" x="500.0" y="144.0" text-anchor="middle">Recognize<tspan x="500.0" dy="20">cues</tspan></text></g>
+<g class="cj-step" data-step="1" tabindex="0" role="button" aria-label="Step 2: Analyze cues"><path d="M634.0 117.9 A268 268 0 0 1 768.0 350.0 L658.0 350.0 A158 158 0 0 0 579.0 213.2 Z" class="cjfig-seg"/><circle cx="684.5" cy="213.5" r="15" class="cjfig-badge"/><text x="684.5" y="219.0" text-anchor="middle" class="cjfig-num">2</text><text class="cjfig-stext" x="684.5" y="250.5" text-anchor="middle">Analyze<tspan x="684.5" dy="20">cues</tspan></text></g>
+<g class="cj-step" data-step="2" tabindex="0" role="button" aria-label="Step 3: Prioritize hypotheses"><path d="M768.0 350.0 A268 268 0 0 1 634.0 582.1 L579.0 486.8 A158 158 0 0 0 658.0 350.0 Z" class="cjfig-seg"/><circle cx="684.5" cy="426.5" r="15" class="cjfig-badge"/><text x="684.5" y="432.0" text-anchor="middle" class="cjfig-num">3</text><text class="cjfig-stext" x="684.5" y="463.5" text-anchor="middle">Prioritize<tspan x="684.5" dy="20">hypotheses</tspan></text></g>
+<g class="cj-step" data-step="3" tabindex="0" role="button" aria-label="Step 4: Generate solutions"><path d="M634.0 582.1 A268 268 0 0 1 366.0 582.1 L421.0 486.8 A158 158 0 0 0 579.0 486.8 Z" class="cjfig-seg"/><circle cx="500.0" cy="533.0" r="15" class="cjfig-badge"/><text x="500.0" y="538.5" text-anchor="middle" class="cjfig-num">4</text><text class="cjfig-stext" x="500.0" y="570.0" text-anchor="middle">Generate<tspan x="500.0" dy="20">solutions</tspan></text></g>
+<g class="cj-step" data-step="4" tabindex="0" role="button" aria-label="Step 5: Take action"><path d="M366.0 582.1 A268 268 0 0 1 232.0 350.0 L342.0 350.0 A158 158 0 0 0 421.0 486.8 Z" class="cjfig-seg"/><circle cx="315.5" cy="426.5" r="15" class="cjfig-badge"/><text x="315.5" y="432.0" text-anchor="middle" class="cjfig-num">5</text><text class="cjfig-stext" x="315.5" y="463.5" text-anchor="middle">Take<tspan x="315.5" dy="20">action</tspan></text></g>
+<g class="cj-step" data-step="5" tabindex="0" role="button" aria-label="Step 6: Evaluate outcomes"><path d="M232.0 350.0 A268 268 0 0 1 366.0 117.9 L421.0 213.2 A158 158 0 0 0 342.0 350.0 Z" class="cjfig-seg"/><circle cx="315.5" cy="213.5" r="15" class="cjfig-badge"/><text x="315.5" y="219.0" text-anchor="middle" class="cjfig-num">6</text><text class="cjfig-stext" x="315.5" y="250.5" text-anchor="middle">Evaluate<tspan x="315.5" dy="20">outcomes</tspan></text></g>
+<g class="cj-flow">
 <path d="M565.7 65.5 A292 292 0 0 1 713.6 150.9" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
 <path d="M779.2 264.6 A292 292 0 0 1 779.2 435.4" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
 <path d="M713.6 549.1 A292 292 0 0 1 565.7 634.5" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
 <path d="M434.3 634.5 A292 292 0 0 1 286.4 549.1" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
 <path d="M220.8 435.4 A292 292 0 0 1 220.8 264.6" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
-<path d="M286.4 150.9 A292 292 0 0 1 316.2 123.1" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
-<path d="M339.0 25.1 L385.0 71.1 L339.0 117.1 L293.0 71.1 Z" class="cjfig-dia"/>
-<text x="339.0" y="68.1" text-anchor="middle" class="cjfig-small">Outcome<tspan x="339.0" dy="17">met?</tspan></text>
-<path d="M345.0 21.1 Q359.0 -4.9 391.0 -4.9" class="cjfig-flow" marker-end="url(#cjfig-ah)"/>
-<text x="331.0" y="11.1" text-anchor="end" class="cjfig-small">Yes</text>
-<text x="399.0" y="0.1" class="cjfig-lab">Continue the plan</text>
-<path d="M381.0 65.1 Q439.0 37.1 494.0 70.0" class="cjfig-ret" marker-end="url(#cjfig-ahr)"/>
-<text x="534.0" y="24.0" class="cjfig-redlab">Not met: back to Recognize</text>
-<text x="534.0" y="44.0" class="cjfig-redlab">cues with new information</text>
+<path d="M286.4 150.9 A292 292 0 0 1 316.2 123.1" class="cjfig-flow" marker-end="url(#cjfig-ah)"/></g>
+<g class="cj-step cj-dec" data-step="6" tabindex="0" role="button" aria-label="Decision: outcome met?"><path d="M339.0 25.1 L385.0 71.1 L339.0 117.1 L293.0 71.1 Z" class="cjfig-dia"/><text x="339.0" y="68.1" text-anchor="middle" class="cjfig-small">Outcome<tspan x="339.0" dy="17">met?</tspan></text></g>
+<g class="cj-yes"><path d="M345.0 21.1 Q359.0 -4.9 391.0 -4.9" class="cjfig-flow" marker-end="url(#cjfig-ah)"/><text x="331.0" y="11.1" text-anchor="end" class="cjfig-small">Yes</text><text x="399.0" y="0.1" class="cjfig-lab">Continue the plan</text></g>
+<g class="cj-ret"><path d="M381.0 65.1 Q439.0 37.1 484.6 69.8" class="cjfig-ret"/><path d="M496.0 78.0 L470.5 75.7 L484.6 69.8 L485.7 54.6 Z" class="cjfig-headred"/><text x="534.0" y="24.0" class="cjfig-redlab">Not met: back to Recognize</text><text x="534.0" y="44.0" class="cjfig-redlab">cues with new information</text></g>
 <text x="500" y="336" text-anchor="middle" class="cjfig-center">A loop,<tspan x="500" dy="30">not a line</tspan></text>
 <text x="500" y="394" text-anchor="middle" class="cjfig-tiny">Inner ring: Layer 2,<tspan x="500" dy="15">running the whole time</tspan></text>
 </svg>
 <figcaption>Adapted from the NCSBN Clinical Judgment Measurement Model.</figcaption>
+<div class="cj-panel">
+  <div class="cj-controls">
+    <button type="button" class="cj-btn primary" id="cj-walk">Walk the loop</button>
+    <button type="button" class="cj-btn" id="cj-prev">Back</button>
+    <button type="button" class="cj-btn" id="cj-next">Next step</button>
+    <button type="button" class="cj-btn" id="cj-all">Show all</button>
+  </div>
+  <div class="cj-info" id="cj-info" aria-live="polite">
+    <p class="cj-eyebrow">How to use this figure</p>
+    <p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below.</p>
+  </div>
+</div>
 </figure>
     </div>
 
@@ -684,6 +697,50 @@ a{color:var(--head)}
       try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){}
     });
   });
+})();
+</script>
+<script>
+(function(){
+  var fig=document.querySelector('.cjfig'); if(!fig) return;
+  var D=[{"name": "Recognize cues", "ask": "What matters most right now?", "do": "Pick out the data that matter from the history, the exam, labs, and the room.", "phase": "Form hypotheses", "np": "Assessment", "ex": "A red area on his sacrum that stays red when pressed, a damp brief, and six hours on his back."}, {"name": "Analyze cues", "ask": "What could these cues mean together?", "do": "Link cues to each other and to the patient's condition.", "phase": "Form hypotheses", "np": "Analysis", "ex": "Pressure, moisture, and redness that does not blanch point to early pressure damage."}, {"name": "Prioritize hypotheses", "ask": "Which problem is most urgent, and why?", "do": "Rank the possible problems by urgency and risk.", "phase": "Refine hypotheses", "np": "Analysis", "ex": "The skin comes before the TV remote. Pressure damage can get worse within hours."}, {"name": "Generate solutions", "ask": "What should happen, and what will I do?", "do": "Set the outcome you want and choose the actions that get there.", "phase": "Refine hypotheses", "np": "Planning", "ex": "Goal: no new or larger red areas at the next skin check. Plan: turn, clean, dry, report."}, {"name": "Take action", "ask": "What do I do first?", "do": "Carry out the highest-priority actions, including reporting.", "phase": "Evaluate hypotheses", "np": "Implementation", "ex": "Turn him to his side with pillows, clean and dry the skin, and tell the RN now."}, {"name": "Evaluate outcomes", "ask": "Did it work? What now?", "do": "Compare what happened with what you expected.", "phase": "Evaluate hypotheses", "np": "Evaluation", "ex": "Check the area again at the next turn."}, {"name": "Outcome met?", "ask": "Did the patient reach the goal?", "do": "Yes: continue the plan and keep watching. Not met: go back to Recognize cues with the new information, and the loop starts again.", "phase": "Evaluate hypotheses", "np": "Evaluation", "ex": "Still red or larger at the next turn? Report again and start back at Recognize cues."}];
+  var steps=[].slice.call(fig.querySelectorAll('.cj-step')), phases=[].slice.call(fig.querySelectorAll('.cj-phase'));
+  var info=document.getElementById('cj-info'), ret=fig.querySelector('.cj-ret');
+  var walkBtn=document.getElementById('cj-walk'), cur=-1, timer=null;
+  function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function show(i){
+    cur=i; fig.classList.add('sel-on'); fig.classList.toggle('dec-on', i===6);
+    steps.forEach(function(s){ s.classList.toggle('on', +s.dataset.step===i); s.setAttribute('aria-pressed', +s.dataset.step===i?'true':'false'); });
+    var ph=Math.min(2,Math.floor(i/2)); phases.forEach(function(p){ p.classList.toggle('on', +p.dataset.phase===ph); });
+    var d=D[i], label = i<6 ? 'Step '+(i+1)+' of 6' : 'Decision';
+    info.innerHTML='<p class="cj-eyebrow">'+label+' · Layer 2: '+esc(d.phase)+' · Nursing process: '+esc(d.np)+'</p>'+
+      '<h4>'+esc(d.name)+'</h4><dl><dt>Ask</dt><dd>'+esc(d.ask)+'</dd><dt>Do</dt><dd>'+esc(d.do)+'</dd></dl>'+
+      '<dl class="cj-ex"><dt>Mr. Ellis</dt><dd>'+esc(d.ex)+'</dd></dl>';
+    if(i===6){ ret.classList.remove('pulse'); void ret.getBBox(); ret.classList.add('pulse'); }
+  }
+  function clearSel(){
+    stopWalk(); cur=-1; fig.classList.remove('sel-on','dec-on');
+    steps.concat(phases).forEach(function(s){ s.classList.remove('on'); s.removeAttribute('aria-pressed'); });
+    info.innerHTML='<p class="cj-eyebrow">How to use this figure</p><p>Tap any step, or press <b>Walk the loop</b> to go around once. Each step shows the question to ask, what you do, and how it played out for Mr. Ellis in the worked example below.</p>';
+  }
+  function stopWalk(){ if(timer){clearInterval(timer);timer=null;} walkBtn.textContent='Walk the loop'; }
+  function walk(){
+    if(timer){ stopWalk(); return; }
+    var i=0; show(0); walkBtn.textContent='Pause';
+    timer=setInterval(function(){
+      i++;
+      if(i<=6){ show(i); }
+      else if(i===7){ show(0); info.querySelector('.cj-eyebrow').textContent='Not met: back to Step 1 with new information'; }
+      else { stopWalk(); }
+    }, 3200);
+  }
+  steps.forEach(function(s){
+    s.addEventListener('click',function(){ stopWalk(); show(+s.dataset.step); });
+    s.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); stopWalk(); show(+s.dataset.step); } });
+  });
+  walkBtn.addEventListener('click',walk);
+  document.getElementById('cj-next').addEventListener('click',function(){ stopWalk(); show(cur<0?0:(cur+1)%7); });
+  document.getElementById('cj-prev').addEventListener('click',function(){ stopWalk(); show(cur<=0?6:cur-1); });
+  document.getElementById('cj-all').addEventListener('click',clearSel);
 })();
 </script>
 </body>
