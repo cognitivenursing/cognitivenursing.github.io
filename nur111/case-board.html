@@ -109,6 +109,7 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
 .timer .t{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.6rem;min-width:5.2ch;text-align:center;padding:.15rem .5rem;border-radius:8px;border:2px solid var(--rule)}
 .timer .t.low{border-color:#b45309;color:#b45309}
 .timer .t.done{background:#b42318;border-color:#b42318;color:#fff;animation:tflash .5s steps(2) infinite}
+#stage .body p.breakback{line-height:1.15;color:var(--ink,inherit);font-size:clamp(2rem,6vw,4rem);font-weight:800;margin:1rem 0}
 .timer .b.sm{padding:.45rem .6rem;font-size:.85rem}
 @keyframes tflash{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){.timer .t.done{animation:none}}
@@ -128,7 +129,6 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
         <button class="b sm" id="tminus" type="button" aria-label="Subtract one minute">−1</button>
         <button class="b sm" id="tplus" type="button" aria-label="Add one minute">+1</button>
         <button class="b sm" id="treset" type="button">Reset</button>
-        <button class="b sm" id="tbreak" type="button">Break 10</button>
       </div>
     </div>
     <div class="strip" id="strip" aria-label="CJMM functions">
@@ -243,6 +243,11 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
      body:"<div class='patient'><h3>1000 · hearing aid in, warm tea and juice offered, sat on the edge of the bed before standing</h3><div class='vitals'><div class='v'><span>Drank</span><b>360 mL</b><small>since 0800</small></div><div class='v'><span>Voided</span><b>200 mL</b><small>light yellow</small></div><div class='v'><span>Dizziness</span><b>None</b><small>with standing slowly</small></div><div class='v'><span>HR</span><b>90</b></div><div class='v'><span>BP</span><b>114/66</b></div></div></div>",
      reveal:"<div class='tbl wide'><table><thead><tr><th>Goal</th><th>Evidence at 1000</th><th>Judgment</th></tr></thead><tbody> <tr><td>No fall</td><td>Sat on the edge of the bed first, stood with help, no dizziness</td><td><b>Met so far.</b> The shift isn't over.</td></tr> <tr><td>480 mL by 1200</td><td>360 mL since 0800. Urine 200 mL, now light yellow. HR 98 → 90. BP 106/62 → 114/66.</td><td><b>On track, not yet met.</b> 360 of 480 mL, with two hours left.</td></tr> </tbody></table></div> <div class='two'> <div class='co concept'><p class='label'>Read the whole picture</p><p>The intake number alone says \"not met.\" The other cues say the plan is working: lighter urine, a slower heart rate, and a higher BP all point the same way. Evaluate with every cue that relates to the goal, not just one.</p></div> <div class='co concept'><p class='label'>Then decide</p><ul><li><b>Working:</b> continue the plan.</li><li><b>Partly working:</b> continue and watch, or adjust one piece.</li><li><b>Not working:</b> go back to Recognize cues and ask what you missed.</li></ul><p><b>Here:</b> continue offering drinks she likes and keep recording intake and output.</p></div> </div>"},
 
+    {f:[],tag:"Break · 10 min",title:"Break",min:10,
+     prompt:"Take 10 minutes. Be back in your seat when the timer ends.",
+     body:"<p class='breakback' id='backat'>Press Start to begin the break.</p><p class='small'>When we return: Part 2, managing care. Who on the team does what for Mrs. Moore?</p>",
+     reveal:""},
+
     {f:[],tag:"Case part 2 · Managing care · 10 min",title:"Who does what?",min:10,
      prompt:"It's 0930. Her team is an RN, an LPN, and a UAP, with a case manager, PT, and a dietitian available. Assign each task and say why.",
      body:"<ol><li>Take her 1000 vital signs</li><li>Assess her dizziness and decide whether she is safe to walk</li><li>Help her to the bathroom</li><li>Record her intake and output</li><li>Teach her to call before getting up</li><li>Give scheduled oral meds to a stable patient next door</li><li>Plan for going home alone with a cane</li><li>Check her walking and cane use</li><li>Find foods and drinks she will take within her diet</li></ol>",
@@ -295,13 +300,19 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
     clock.textContent=s.tag.split('·')[0].trim();
     prevB.disabled=st.i===0; nextB.disabled=st.i===stages.length-1;
     revB.textContent=shown?'Hide debrief':'Reveal debrief';
+    revB.hidden=!s.reveal;
     revB.setAttribute('aria-pressed',shown?'true':'false');
   }
   // ---- section timer ----
   var tdisp=document.getElementById('tdisp'), tgo=document.getElementById('tgo'), tleft=0, tid=null, ac=null, alarmOn=false;
   function fmt(x){ var m=Math.floor(x/60), sec=x%60; return m+':'+(sec<10?'0':'')+sec; }
   function tdraw(){ tdisp.textContent=fmt(Math.max(0,tleft)); tdisp.classList.toggle('low', tleft>0 && tleft<=60);
-    tdisp.classList.toggle('done', tleft<=0 && alarmOn); tgo.textContent=tid?'Pause':'Start'; }
+    tdisp.classList.toggle('done', tleft<=0 && alarmOn); tgo.textContent=tid?'Pause':'Start';
+    var bk=document.getElementById('backat');
+    if(bk){ if(tid){ var d=new Date(Date.now()+tleft*1000), h=d.getHours()%12||12, mm=d.getMinutes();
+        bk.textContent='Back at '+h+':'+(mm<10?'0':'')+mm; }
+      else if(tleft<=0 && alarmOn){ bk.textContent='Break is over. Take your seats.'; }
+      else { bk.textContent='Press Start to begin the break.'; } } }
   function tstop(){ if(tid){ clearInterval(tid); tid=null; } }
   function tset(sec){ tstop(); alarmOn=false; tleft=sec; tdraw(); }
   function unlock(){ try{ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); } if(ac.state==='suspended') ac.resume(); }catch(e){} }
@@ -322,7 +333,6 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
   document.getElementById('treset').addEventListener('click',function(){ tset((stages[st.i].min||5)*60); });
   document.getElementById('tplus').addEventListener('click',function(){ tleft+=60; alarmOn=false; tdraw(); });
   document.getElementById('tminus').addEventListener('click',function(){ tleft=Math.max(0,tleft-60); tdraw(); });
-  document.getElementById('tbreak').addEventListener('click',function(){ unlock(); tset(600); tid=setInterval(tick,1000); tdraw(); });
   function go(k){ st.i=Math.max(0,Math.min(stages.length-1,k)); save(); render(); tset((stages[st.i].min||5)*60); window.scrollTo(0,0); }
   prevB.addEventListener('click',function(){ go(st.i-1); });
   nextB.addEventListener('click',function(){ go(st.i+1); });
