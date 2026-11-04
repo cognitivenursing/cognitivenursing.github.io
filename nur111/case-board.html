@@ -183,12 +183,12 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
   var T=function(id){return document.getElementById(id).innerHTML;};
   var stages=[
     {f:[],tag:"Cold open · 8 min",title:"First look",
-     prompt:"60 seconds alone, 60 with your partner. What do you notice? What worries you?",
+     prompt:"60 seconds alone, then 60 seconds with your group. What do you notice? What worries you?",
      body:T("vit0800")+T("chart"),
      reveal:"<div class='co concept'><p class='label'>Faculty</p><p>Write their words under <b>Notice</b> and <b>Worried about</b>. Don't correct anything yet. Praise anyone who noticed the room, not just the numbers.</p></div>"},
 
     {f:[],tag:"Build the model · 12 min",title:"Match the nursing process to the CJMM",
-     prompt:"With your partner, lay out the 11 cards. Match each nursing process step to its CJMM function or functions. Then draw the loop.",
+     prompt:"As a group, lay out the 11 cards. Match each nursing process step to its CJMM function or functions. Then draw the loop.",
      body:"<p class='small'>Cards: Assessment, Analysis, Planning, Implementation, Evaluation · Recognize cues, Analyze cues, Prioritize hypotheses, Generate solutions, Take action, Evaluate outcomes</p>",
      reveal:"<div class='tbl'><table><thead><tr><th>Nursing process</th><th>CJMM Layer 3</th></tr></thead><tbody><tr><td>Assessment</td><td>Recognize cues</td></tr><tr><td>Analysis</td><td>Analyze cues · Prioritize hypotheses</td></tr><tr><td>Planning</td><td>Generate solutions</td></tr><tr><td>Implementation</td><td>Take action</td></tr><tr><td>Evaluation</td><td>Evaluate outcomes</td></tr></tbody></table></div>"+
        "<div class='co concept'><p class='label'>It is a loop</p><div class='loop'><span>Recognize</span><i>→</i><span>Analyze</span><i>→</i><span>Prioritize</span><i>→</i><span>Generate</span><i>→</i><span>Take action</span><i>→</i><span>Evaluate</span><i>↺ back to Recognize</i></div><p>Layer 2 runs underneath: form hypotheses, refine them, evaluate them.</p></div>"+
@@ -219,7 +219,7 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
     {f:["ph"],tag:"Case part 1 · Prioritize hypotheses",title:"What could hurt her first?",
      prompt:"Rank her problems. Defend your number one.",
      body:"<p>Use Maslow and ABCs. Ask what could happen in the next five minutes.</p>",
-     reveal:"<ol><li><b>Fall prevention.</b> A potential problem, but the harm is close and severe. She is dizzy and gets up alone.</li><li><b>Fluids.</b> The problem behind the dizziness.</li><li><b>Communication.</b> Third in rank, first in time: putting the hearing aid in takes 30 seconds and makes everything else work.</li><li><b>Nutrition and skin.</b></li></ol><div class='co pearl'><p class='label'>If a pair put fluids first</p><p>Ask: what happens if she stands up while you go get the juice?</p></div>"},
+     reveal:"<ol><li><b>Fall prevention.</b> A potential problem, but the harm is close and severe. She is dizzy and gets up alone.</li><li><b>Fluids.</b> The problem behind the dizziness.</li><li><b>Communication.</b> Third in rank, first in time: putting the hearing aid in takes 30 seconds and makes everything else work.</li><li><b>Nutrition and skin.</b></li></ol><div class='co pearl'><p class='label'>If a group put fluids first</p><p>Ask: what happens if she stands up while you go get the juice?</p></div>"},
 
     {f:["gs"],tag:"Case part 1 · Generate solutions",title:"Goal and actions",
      prompt:"Write one measurable goal and three nursing actions within your scope as a student. Half of you will write \"encourage fluids.\" With what?",
@@ -253,7 +253,7 @@ button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
      reveal:"<ol><li><b>Ice water.</b> Wasted staff time, and the goal still isn't met. Ask what she'll drink.</li><li><b>Opened socks.</b> Supply waste, and the safety measure never reached her feet.</li><li><b>Double vitals.</b> Duplicated work from unclear communication.</li><li><b>Breakfast tray.</b> Order what she will actually eat.</li></ol><div class='co pearl'><p class='label'>The point</p><p>The most expensive waste would be a preventable fall: a hip fracture means surgery, a longer stay, and maybe never living alone again.</p></div>"},
 
     {f:["eo","rc"],tag:"Case part 3 · Dizzy again · 15 min",title:"1130: the loop comes back",
-     prompt:"What do you do first? Then write an SBAR to the RN. One partner plays the RN.",
+     prompt:"What do you do first? Then write an SBAR to the RN as a group. One person calls, one plays the RN, and the rest observe with the checklist on your worksheet.",
      body:"<div class='co voice'><p class='label'>The UAP reports</p><blockquote>\"She stood up fast to go to the bathroom and said the room was spinning. I helped her sit back down. She didn't fall.\"</blockquote></div><div class='patient'><h3>1130</h3><div class='vitals'><div class='v alert'><span>HR</span><b>102</b></div><div class='v alert'><span>BP</span><b>104/60</b><small>usually about 130/80</small></div><div class='v'><span>Last drink</span><b>1000</b></div></div></div>",
      reveal:"<div class='co flag'><p class='label'>First</p><ol><li>Stay with her. Keep her sitting or lying down.</li><li>Call light in reach, bed low.</li><li>Report to the RN or instructor now. Use the call light; don't leave her.</li><li>Recheck vital signs when the RN asks. Chart after.</li></ol></div>"+
        "<div class='tbl wide'><table><thead><tr><th></th><th>Model SBAR, student to RN</th></tr></thead><tbody>"+
