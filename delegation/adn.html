@@ -333,6 +333,12 @@ section > p, section > ol, section > ul, .co p, .co ul, .resp .hint, .event > p{
     <p>Select <b>Build my submission</b>, then <b>Copy</b>, and paste the text into the course dropbox. Faculty grade the dropbox submission, not this page.</p>
     <div class="row"><button class="btn" id="build">Build my submission</button><button class="btn sec" id="copy">Copy</button><span class="status" id="copymsg" aria-live="polite"></span></div>
     <textarea id="out" readonly aria-label="Your submission text"></textarea>
+    <div class="lockbox" id="resetbox">
+      <h3>Start over</h3>
+      <p>Clears every answer on this page, unlocks Phase 1, and resets the clock to 0730. Copy your submission first if you need it.</p>
+      <div class="row" id="resetrow1"><button class="btn sec" id="reset1">Start over</button></div>
+      <div class="row" id="resetrow2" hidden><span><b>Clear all answers?</b></span><button class="btn" id="reset2">Clear and start over</button><button class="btn sec" id="reset0">Cancel</button></div>
+    </div>
   </section>
 
   <footer id="sources">
@@ -355,7 +361,7 @@ section > p, section > ol, section > ul, .co p, .co ul, .resp .hint, .event > p{
 <script>
 const ROLE = "ADN";
 const ADN = ROLE === "ADN";
-const KEY = "deleg-case-" + ROLE + "-v1";
+const KEY = "deleg-case-" + ROLE + (ADN ? "-v2" : "-v1");
 
 /* ---------- Version text ---------- */
 const V = ADN ? {
@@ -867,6 +873,16 @@ $("#copy").onclick = () => {
   try { navigator.clipboard.writeText(t).then(() => { $("#copymsg").textContent = "Copied. Paste it into the dropbox."; }, fallback); } catch(e) { fallback(); }
 };
 
+$("#reset1").onclick = () => { $("#resetrow1").hidden = true; $("#resetrow2").hidden = false; $("#reset2").focus(); };
+$("#reset0").onclick = () => { $("#resetrow2").hidden = true; $("#resetrow1").hidden = false; };
+$("#reset2").onclick = () => {
+  try { localStorage.removeItem(KEY); } catch(e) {}
+  S = {phase:1, clock:450, lockedAt:"", v:{}};
+  allInputs().forEach(el => { el.value = el.tagName === "SELECT" ? "" : ""; });
+  $("#out").value = ""; $("#copymsg").textContent = "";
+  $("#resetrow2").hidden = true; $("#resetrow1").hidden = false;
+  cur = "A"; tab = "sum"; applyPhase(); location.hash = "start";
+};
 applyPhase();
 </script>
 
