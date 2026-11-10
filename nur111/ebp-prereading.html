@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Evidence-Based Practice Pre-Reading</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: one 720px reading column, navy masthead, sticky jump-nav, four callout types with fixed meanings */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --s1:2rem; --s2:1.5rem; --s3:1.1875rem; --s4:1.0625rem; --s5:.875rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--s4);line-height:1.65}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0} p{margin:0}
+.label{font-size:var(--s5);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.mast{background:var(--navy);color:var(--navy-fg)}
+.mast .wrap{padding-block:2.5rem 2rem;display:grid;gap:.75rem}
+.mast .label{opacity:.8} .mast h1{font-size:var(--s1);font-weight:800} .mast p{opacity:.9;max-width:58ch}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:var(--s5);opacity:.85}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav .wrap{display:flex;gap:.25rem;overflow-x:auto;padding-block:.5rem}
+nav a{flex:none;font-size:var(--s5);font-weight:600;color:var(--head);text-decoration:none;padding:.4rem .7rem;border-radius:4px}
+nav a:hover,nav a:focus-visible{background:var(--concept-bg);outline:none}
+main .wrap{display:grid;gap:3rem;padding-block:2.5rem 3rem}
+main .wrap > footer{margin-top:-1rem}
+section{display:grid;gap:1.25rem;scroll-margin-top:4rem;min-width:0}
+section > h2{font-size:var(--s2);font-weight:700;color:var(--head);padding-bottom:.5rem;border-bottom:2px solid var(--rule)}
+h3{font-size:var(--s3);font-weight:700}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
+.num{font-variant-numeric:tabular-nums}
+.obj{counter-reset:o;list-style:none;padding:0;gap:.75rem}
+.obj li{counter-increment:o;display:grid;grid-template-columns:2rem 1fr;gap:.5rem}
+.obj li::before{content:counter(o);font-weight:800;color:var(--navy-fg);background:var(--navy);width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;font-size:var(--s5);margin-top:.15rem}
+.obj .verb{font-weight:700}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 .35rem;margin-left:.35rem;vertical-align:1px}
+.co{border-radius:12px;padding:1.25rem 1.25rem 1.35rem;display:grid;gap:.6rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:var(--s3);line-height:1.5}
+.voice cite{font-style:normal;font-size:var(--s5);color:var(--muted)}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:var(--s5)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;border:1px solid}
+.legend .concept,.legend .pearl,.legend .voice,.legend .flag{border-radius:999px;border-width:1px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:var(--s5)}
+th,td{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .75rem;display:grid;gap:.1rem}
+.v span{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:var(--s3);font-variant-numeric:tabular-nums} .v.alert b{color:var(--flag)}
+details{border:1px solid var(--rule);border-radius:8px;padding:.75rem 1rem}
+summary{cursor:pointer;font-weight:600;color:var(--head)}
+summary:focus-visible{outline:2px solid var(--head);outline-offset:3px}
+details[open] summary{margin-bottom:.6rem}
+details > div{display:grid;gap:.6rem}
+.opts{list-style:upper-alpha;padding-left:1.5rem}
+footer{font-size:.8125rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem;max-width:90ch;scroll-margin-top:4rem}
+footer ul{margin:0;padding-left:1.125rem;display:block}
+a{color:var(--head)}
+.q{display:grid;gap:.75rem}
+.los{font-size:var(--s5);color:var(--muted);margin-top:-.5rem}
+.los .tag{margin-left:.25rem}
+.obj .tag.where{color:var(--head);border-color:var(--concept-edge)}
+</style>
+</head>
+<body style="margin:0">
+<header class="mast">
+  <div class="wrap">
+    <p class="label">Concept: Evidence-Based Practice · Exemplars: Best Practices, Individual Preferences · NUR 111</p>
+    <h1>Evidence-Based Practice: Pre-Reading</h1>
+    <p>Read this before class. It covers what evidence-based practice is, how to weigh evidence, and how to fit best practice to the person in the bed.</p>
+    <div class="meta"><span>Audience: first-semester ADN students</span><span>Format: online, self-paced</span><span>About 15 minutes</span></div>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <div class="wrap">
+    <a href="#objectives">Outcomes</a>
+    <a href="#what">What EBP is</a>
+    <a href="#evidence">Weighing evidence</a>
+    <a href="#picot">PICOT</a>
+    <a href="#standards">Best practices</a>
+    <a href="#preferences">Preferences</a>
+    <a href="#case">Case</a>
+    <a href="#check">Check yourself</a>
+    <a href="#sources">Sources</a>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <div class="legend" aria-label="Callout key">
+    <span class="concept">Key concept</span>
+    <span class="pearl">Clinical pearl</span>
+    <span class="voice">Client voice</span>
+    <span class="flag">Safety flag</span>
+  </div>
+
+  <section id="objectives">
+    <h2>Module learning outcomes</h2>
+    <p>Upon completion of this module, the student will be able to:</p>
+    <ol class="obj"><li><p>Define evidence-based practice (EBP) and its significance in providing safe, effective nursing care across the lifespan. (Knowledge)<span class="tag">Recognize cues</span></p></li><li><p>Describe the basic components of EBP, including clinical expertise, best current evidence, and patient values/preferences. (Comprehension)<span class="tag">Recognize cues</span></p></li><li><p>Identify examples of best practices used in fundamental nursing care. (Comprehension)<span class="tag">Generate solutions</span></p></li><li><p>Explain the importance of incorporating patient and family preferences into the care planning process. (Comprehension)<span class="tag">Analyze cues</span></p></li><li><p>Demonstrate the use of current clinical guidelines or protocols when providing care in simulated or clinical settings. (Application)<span class="tag">Take action</span><span class="tag where">Practiced in lab and clinical</span></p></li><li><p>Recognize how to balance best practice recommendations with individual patient needs, beliefs, and cultural values. (Application)<span class="tag">Generate solutions</span></p></li><li><p>Discuss how EBP supports clinical decision-making and improves patient outcomes across various stages of life. (Analysis)<span class="tag">Evaluate outcomes</span></p></li><li><p>Reflect on how patient-centered care and EBP can work together to guide nursing practice. (Evaluation)<span class="tag">Evaluate outcomes</span></p></li></ol>
+    <p class="los">Verbatim from the NUR 111 Evidence-Based Practice module outline. Tags show the clinical judgment step each outcome builds. Each section below names the outcomes it supports.</p>
+  </section>
+
+  <section id="what">
+    <h2>What evidence-based practice is</h2>
+    <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span><span class="tag">LO7</span></p>
+    <p>Many nursing routines were learned from whoever trained us. Some are backed by strong evidence, some are required by regulation, and some are just habit. EBP asks one question: <b>Is our practice the best it can be, for this client?</b></p>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p><b>Evidence-based practice</b> combines three inputs to make a care decision:</p>
+      <ul>
+        <li><b>Best current evidence:</b> well-designed research and the clinical guidelines built from it</li>
+        <li><b>Clinical expertise:</b> the nurse’s assessment, skill, and judgment about this client</li>
+        <li><b>Client values and preferences:</b> what matters to this person, including beliefs, culture, and goals</li>
+      </ul>
+    </div>
+    <p>EBP applies at every stage of life. Placing infants on their backs to sleep came from evidence linking stomach sleeping to sudden infant death. Fall-prevention measures for older adults come from studies of why older adults fall in the hospital. In both cases, evidence changed what nurses do at the bedside and improved outcomes.</p>
+    <p>Evidence alone is not EBP. A guideline applied without judgment, or without asking the client, is just following a protocol. When a well-informed client declines an intervention and the nurse honors that choice, the nurse is still practicing EBP.</p>
+  </section>
+
+  <section id="evidence">
+    <h2>Not all evidence carries equal weight</h2>
+    <p class="los">Supports <span class="tag">LO2</span><span class="tag">LO7</span></p>
+    <p>For questions about <b>what works</b>, some kinds of evidence are less likely to be biased than others. From strongest to weakest:</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Kind of evidence</th><th>What it is</th></tr>
+        <tr><td><b>Systematic review or meta-analysis</b></td><td>Pools the results of many studies on one question</td></tr>
+        <tr><td><b>Randomized controlled trial</b></td><td>Randomly assigns people to an intervention or a comparison group</td></tr>
+        <tr><td><b>Cohort or case-control study</b></td><td>Follows or compares groups without random assignment</td></tr>
+        <tr><td><b>Descriptive, qualitative, or single study</b></td><td>Describes a situation or people’s experiences</td></tr>
+        <tr><td><b>Expert opinion and tradition</b></td><td>What experienced people believe or have always done</td></tr>
+      </table>
+    </div>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>At the bedside you will rarely read a meta-analysis. You will use <b>clinical practice guidelines</b> and facility protocols, which experts build from the strongest evidence. When a routine has no evidence behind it, it is fair to ask why it is done.</p>
+    </div>
+    <p>For questions about <b>what an experience is like</b>, such as how clients feel about being woken at night, qualitative research is the right kind of evidence.</p>
+  </section>
+
+  <section id="picot">
+    <h2>Asking a question you can search: PICOT</h2>
+    <p class="los">Supports <span class="tag">LO7</span></p>
+    <p>Nurses turn practice problems into a focused question so they can search the literature. PICOT names the parts:</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Letter</th><th>Stands for</th><th>Example</th></tr>
+        <tr><td><b>P</b></td><td>Population</td><td>Hospitalized adults 65 and older</td></tr>
+        <tr><td><b>I</b></td><td>Intervention</td><td>Hand hygiene reminders at each doorway</td></tr>
+        <tr><td><b>C</b></td><td>Comparison</td><td>No reminders</td></tr>
+        <tr><td><b>O</b></td><td>Outcome</td><td>Staff hand hygiene compliance</td></tr>
+        <tr><td><b>T</b></td><td>Time</td><td>Over 3 months</td></tr>
+      </table>
+    </div>
+    <p>Put together: <i>“On units caring for hospitalized adults 65 and older, do hand hygiene reminders at each doorway, compared with no reminders, improve staff hand hygiene compliance over 3 months?”</i></p>
+  </section>
+
+  <section id="standards">
+    <h2>When best practice becomes the standard</h2>
+    <p class="los">Supports <span class="tag">LO3</span><span class="tag">LO5</span></p>
+    <p>Some best practices are strong and important enough to become required. Since January 1, 2026, The Joint Commission’s 14 <b>National Performance Goals</b> have replaced the National Patient Safety Goals for hospitals. Several shape what you will do on your first clinical day.</p>
+    <div class="co flag">
+      <p class="label">Safety flag</p>
+      <p>Identify every client with <b>two identifiers</b>, such as name and date of birth. <b>Never use the room number.</b> Label specimens in front of the client.</p>
+    </div>
+    <ul>
+      <li><b>Infection prevention:</b> hand hygiene that follows CDC or WHO guidelines</li>
+      <li><b>Medication management:</b> reconcile the client’s medications, and give the client a written list at discharge</li>
+      <li><b>Workplace and patient safety:</b> fall-prevention measures tailored to each client’s assessed risk</li>
+      <li><b>Pain management:</b> offer nondrug treatments as well as medications</li>
+    </ul>
+  </section>
+
+  <section id="preferences">
+    <h2>Best practice is applied to a person</h2>
+    <p class="los">Supports <span class="tag">LO4</span><span class="tag">LO6</span><span class="tag">LO8</span></p>
+    <div class="co voice">
+      <p class="label">Client voice · composite</p>
+      <blockquote>“Everyone kept telling me what the plan was. Nobody asked me what I was worried about.”</blockquote>
+      <cite>A composite of comments clients commonly make, not a real client</cite>
+    </div>
+    <p>Care centered on the client’s preferences is linked to better satisfaction and outcomes. Nurses honor preferences in three ways:</p>
+    <ul>
+      <li><b>Invite participation:</b> bring the client into decisions, and keep advocating as needs change.</li>
+      <li><b>Promote understanding:</b> explain in plain language and correct misunderstandings.</li>
+      <li><b>Share information:</b> keep it a two-way conversation about the plan.</li>
+    </ul>
+    <p>Watch for barriers you can control: medical jargon, routines set for staff convenience (a 0600 bath for someone who always bathes at night), and family wishes that override what the client wants. A competent adult client makes their own decisions.</p>
+    <p>Culture shapes beliefs about illness, diet, privacy, and who makes decisions. Start by learning the client’s own beliefs and practices, and examine your own assumptions. Don’t assume from a group label.</p>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>Ask early: <b>“What matters most to you about your care today?”</b> When a client declines a best practice, explore the reason first, then teach, then involve the provider and document.</p>
+    </div>
+  </section>
+
+  <section id="case">
+    <h2>Case: Mrs. Patel’s requests</h2>
+    <p class="los">Supports <span class="tag">LO4</span><span class="tag">LO6</span><span class="tag">LO7</span></p>
+    <p>Mrs. Patel, 72, is on day 2 of an admission for cellulitis of the left leg. She walks with a walker. Her fall-risk screening places her at high risk, and the unit’s fall protocol includes a bed alarm.</p>
+    <div class="vitals">
+      <div class="v"><span>Age</span><b class="num">72</b></div>
+      <div class="v"><span>Admitted for</span><b>Cellulitis, L leg</b></div>
+      <div class="v"><span>Mobility</span><b>Walker</b></div>
+      <div class="v"><span>Fall risk</span><b>High</b></div>
+    </div>
+    <p>Mrs. Patel tells you, “I’ve always bathed at night, not first thing in the morning. And please turn off that bed alarm. It goes off every time I roll over, and it’s embarrassing.”</p>
+    <details>
+      <summary>1. Which request can you simply honor, and why?</summary>
+      <div>
+        <p>The <b>bath at night</b>. Bath timing is a routine, not a safety standard. Moving it respects her preference at no cost to her safety.</p>
+      </div>
+    </details>
+    <details>
+      <summary>2. How do you respond to the bed alarm request?</summary>
+      <div>
+        <p>Don’t just say yes or no. Ask what bothers her most about it, then explain why the team is concerned about falls. Then look at other ways to keep her safe that fit her wishes: call light and walker within reach, bed in the low position, scheduled help to the bathroom, nonslip footwear. Talk with the charge nurse about whether the protocol allows a change, and document the conversation. The decision combines all three EBP inputs: the evidence, your assessment of her, and her preference.</p>
+      </div>
+    </details>
+    <details>
+      <summary>3. Write a PICOT question this situation raises.</summary>
+      <div>
+        <p>One possibility: <i>“In hospitalized older adults at high risk for falls (P), do bed alarms (I), compared with scheduled toileting rounds without alarms (C), reduce falls (O) during hospitalization (T)?”</i> Any question that names a population, an intervention, a comparison, an outcome, and a time frame works.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="check">
+    <h2>Check yourself</h2>
+    <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span><span class="tag">LO7</span></p>
+    <p>These are for practice only and are not graded. Commit to an answer before you open the explanation.</p>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span></p>
+      <p><b>1.</b> Which statement best describes evidence-based practice?</p>
+      <ol class="opts"><li>Doing what the most recent study recommends</li><li>Following the unit’s routine because it has always worked</li><li>Combining research evidence, clinical expertise, and the client’s preferences</li><li>Doing whatever the client prefers</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>C.</b> EBP integrates all three inputs.</p>
+          <p><b>A:</b> One study is weak evidence on its own, and research alone leaves out judgment and the client.</p>
+          <p><b>B:</b> Tradition is not evidence. “We’ve always done it this way” is the habit EBP is meant to question.</p>
+          <p><b>D:</b> Preferences are one input, not the only one. The nurse also brings evidence and judgment.</p>
+        </div>
+      </details>
+    </div>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO2</span></p>
+      <p><b>2.</b> A nurse wants to know whether a new oral care routine prevents pneumonia. Which source gives the strongest evidence?</p>
+      <ol class="opts"><li>An experienced nurse’s recommendation</li><li>A systematic review of several randomized trials</li><li>One hospital’s report of its own results</li><li>Interviews with clients about their oral care</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>B.</b> A systematic review pools the results of many well-designed trials, so it is the least likely to be biased for a question about what works.</p>
+          <p><b>A:</b> Expert opinion is the weakest level of evidence.</p>
+          <p><b>C:</b> One site’s results are a single study and may not apply elsewhere.</p>
+          <p><b>D:</b> Interviews tell you about experiences, not whether the routine prevents pneumonia.</p>
+        </div>
+      </details>
+    </div>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO7</span></p>
+      <p><b>3.</b> In the question “In adults after abdominal surgery, does early walking, compared with bed rest, reduce the length of hospital stay?”, what is the <b>C</b>?</p>
+      <ol class="opts"><li>Adults after abdominal surgery</li><li>Early walking</li><li>Bed rest</li><li>Length of hospital stay</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>C. Bed rest</b> is the comparison.</p>
+          <p><b>A:</b> This is the Population.</p>
+          <p><b>B:</b> This is the Intervention.</p>
+          <p><b>D:</b> This is the Outcome. (This question has no T. A complete PICOT question would add a time frame.)</p>
+        </div>
+      </details>
+    </div>
+    <div class="co pearl">
+      <p class="label">Before class</p>
+      <p>Think of one nursing task you were taught to do “just because.” Bring it to class. We will ask what, if anything, supports it, and how it fits with what the client wants.</p>
+      <p class="los">Supports <span class="tag">LO8</span></p>
+    </div>
+  </section>
+
+  <div class="co pearl">
+    <p class="label">How this connects</p>
+    <p>EBP asks, <b>“Is our practice the best it can be?”</b> The companion reading on quality improvement asks, <b>“Is our system safe?”</b> In class we will put the two together.</p>
+  </div>
+
+  <footer id="sources">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>The case and practice items are fictional and formative, not exam items. Fall protocols, bed alarm policies, and fall-risk tools vary by facility.</p>
+    <p>Guideline points checked November 2026:</p>
+    <ul>
+      <li>ATI Nursing: Evidence-Based Practice exemplars (Introduction to Best Practices; Individual Preferences)</li>
+      <li>Sackett, D. L., et al. (1996). <i>BMJ, 312</i>, 71–72. (Components of EBP)</li>
+      <li>Melnyk, B. M., &amp; Fineout-Overholt, E. <i>Evidence-Based Practice in Nursing &amp; Healthcare</i>. (Evidence hierarchy; PICOT)</li>
+      <li>The Joint Commission. National Performance Goals, effective January 2026. (Two identifiers, specimen labeling, hand hygiene, medication reconciliation, fall risk, nondrug pain treatment)</li>
+      <li>Campinha-Bacote, J. (2002). <i>Journal of Transcultural Nursing, 13</i>(3), 181–184. (Cultural assessment and self-awareness)</li>
+    </ul>
+  </footer>
+
+</div>
+</main>
+</body>
+</html>

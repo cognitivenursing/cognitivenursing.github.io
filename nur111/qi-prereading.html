@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quality Improvement Pre-Reading</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: one 720px reading column, navy masthead, sticky jump-nav, four callout types with fixed meanings */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --s1:2rem; --s2:1.5rem; --s3:1.1875rem; --s4:1.0625rem; --s5:.875rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--s4);line-height:1.65}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0} p{margin:0}
+.label{font-size:var(--s5);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.mast{background:var(--navy);color:var(--navy-fg)}
+.mast .wrap{padding-block:2.5rem 2rem;display:grid;gap:.75rem}
+.mast .label{opacity:.8} .mast h1{font-size:var(--s1);font-weight:800} .mast p{opacity:.9;max-width:58ch}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:var(--s5);opacity:.85}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav .wrap{display:flex;gap:.25rem;overflow-x:auto;padding-block:.5rem}
+nav a{flex:none;font-size:var(--s5);font-weight:600;color:var(--head);text-decoration:none;padding:.4rem .7rem;border-radius:4px}
+nav a:hover,nav a:focus-visible{background:var(--concept-bg);outline:none}
+main .wrap{display:grid;gap:3rem;padding-block:2.5rem 3rem}
+main .wrap > footer{margin-top:-1rem}
+section{display:grid;gap:1.25rem;scroll-margin-top:4rem;min-width:0}
+section > h2{font-size:var(--s2);font-weight:700;color:var(--head);padding-bottom:.5rem;border-bottom:2px solid var(--rule)}
+h3{font-size:var(--s3);font-weight:700}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem}
+.num{font-variant-numeric:tabular-nums}
+.obj{counter-reset:o;list-style:none;padding:0;gap:.75rem}
+.obj li{counter-increment:o;display:grid;grid-template-columns:2rem 1fr;gap:.5rem}
+.obj li::before{content:counter(o);font-weight:800;color:var(--navy-fg);background:var(--navy);width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;font-size:var(--s5);margin-top:.15rem}
+.obj .verb{font-weight:700}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 .35rem;margin-left:.35rem;vertical-align:1px}
+.co{border-radius:12px;padding:1.25rem 1.25rem 1.35rem;display:grid;gap:.6rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:var(--s3);line-height:1.5}
+.voice cite{font-style:normal;font-size:var(--s5);color:var(--muted)}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:var(--s5)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;border:1px solid}
+.legend .concept,.legend .pearl,.legend .voice,.legend .flag{border-radius:999px;border-width:1px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:var(--s5)}
+th,td{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .75rem;display:grid;gap:.1rem}
+.v span{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:var(--s3);font-variant-numeric:tabular-nums} .v.alert b{color:var(--flag)}
+details{border:1px solid var(--rule);border-radius:8px;padding:.75rem 1rem}
+summary{cursor:pointer;font-weight:600;color:var(--head)}
+summary:focus-visible{outline:2px solid var(--head);outline-offset:3px}
+details[open] summary{margin-bottom:.6rem}
+details > div{display:grid;gap:.6rem}
+.opts{list-style:upper-alpha;padding-left:1.5rem}
+footer{font-size:.8125rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem;max-width:90ch;scroll-margin-top:4rem}
+footer ul{margin:0;padding-left:1.125rem;display:block}
+a{color:var(--head)}
+.q{display:grid;gap:.75rem}
+.los{font-size:var(--s5);color:var(--muted);margin-top:-.5rem}
+.los .tag{margin-left:.25rem}
+.obj .tag.where{color:var(--head);border-color:var(--concept-edge)}
+</style>
+</head>
+<body style="margin:0">
+<header class="mast">
+  <div class="wrap">
+    <p class="label">Concept: Quality Improvement · Exemplars: Sentinel Events, Reporting · NUR 111</p>
+    <h1>Quality Improvement: Pre-Reading</h1>
+    <p>Read this before class. It gives you the vocabulary for safety events, reporting, and how a unit learns from mistakes, so class time can go to cases.</p>
+    <div class="meta"><span>Audience: first-semester ADN students</span><span>Format: online, self-paced</span><span>About 15 minutes</span></div>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <div class="wrap">
+    <a href="#objectives">Outcomes</a>
+    <a href="#why">Why QI</a>
+    <a href="#events">Safety events</a>
+    <a href="#reporting">Reporting</a>
+    <a href="#just-culture">Just culture</a>
+    <a href="#pdsa">QI cycle</a>
+    <a href="#case">Case</a>
+    <a href="#check">Check yourself</a>
+    <a href="#sources">Sources</a>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <div class="legend" aria-label="Callout key">
+    <span class="concept">Key concept</span>
+    <span class="pearl">Clinical pearl</span>
+    <span class="voice">Client voice</span>
+    <span class="flag">Safety flag</span>
+  </div>
+
+  <section id="objectives">
+    <h2>Module learning outcomes</h2>
+    <p>Upon completion of this module, the student will be able to:</p>
+    <ol class="obj"><li><p>Define quality improvement (QI), sentinel events, and the role of reporting in promoting patient safety. (Knowledge)<span class="tag">Recognize cues</span></p></li><li><p>Describe common types of sentinel events (e.g., falls, medication errors, wrong-site surgery) and contributing factors. (Comprehension)<span class="tag">Analyze cues</span></p></li><li><p>Explain how the reporting of errors and near misses supports continuous quality improvement and prevents future harm. (Comprehension)<span class="tag">Evaluate outcomes</span></p></li><li><p>Identify the nurse’s role and legal/ethical responsibility in reporting sentinel events and safety concerns. (Comprehension)<span class="tag">Take action</span></p></li><li><p>Recognize safety risks in clinical or simulated settings that could lead to sentinel events. (Application)<span class="tag">Recognize cues</span><span class="tag where">Started here; practiced in class and clinical</span></p></li><li><p>Discuss the impact of a just culture in encouraging transparency, accountability, and system-wide learning from errors. (Analysis)<span class="tag">Analyze cues</span></p></li><li><p>Reflect on how nurses contribute to a culture of safety and continuous quality improvement in diverse health care settings. (Evaluation)<span class="tag">Evaluate outcomes</span></p></li></ol>
+    <p class="los">Verbatim from the NUR 111 Quality Improvement module outline. Tags show the clinical judgment step each outcome builds. Each section below names the outcomes it supports.</p>
+  </section>
+
+  <section id="why">
+    <h2>Why quality improvement</h2>
+    <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO7</span></p>
+    <p>In 1999 the Institute of Medicine’s report <i>To Err Is Human</i> estimated that 44,000 to 98,000 people died each year in U.S. hospitals because of medical error. Its main argument still shapes nursing today: <b>most errors come from flawed systems, not bad people.</b></p>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p><b>Quality improvement (QI)</b> is the ongoing work of measuring care, finding where it falls short, and changing the system so it does better. QI asks one question: <b>Is our system keeping clients safe?</b></p>
+    </div>
+  </section>
+
+  <section id="events">
+    <h2>The language of safety events</h2>
+    <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span></p>
+    <p>Two questions sort almost every event. <b>Did it reach the client?</b> If it did, <b>how much harm did it cause?</b></p>
+    <div class="tbl">
+      <table>
+        <tr><th>Event</th><th>Reached the client?</th><th>Harm</th><th>Example</th></tr>
+        <tr><td><b>Near miss</b> (close call)</td><td>No</td><td>None</td><td>Barcode scan flags the wrong medication before it is given</td></tr>
+        <tr><td><b>No-harm event</b></td><td>Yes</td><td>None</td><td>A scheduled dose is given 2 hours early; the client’s condition does not change</td></tr>
+        <tr><td><b>Adverse event</b></td><td>Yes</td><td>Harm</td><td>Missed repositioning leads to a stage 2 pressure injury</td></tr>
+        <tr><td><b>Sentinel event</b></td><td>Yes</td><td>Death, permanent harm, or severe harm</td><td>A fall that fractures a hip and requires surgery</td></tr>
+      </table>
+    </div>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p>The Joint Commission defines a <b>sentinel event</b> as a patient safety event, not primarily related to the client’s illness, that reaches the client and results in <b>death, permanent harm, or severe harm</b>. Every sentinel event calls for an immediate investigation into its root causes.</p>
+    </div>
+    <div class="co flag">
+      <p class="label">Safety flag</p>
+      <p>Some events count as sentinel because of what they are: surgery on the <b>wrong site, wrong client, or wrong procedure</b>; a <b>foreign object left in</b> after a procedure; a transfusion of <b>incompatible blood</b>; a <b>suicide</b> in a 24-hour staffed setting; an <b>infant abduction</b>.</p>
+    </div>
+    <p>“Sentinel event” and “never event” are not the same term. Never events are a fixed list from the National Quality Forum. The two lists overlap a lot, but they come from different organizations.</p>
+    <h3>What the data show</h3>
+    <p>Hospitals reported <span class="num">1,575</span> sentinel events to The Joint Commission in 2024. <b>Falls</b> are the most common type. Reporting to The Joint Commission is voluntary, so a rise in reports may mean more honest reporting, not necessarily more harm.</p>
+    <p>When The Joint Commission looks for causes, the same contributing factors come up again and again: <b>breakdowns in communication</b>, <b>breakdowns in teamwork</b>, and <b>policies not followed</b>. Others include look-alike or sound-alike medications, similar client names, interruptions, fatigue, and short staffing.</p>
+  </section>
+
+  <section id="reporting">
+    <h2>Reporting: what the nurse does next</h2>
+    <p class="los">Supports <span class="tag">LO3</span><span class="tag">LO4</span></p>
+    <p>After any safety event, the order of your actions matters:</p>
+    <ol>
+      <li><b>Make the client safe.</b> Assess and intervene first.</li>
+      <li><b>Notify</b> the charge nurse and the provider.</li>
+      <li><b>Document</b> the objective facts and the care you gave in the health record.</li>
+      <li><b>Complete an occurrence report</b> (also called an incident or safety report) in the facility’s reporting system.</li>
+    </ol>
+    <div class="co pearl">
+      <p class="label">Clinical pearl</p>
+      <p>The occurrence report is a quality document, not part of the client’s chart. Do not write “incident report filed” in the health record. And report near misses too: a near miss shows the same weak spot in the system as a serious event, at no cost to the client.</p>
+    </div>
+    <p>Reporting is a professional, ethical, and legal duty. The ANA <i>Code of Ethics</i> calls on nurses to protect the health, safety, and rights of clients, facility policy requires reporting, and the state board of nursing expects it. One report is a single data point. When risk management sees fifty reports about the same look-alike vials, the storage gets fixed.</p>
+  </section>
+
+  <section id="just-culture">
+    <h2>Just culture</h2>
+    <p class="los">Supports <span class="tag">LO6</span></p>
+    <p>Blaming the nurse who made the last mistake leaves the flawed system in place for the next nurse. A <b>just culture</b> responds to the behavior behind an error, not to how bad the outcome was.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Behavior</th><th>What it looks like</th><th>Response</th></tr>
+        <tr><td><b>Human error</b></td><td>An unintended slip or lapse</td><td><b>Console</b> the nurse and fix the system</td></tr>
+        <tr><td><b>At-risk behavior</b></td><td>A shortcut whose risk isn’t recognized or seems justified</td><td><b>Coach</b>, and remove the reason for the shortcut</td></tr>
+        <tr><td><b>Reckless behavior</b></td><td>Knowingly disregarding a substantial, unjustifiable risk</td><td><b>Sanction</b>: discipline is appropriate</td></tr>
+      </table>
+    </div>
+    <p>A just culture is not blame-free. It holds the system and the individual accountable for their own parts. It also makes people more willing to report, because they know an honest mistake will lead to a fix and not a punishment.</p>
+  </section>
+
+  <section id="pdsa">
+    <h2>The QI cycle: Plan–Do–Study–Act</h2>
+    <p class="los">Supports <span class="tag">LO3</span><span class="tag">LO7</span></p>
+    <p>Units improve by testing small changes and measuring the result, over and over. The Institute for Healthcare Improvement’s PDSA cycle is the most common model. Here is how a unit might use it on its fall rate.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Step</th><th>What happens</th><th>Example: falls on a medical unit</th></tr>
+        <tr><td><b>Plan</b></td><td>Name the problem, predict what a change will do, and choose how to measure it</td><td>Most falls happen at night on the way to the bathroom. Predict that scheduled toileting rounds will reduce them. Measure falls per 1,000 patient days.</td></tr>
+        <tr><td><b>Do</b></td><td>Try the change on a small scale and collect data</td><td>Night shift on one unit tries the rounds for 6 weeks.</td></tr>
+        <tr><td><b>Study</b></td><td>Compare the results with the baseline and the prediction</td><td>Did falls drop? Did anything else change, such as staffing or reporting?</td></tr>
+        <tr><td><b>Act</b></td><td>Adopt, adapt, or abandon the change, then start the next cycle</td><td>Keep the rounds, adjust the timing, or try something else.</td></tr>
+      </table>
+    </div>
+    <div class="co concept">
+      <p class="label">Key concept</p>
+      <p>A <b>benchmark</b> is a reference point for judging results. A unit can compare itself with its own past performance (internal) or with similar units nationally (external). Rates are usually given <b>per 1,000 patient days</b>, so units of different sizes can be compared fairly.</p>
+    </div>
+    <p>Many QI measures are <b>nurse-sensitive</b>, meaning nursing care directly affects them: falls with injury, pressure injuries, catheter-associated urinary tract infections (CAUTI), and central line–associated bloodstream infections (CLABSI).</p>
+  </section>
+
+  <section id="case">
+    <h2>Case: two names, one hallway</h2>
+    <p class="los">Supports <span class="tag">LO2</span><span class="tag">LO4</span><span class="tag">LO5</span><span class="tag">LO6</span></p>
+    <p>3 East, 2100. Mr. Hollis (room 312) and Mr. Hollins (room 314) are both receiving scheduled basal insulin at bedtime. Their insulin pens are stored in the same drawer of the medication room. The nurse has been interrupted three times in the last 15 minutes.</p>
+    <div class="vitals">
+      <div class="v"><span>Client</span><b>Mr. Hollis, 312</b></div>
+      <div class="v"><span>Fingerstick glucose</span><b class="num">168 mg/dL</b></div>
+      <div class="v"><span>Ordered</span><b class="num">Basal insulin, 2100</b></div>
+      <div class="v alert"><span>Bedside scan</span><b>Wrong-patient alert</b></div>
+    </div>
+    <p>The nurse takes a pen from the drawer, goes to room 312, and scans Mr. Hollis’s wristband and the pen. The scanner shows that the pen belongs to Mr. Hollins. Nothing has been given.</p>
+    <div class="co flag">
+      <p class="label">Safety flag</p>
+      <p>Insulin is a <b>high-alert medication</b>: an error can cause serious harm quickly. An insulin pen is for <b>one client only</b> and is never shared, even with a new needle.</p>
+    </div>
+    <details>
+      <summary>1. What kind of event is this, and what should the nurse do now?</summary>
+      <div>
+        <p>A <b>near miss</b>: the error was caught before it reached the client. The nurse gets Mr. Hollis’s own pen, verifies it with two identifiers and a scan, gives the dose, and then files a report. The near miss still gets reported, because the next nurse may not have a working scanner.</p>
+      </div>
+    </details>
+    <details>
+      <summary>2. What contributing factors set this up?</summary>
+      <div>
+        <p>Similar names on the same hall, pens for both clients stored in one drawer, and repeated interruptions during medication preparation. Not one of these is about a “bad nurse.” All of them are about the system.</p>
+      </div>
+    </details>
+    <details>
+      <summary>3. How would a just culture respond to the nurse? Name a change the unit could test with PDSA.</summary>
+      <div>
+        <p>This was human error, an unintended slip, so the response is to <b>console</b> the nurse and fix the system. Changes to test include name-alert stickers, a separate labeled bin for each client’s pens, a no-interruption zone for medication preparation, or moving one client to another room. In <b>Study</b>, the unit would compare wrong-patient scanner alerts before and after the change.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="check">
+    <h2>Check yourself</h2>
+    <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span><span class="tag">LO3</span><span class="tag">LO6</span></p>
+    <p>These are for practice only and are not graded. Commit to an answer before you open the explanation.</p>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO1</span><span class="tag">LO2</span></p>
+      <p><b>1.</b> A client receives a unit of blood that is not compatible with their blood type, develops a hemolytic reaction, and is moved to the ICU. Which term fits best?</p>
+      <ol class="opts"><li>Near miss</li><li>No-harm event</li><li>Adverse event</li><li>Sentinel event</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>D. Sentinel event.</b> An ABO-incompatible transfusion is on The Joint Commission’s sentinel event list, and this one caused severe harm.</p>
+          <p><b>A:</b> A near miss never reaches the client. This one did.</p>
+          <p><b>B:</b> There was harm, so it is not a no-harm event.</p>
+          <p><b>C:</b> It is an adverse event, but “sentinel” is more specific because of the harm level and the event type.</p>
+        </div>
+      </details>
+    </div>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO6</span></p>
+      <p><b>2.</b> A nurse moving between two call lights programs an IV pump at 125 mL/hr when 12.5 mL/hr was ordered. The nurse catches it 10 minutes later, and the client is unharmed. In a just culture, which response fits best?</p>
+      <ol class="opts"><li>Suspend the nurse</li><li>Console the nurse and look at the system</li><li>Take no action because there was no harm</li><li>Require the nurse to retake orientation</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>B.</b> This is an unintended slip, which is human error. The response is support for the nurse plus a look at the system: interruptions, workload, and whether the pump has dose-limit software.</p>
+          <p><b>A:</b> Punishing a slip makes people stop reporting and leaves the system unchanged.</p>
+          <p><b>C:</b> No harm does not mean no action. This is a no-harm event and should still be reported, because the same conditions could cause harm next time.</p>
+          <p><b>D:</b> Retraining fixes a knowledge gap. This nurse knew the correct rate, so retraining doesn’t address the cause.</p>
+        </div>
+      </details>
+    </div>
+    <div class="q">
+      <p class="los">Supports <span class="tag">LO3</span></p>
+      <p><b>3.</b> A unit has tried a new catheter-removal reminder for two months. The team now compares its CAUTI rate with the rate from before the reminder. Which PDSA step is this?</p>
+      <ol class="opts"><li>Plan</li><li>Do</li><li>Study</li><li>Act</li></ol>
+      <details>
+        <summary>Answer and rationale</summary>
+        <div>
+          <p><b>C. Study.</b> Comparing results with the baseline is the Study step.</p>
+          <p><b>A:</b> Plan comes before the change, when the team names the problem and predicts the result.</p>
+          <p><b>B:</b> Do is the two months of trying the reminder, which are already finished.</p>
+          <p><b>D:</b> Act comes after Study, when the team decides to adopt, adapt, or abandon the reminder.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <div class="co pearl">
+    <p class="label">Before class</p>
+    <p>Think of a time you saw or heard about a near miss or error, in health care or any job. Was it reported? What would make you hesitate to report, and what would make it easier?</p>
+    <p class="los">Supports <span class="tag">LO7</span></p>
+  </div>
+
+  <div class="co pearl">
+    <p class="label">How this connects</p>
+    <p>QI asks, <b>“Is our system safe?”</b> The companion reading on evidence-based practice asks, <b>“Is our practice the best it can be?”</b> In class we will put the two together.</p>
+  </div>
+
+  <footer id="sources">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>The case and practice items are fictional and formative, not exam items. Reporting systems and medication storage vary by facility. The falls example is a teaching illustration, not a recommendation.</p>
+    <p>Guideline points checked November 2026:</p>
+    <ul>
+      <li>ATI Nursing: Quality Improvement exemplars (Sentinel Events; Reporting)</li>
+      <li>The Joint Commission. Sentinel Event Policy; Sentinel Event Data 2024 Annual Review (2025). (Sentinel event definition, examples, 2024 count, falls, contributing factors)</li>
+      <li>Institute of Medicine. <i>To Err Is Human</i> (2000). (1999 error estimate; systems view of error)</li>
+      <li>Marx, D. (2001). Patient safety and the “just culture.” (Human error, at-risk, reckless)</li>
+      <li>Institute for Healthcare Improvement. Model for Improvement. (PDSA)</li>
+      <li>Institute for Safe Medication Practices. High-alert medications in acute care settings. (Insulin as high-alert)</li>
+    </ul>
+  </footer>
+
+</div>
+</main>
+</body>
+</html>
