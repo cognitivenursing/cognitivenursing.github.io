@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Pressure Injury Protocol Demo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: projector board. Persistent CJMM strip on top, one stage at a time below, faculty reveal under each prompt. Same navy/teal system as the module pages, scaled up. */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+html{font-size:clamp(15px,1.15vw + 6px,24px)}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0} p{margin:0}
+.label{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--navy);color:var(--navy-fg)}
+.top .wrap{padding-block:.6rem;display:grid;gap:.5rem}
+.toprow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
+.toprow .label{opacity:.85}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem}
+.strip span{font-size:.72rem;font-weight:700;text-align:center;padding:.4rem .25rem;border-radius:6px;border:1px solid rgba(255,255,255,.28);opacity:.6;line-height:1.2}
+.strip span.on{background:var(--navy-fg);color:var(--navy);opacity:1;border-color:var(--navy-fg)}
+@media (max-width:620px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+main .wrap{padding-block:1.75rem 6rem;display:grid;gap:1.5rem}
+.stagehead{display:grid;gap:.35rem}
+.stagehead .label{color:var(--head)}
+.stagehead h1{font-size:2.1rem;font-weight:800}
+.prompt{font-size:1.35rem;font-weight:600;max-width:60ch}
+.body{display:grid;gap:1.1rem;min-width:0}
+.body p,.body li{font-size:1.05rem}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.35rem}
+
+.patient{border:1px solid var(--rule);border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;background:var(--concept-bg)}
+.patient h3{font-size:1.25rem}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .8rem;display:grid;gap:.1rem;background:var(--bg)}
+.v span{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.v small{font-size:.8rem;color:var(--muted)}
+.v.alert b{color:var(--flag)}
+
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.tbl.wide table{min-width:640px}
+
+.co{border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:1.15rem;line-height:1.45}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+
+.reveal{border-top:2px dashed var(--rule);padding-top:1.1rem;display:grid;gap:1rem}
+.reveal .label{color:var(--head)}
+
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px)}
+.controls .wrap{padding-block:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.pips{display:flex;flex-wrap:wrap;gap:.3rem}
+.pips button{width:1.4rem;height:.55rem;border-radius:2px;border:0;padding:0;background:var(--rule);cursor:pointer}
+.pips button.done{background:var(--head)}
+.pips button.cur{background:var(--navy);outline:2px solid var(--head);outline-offset:1px}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap}
+button.b{font:inherit;font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;cursor:pointer;border:1.5px solid var(--rule);background:var(--bg);color:var(--fg)}
+button.b.primary{background:var(--navy);color:var(--navy-fg);border-color:var(--navy)}
+button.b:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1rem}
+.two > *{min-width:0}
+.loop{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-weight:600}
+.loop span{border:1px solid var(--concept-edge);background:var(--bg);border-radius:6px;padding:.3rem .6rem}
+.loop i{font-style:normal;color:var(--muted)}
+.small{font-size:.85rem;color:var(--muted)}
+.looplink{font-weight:700;color:var(--accent,#1f6f78);text-decoration:underline;text-underline-offset:3px}
+.timer{display:flex;align-items:center;gap:.35rem;margin-left:auto}
+.top .timer .t{color:#fff;border-color:rgba(255,255,255,.5)}
+.top .timer .b{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+.top .timer .t.low{color:#fcd34d;border-color:#fcd34d}
+.timer .t{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.6rem;min-width:5.2ch;text-align:center;padding:.15rem .5rem;border-radius:8px;border:2px solid var(--rule)}
+.timer .t.low{border-color:#b45309;color:#b45309}
+.timer .t.done{background:#b42318;border-color:#b42318;color:#fff;animation:tflash .5s steps(2) infinite}
+#stage .body p.breakback{line-height:1.15;color:var(--ink,inherit);font-size:clamp(2rem,6vw,4rem);font-weight:800;margin:1rem 0}
+.timer .b.sm{padding:.45rem .6rem;font-size:.85rem}
+@keyframes tflash{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.timer .t.done{animation:none}}
+@media (max-width:820px){.timer .t{font-size:1.2rem}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="toprow">
+      <span class="label">NUR 111 · Evidence-Based Practice · Protocol demonstration · LO5 → LO6</span>
+      <span class="label" id="clock"></span>
+      <div class="timer" role="group" aria-label="Section timer">
+        <span class="t" id="tdisp" aria-live="off">0:00</span>
+        <button class="b sm" id="tgo" type="button">Start</button>
+        <button class="b sm" id="tminus" type="button" aria-label="Subtract one minute">−1</button>
+        <button class="b sm" id="tplus" type="button" aria-label="Add one minute">+1</button>
+        <button class="b sm" id="treset" type="button">Reset</button>
+      </div>
+    </div>
+    <div class="strip" id="strip" aria-label="CJMM functions">
+      <span data-f="rc">Recognize cues</span><span data-f="ac">Analyze cues</span><span data-f="ph">Prioritize hypotheses</span><span data-f="gs">Generate solutions</span><span data-f="ta">Take action</span><span data-f="eo">Evaluate outcomes</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="stage" aria-live="polite"></div>
+  <div class="wrap">
+  <footer id="sources" style="font-size:.7rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;padding-bottom:5rem;display:flex;flex-direction:column;gap:.5rem">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>The cases are fictional and formative and are not exam items. The protocol is a teaching example; repositioning schedules, Braden cutoffs, support-surface procedures, and policies on food from home vary by facility. Stage position is saved only in this browser. Use the arrow keys to move between stages, R to reveal, and T to start or pause the timer.</p>
+    <p>Guideline points checked November 2026:</p>
+    <ul style="margin:0;padding-left:1.125rem;display:block">
+      <li>ATI Nursing: Evidence-Based Practice exemplars (Introduction to Best Practices; Individual Preferences).</li>
+      <li>NPIAP, EPUAP, PPPIA. International Pressure Injury Guideline, 4th edition, Repositioning chapter. (Individualized schedules; factors including sleep and comfort; 2- or 3-hour intervals on a suitable surface; not routinely extending to 4–6 hours; 30° lateral positioning; involving the person)</li>
+      <li>NPIAP, EPUAP, PPPIA. Prevention and Treatment of Pressure Ulcers/Injuries: Clinical Practice Guideline, 2019, nutrition recommendations as summarized by the Association of Nutrition &amp; Foodservice Professionals (2021). (Nutrition screening, dietitian referral, honoring cultural and religious food preferences)</li>
+      <li>Agency for Healthcare Research and Quality. Preventing Pressure Injuries in Hospitals, Module 1: Understanding Why Change Is Needed. (2.5 million patients, about 60,000 deaths, up to $11 billion a year, most preventable; estimates citing AHRQ 2013)</li>
+      <li>Centers for Medicare &amp; Medicaid Services. Hospital-Acquired Conditions. (Stage III and IV pressure ulcers; no additional payment when not present on admission)</li>
+      <li>National Quality Forum. Serious Reportable Events. (Stage 3, 4, or unstageable pressure injury acquired after admission)</li>
+      <li>Bergstrom N, Braden BJ, et al. The Braden Scale for Predicting Pressure Sore Risk. Nursing Research, 1987. (Subscales and 6–23 range)</li>
+    </ul>
+  </footer>
+  </div>
+</main>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="pips" id="pips" aria-label="Stages"></div>
+    <span class="count" id="count"></span>
+    <div class="btns">
+      <button class="b" id="prev" type="button">Previous</button>
+      <button class="b" id="rev" type="button">Reveal debrief</button>
+      <button class="b primary" id="next" type="button">Next stage</button>
+    </div>
+  </div>
+</div>
+
+<template id="shah">
+  <div class="patient">
+    <h3>Vikram Shah, 79 · Day 2, admitted with pneumonia · 0800</h3>
+    <p>Weak and short of breath with activity. Spends most of the day in bed and needs one person to help him turn. Retired schoolteacher. His daughter visits each afternoon.</p>
+    <div class="vitals">
+      <div class="v"><span>Temp</span><b>37.8 °C</b><small>100.0 °F</small></div>
+      <div class="v"><span>HR</span><b>94</b><small>/min</small></div>
+      <div class="v"><span>RR</span><b>22</b><small>/min</small></div>
+      <div class="v"><span>BP</span><b>128/76</b></div>
+      <div class="v"><span>SpO₂</span><b>93%</b><small>2 L nasal cannula</small></div>
+      <div class="v"><span>Meals</span><b>~25%</b><small>of last 3 trays</small></div>
+    </div>
+  </div>
+  <div class="tbl wide"><table>
+    <thead><tr><th scope="col">Area</th><th scope="col">Finding at 0800</th></tr></thead>
+    <tbody>
+      <tr><td><b>Skin</b></td><td>Sacrum red, blanches when pressed. Heels intact. Skin otherwise intact.</td></tr>
+      <tr><td><b>Continence</b></td><td>One episode of urinary incontinence overnight; linens damp at 0500.</td></tr>
+      <tr><td><b>Position</b></td><td>Found lying flat on his back with heels resting on the mattress. Head of bed raised for breathing.</td></tr>
+      <tr><td><b>Mattress</b></td><td>Standard hospital mattress.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="braden">
+  <div class="tbl"><table>
+    <thead><tr><th scope="col">Braden subscale</th><th scope="col">Score</th><th scope="col">Why</th></tr></thead>
+    <tbody>
+      <tr><td>Sensory perception</td><td>3</td><td>Responds to verbal commands; can’t always say when he is uncomfortable</td></tr>
+      <tr><td>Moisture</td><td>3</td><td>Occasionally moist; incontinence overnight</td></tr>
+      <tr><td>Activity</td><td>2</td><td>Chairfast at best; mostly in bed</td></tr>
+      <tr><td>Mobility</td><td>2</td><td>Very limited; needs help to change position</td></tr>
+      <tr><td>Nutrition</td><td>2</td><td>Probably inadequate; eating about a quarter of meals</td></tr>
+      <tr><td>Friction and shear</td><td>2</td><td>Slides down in bed with the head raised</td></tr>
+      <tr><td><b>Total</b></td><td><b>14</b></td><td>Range 6–23. Lower scores mean higher risk.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="protocol">
+  <div class="co concept"><p class="label">Sample unit protocol · Pressure injury prevention</p>
+  <p class="small">A teaching example built from the international guideline. Your clinical site’s protocol will differ in its details.</p></div>
+  <div class="tbl wide"><table style="min-width:860px">
+    <thead><tr><th scope="col">Step</th><th scope="col">The protocol says</th><th scope="col">Where it comes from</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. Assess risk</b></td><td>Braden score on admission and every shift. A score at or below the unit’s cutoff starts this protocol.</td><td>Guideline: risk assessment with a structured tool plus clinical judgment. Braden scale, 1987.</td><td>You can’t prevent what you haven’t identified. The subscales show which risks to target.</td></tr>
+      <tr><td><b>2. Inspect skin</b></td><td>Check bony prominences each shift and with each turn. Press red areas: do they blanch?</td><td>Guideline: skin and tissue assessment</td><td>Redness that blanches is a warning you can still act on. Redness that doesn’t blanch is already a stage 1 injury.</td></tr>
+      <tr><td><b>3. Reposition</b></td><td>Individualized schedule; 30° side-lying tilt, not directly on the hip.</td><td>Guideline: individualized repositioning; 30° lateral position</td><td>Unrelieved pressure cuts off blood flow to tissue over bone.</td></tr>
+      <tr><td><b>4. Offload heels</b></td><td>Pillow under the calves so the heels float.</td><td>Guideline: heel pressure injury prevention</td><td>The heel has little padding over bone and is one of the most common injury sites.</td></tr>
+      <tr><td><b>5. Limit shear</b></td><td>Head of bed as low as breathing allows; lift, don’t drag.</td><td>Guideline: positioning and microclimate</td><td>Sliding stretches deep tissue over the sacrum even when the skin looks fine.</td></tr>
+      <tr><td><b>6. Manage moisture</b></td><td>Clean promptly after incontinence; apply skin barrier.</td><td>Guideline: skin care</td><td>Wet skin is softer and breaks down faster under pressure and friction.</td></tr>
+      <tr><td><b>7. Support surface</b></td><td>Request a pressure-redistribution mattress per procedure.</td><td>Guideline: support surfaces</td><td>Spreads his weight over a larger area, so each turn has to do less work.</td></tr>
+      <tr><td><b>8. Nutrition</b></td><td>Screen; refer to the dietitian when intake is poor.</td><td>Guideline: nutrition screening and referral</td><td>Skin needs protein and energy to stay strong and to repair itself.</td></tr>
+      <tr><td><b>9. Document and report</b></td><td>Record score, skin, positions, and plan. Report new skin changes.</td><td>Facility policy; QI reporting</td><td>The next shift continues the plan, and the unit can track whether prevention is working.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="carter">
+  <div class="patient">
+    <h3>Darlene Carter, 70 · Day 3, admitted with a stroke · 1000</h3>
+    <p>Right-sided weakness; needs help to turn. Braden score 13. Eating about half of her meals. Skin intact; left heel slightly red, blanches.</p>
+  </div>
+  <div class="co voice"><p class="label">What she says</p><blockquote>“I’d like a woman to help me bathe and check my skin, please. And lying on my right side hurts my shoulder.”</blockquote></div>
+</template>
+
+<script>
+(function(){
+  var T=function(id){return document.getElementById(id).innerHTML;};
+  var stages=[
+    {f:[],tag:"Cold open · 3 min",title:"Two questions",min:3,
+     prompt:"Today we answer two questions about one protocol: <b>Where does it come from?</b> And <b>why is it so important?</b>",
+     body:"<div class='two'><div class='co concept'><p class='label'>Question 1</p><p style='font-size:1.6rem;font-weight:800'>Where does it come from?</p></div><div class='co concept'><p class='label'>Question 2</p><p style='font-size:1.6rem;font-weight:800'>Why is it so important?</p></div></div><p>Start here: a guideline, a unit protocol, and the person in the bed. What is the difference between the first two, and where does the third come in?</p><div class='two'><div class='co concept'><p class='label'>Today’s outcomes</p><p><b>LO5:</b> Demonstrate the use of current clinical guidelines or protocols when providing care in simulated or clinical settings. (Application)</p><p><b>LO6:</b> Recognize how to balance best practice recommendations with individual patient needs, beliefs, and cultural values. (Application)</p></div><div class='co pearl'><p class='label'>How this runs</p><p>I do it, then we do it, then you do it. Then the client pushes back.</p></div></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Layer</th><th>What it is</th><th>Example</th></tr></thead><tbody><tr><td><b>Guideline</b></td><td>Recommendations an expert group builds from the evidence</td><td>The International Pressure Injury Guideline (NPIAP, EPUAP, PPPIA)</td></tr><tr><td><b>Protocol</b></td><td>Your facility’s required version of the guideline, with its own details</td><td>The unit’s pressure injury prevention protocol</td></tr><tr><td><b>Person</b></td><td>The client’s needs, beliefs, values, and goals</td><td>What Mr. Shah wants, and why</td></tr></tbody></table></div><div class='co pearl'><p class='label'>Faculty</p><p>Students will follow the protocol in clinical. The point of today is that the protocol is not the end of thinking. It is where clinical judgment starts.</p></div>"},
+
+    {f:["rc"],tag:"Recognize cues · 4 min",title:"Meet Mr. Shah",min:4,
+     prompt:"Which cues put Mr. Shah at risk for a pressure injury? Call them out.",
+     body:T("shah"),
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Cue</th><th>Why it matters for skin</th></tr></thead><tbody><tr><td>Mostly in bed, needs help to turn</td><td>Unrelieved pressure over bony areas</td></tr><tr><td>Red sacrum that blanches</td><td>Early warning. Skin is under stress but not yet injured</td></tr><tr><td>Heels resting on the mattress</td><td>Heels are a top site for pressure injury</td></tr><tr><td>Incontinence, damp linens</td><td>Moisture softens skin and makes it break down faster</td></tr><tr><td>Head of bed up; slides down</td><td>Shear stretches the tissue over the sacrum</td></tr><tr><td>Eating about 25%</td><td>Too little protein and energy for skin to stay strong</td></tr><tr><td>Fever, age 79, standard mattress</td><td>More risk; no pressure relief from the surface</td></tr></tbody></table></div>"+T("braden")+"<div class='co pearl'><p class='label'>The score is a cue, not a plan</p><p>A Braden of 14 tells you he is at risk. The subscales tell you <b>why</b>: activity, mobility, nutrition, and friction. Those are the targets.</p></div>"},
+
+    {f:["ac"],tag:"Why it matters · 4 min",title:"Why is it so important?",min:4,
+     prompt:"If Mr. Shah’s red sacrum becomes an open wound, what happens to him? To the hospital? Call out your guesses before the reveal.",
+     body:"<div class='co voice'><p class='label'>Think about it</p><blockquote>He came in for pneumonia. What would it mean for him to go home with a wound he didn’t have when he arrived?</blockquote></div>",
+     reveal:"<div class='vitals'><div class='v alert'><span>U.S. patients each year</span><b>2.5 million</b><small>develop a pressure injury (AHRQ estimate)</small></div><div class='v alert'><span>Deaths each year</span><b>~60,000</b><small>from complications (AHRQ estimate)</small></div><div class='v'><span>Treatment cost</span><b>Up to $11 billion</b><small>per year in the U.S. (AHRQ)</small></div><div class='v'><span>Preventable?</span><b>Most</b><small>according to AHRQ</small></div></div><div class='two'><div class='co concept'><p class='label'>For the client</p><ul><li>Pain</li><li>Longer hospital stay</li><li>Infection that can reach bone or the blood</li><li>Weeks to months to heal, if it heals</li></ul></div><div class='co flag'><p class='label'>For the system</p><ul><li>A stage 3 or 4 pressure injury acquired in the hospital is on the National Quality Forum’s list of serious reportable events</li><li>Medicare does not pay the hospital extra for treating one that was not present on admission</li><li>It is a nurse-sensitive quality measure that units track and benchmark</li></ul></div></div><div class='co pearl'><p class='label'>Connect it to QI</p><p>This is where the two modules meet. QI counts the injuries and asks whether the system is working. EBP decides what the bedside care should be.</p></div><p class='small'>Faculty: the AHRQ figures are national estimates from its prevention toolkit and are more than a decade old. Present them as estimates, not current counts.</p>"},
+
+    {f:[],tag:"Where it comes from · 5 min",title:"Where does it come from?",min:5,
+     prompt:"Your unit hands you this protocol on day one. Who decided what goes in it, and based on what? Put the steps in order.",
+     body:"<p class='small'>Steps (shuffled): Facility protocol · Research studies · Your bedside care · International guideline · Unit tracks injury rates · Systematic review</p>",
+     reveal:"<div class='loop'><span>Research studies</span><i>→</i><span>Systematic review</span><i>→</i><span>International guideline</span><i>→</i><span>Facility protocol</span><i>→</i><span>Your bedside care</span><i>→</i><span>Unit tracks injury rates</span><i>↺ back to the protocol</i></div><div class='tbl wide'><table><thead><tr><th>Step</th><th>Who</th><th>What happens</th></tr></thead><tbody><tr><td><b>Research</b></td><td>Researchers, often nurses</td><td>Trials and other studies test what prevents pressure injuries</td></tr><tr><td><b>Systematic review</b></td><td>Guideline panel</td><td>Pools the studies and grades how certain the evidence is</td></tr><tr><td><b>Guideline</b></td><td>NPIAP, EPUAP, and PPPIA (U.S., European, and Pan Pacific groups)</td><td>Writes recommendations; now in its 4th edition</td></tr><tr><td><b>Protocol</b></td><td>The facility’s nursing practice or policy committee</td><td>Adapts the guideline to its own beds, mattresses, staffing, and clients</td></tr><tr><td><b>Bedside</b></td><td>You</td><td>Apply it with judgment and the client’s preferences</td></tr><tr><td><b>Tracking</b></td><td>Unit QI team</td><td>Counts hospital-acquired injuries, benchmarks them, and feeds the next revision</td></tr></tbody></table></div><div class='co pearl'><p class='label'>Not every step is equally certain</p><p>Turning every 2 hours was taught for decades as a rule. The current guideline rates the evidence for any fixed interval as very low certainty and recommends an <b>individualized</b> schedule instead. Strong habits and strong evidence are not the same thing.</p></div>"},
+
+    {f:["gs","ta"],tag:"I do · 8 min",title:"Watch me apply the protocol",min:8,
+     prompt:"Faculty demonstrates the 1000 care round on a manikin or volunteer, thinking out loud. Students: tick each protocol step you see.",
+     body:T("protocol"),
+     reveal:"<div class='co concept'><p class='label'>Think-aloud script</p><ol><li>“I identify him with two identifiers and explain what I’m about to do.”</li><li>“His Braden is 14, so the protocol applies. The low subscales are activity, mobility, nutrition, and friction.”</li><li>“Before I turn him, I ask about pain. Then I check the sacrum and heels. The sacrum still blanches.”</li><li>“He was wet overnight. I clean and dry the skin and apply barrier cream.”</li><li>“I turn him to a 30° tilt on his left with a wedge behind his back, not all the way onto his hip.”</li><li>“Pillow under the calves. His heels float.”</li><li>“His breathing needs the head of the bed up, so I raise the knee gatch slightly to keep him from sliding.”</li><li>“He’s on a standard mattress, so I request a pressure-redistribution surface. He eats about a quarter of his meals, so I ask for a dietitian referral.”</li><li>“I document the score, the skin, the position, and the time, and I tell the charge nurse about the red sacrum.”</li></ol></div><div class='two'><div class='co pearl'><p class='label'>Competing best practices</p><p>Skin wants the head of the bed low. His lungs want it up. Clinical judgment chooses the lowest angle he can breathe at and manages shear another way. Protocols rarely tell you this.</p></div><div class='co concept'><p class='label'>Where each step comes from</p><p>Every step maps to the international guideline: risk assessment, skin inspection, individualized repositioning, 30° tilt, heel offloading, moisture management, support surfaces, and nutrition screening with referral.</p></div></div><p class='small'>Faculty: knee gatch use varies by unit and by client. Present it as one option, not a rule.</p>"},
+
+    {f:["gs","ta"],tag:"We do · 4 min",title:"Class, you’re the nurse",min:4,
+     prompt:"It’s 1300. The volunteer does exactly what the class tells them, step by step, and nothing else. Who goes first?",
+     body:T("protocol"),
+     reveal:"<div class='co concept'><p class='label'>The 1300 round, in order</p><ol><li>Identify, explain, ask about pain</li><li>Inspect the sacrum, left hip, and heels after lying left-tilted</li><li>Tilt 30° to the right with a wedge</li><li>Float the heels</li><li>Check head of bed and sliding</li><li>Check for moisture</li><li>Document the time, position, and skin findings</li></ol></div><div class='co pearl'><p class='label'>Watch for</p><p>The class will skip the skin check and go straight to turning. The skin check after each turn is how you know the schedule is working for <b>this</b> client.</p></div>"},
+
+    {f:["rc","ac","ph"],tag:"The person · 6 min",title:"“Please, just let me sleep”",min:6,
+     prompt:"Can you skip his turns tonight? What does the guideline actually say? Discuss in pairs, then commit.",
+     body:"<div class='co voice'><p class='label'>Mr. Shah, 2200</p><blockquote>“Every two hours someone rolls me over. I haven’t slept in two nights. Please, just leave me alone tonight.”</blockquote></div><div class='two'><div class='co concept'><p class='label'>Since 1000</p><p>Pressure-redistribution mattress in place. Sacrum: redness fading, blanches. Heels intact.</p></div><div class='co concept'><p class='label'>Your options</p><ol class='small'><li>Stop turning him tonight, as he asked</li><li>Keep turning every 2 hours; the protocol is the protocol</li><li>Something else</li></ol></div></div>",
+     reveal:"<div class='co concept'><p class='label'>What the guideline says</p><ul><li>Reposition on an <b>individualized</b> schedule, not one fixed interval for everyone.</li><li>Base the schedule on mobility, skin tolerance, condition, comfort, <b>sleep</b>, goals of care, and the support surface.</li><li>On a suitable surface, every 2 or 3 hours are both reasonable. Don’t routinely stretch to 4–6 hours.</li><li>Involve the person in deciding, weighing sleep against prevention.</li></ul></div><div class='tbl wide'><table><thead><tr><th>Option</th><th>Verdict</th></tr></thead><tbody><tr><td>Stop turning</td><td>No. He is still at risk, and the evidence doesn’t support long gaps.</td></tr><tr><td>Every 2 hours, no discussion</td><td>Follows the letter of the protocol and ignores a real harm: two nights without sleep.</td></tr><tr><td><b>Something else</b></td><td><b>Yes.</b> Explain why turning matters. Cluster care so you wake him less. Use small 30° tilts with pillows. Ask the charge nurse whether the protocol allows a 3-hour night schedule on his new mattress. Check his skin at each turn, and document the plan and his preference.</td></tr></tbody></table></div><div class='co flag'><p class='label'>Scope</p><p>Changing a protocol schedule is a team decision. The new nurse brings the client’s request and the skin findings to the charge nurse; the new nurse does not quietly change the plan alone.</p></div>"},
+
+    {f:["ac","gs"],tag:"The person · 6 min",title:"The untouched shake",min:6,
+     prompt:"The best practice is better nutrition. How do you meet it his way?",
+     body:"<div class='two'><div class='co concept'><p class='label'>His tray, 1230</p><p>White rice, steamed vegetables, a roll. Protein shake unopened. Ate about a quarter.</p></div><div class='co voice'><p class='label'>Mr. Shah</p><blockquote>“I don’t eat meat or eggs. I don’t know what’s in that drink.”</blockquote></div></div><div class='co voice'><p class='label'>His daughter</p><blockquote>“At home he has dal and yogurt every day.”</blockquote></div>",
+     reveal:"<div class='co concept'><p class='label'>What the guideline says</p><p>Screen nutrition, refer at-risk clients to a dietitian, and improve intake with approaches such as fortified foods, help with eating, and <b>honoring cultural and religious food preferences</b>. Respecting his diet is part of the guideline itself.</p></div><div class='two'><div class='co pearl'><p class='label'>Do</p><ul><li>Read the shake’s label <b>with him</b>; let him decide</li><li>Ask him which foods he eats and enjoys</li><li>Make sure the dietitian referral is in and pass on his preferences</li><li>Check the policy on food from home; the daughter may be able to help</li><li>Document his preferences in the plan of care</li></ul></div><div class='co flag'><p class='label'>Don’t</p><ul><li>Assume what he eats from his name or background; <b>ask</b></li><li>Keep sending a shake he won’t drink</li><li>Let his daughter answer for him; he is the decision-maker</li></ul></div></div><p class='small'>Faculty: protein and calorie targets are the dietitian’s call. Students do not calculate them in NUR 111.</p>"},
+
+    {f:["gs","ta"],tag:"You do · 7 min",title:"Ms. Carter: your turn",min:7,
+     prompt:"In pairs: Which protocol steps apply? Then adapt two of them to what she has told you.",
+     body:T("carter")+T("protocol"),
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Protocol step</th><th>Adapted for Ms. Carter</th></tr></thead><tbody><tr><td>Inspect skin</td><td>Arrange a female staff member for bathing and skin checks when possible. Explain why the heels and sacrum need checking, offer privacy, and ask how she prefers it done.</td></tr><tr><td>Reposition</td><td>Assess shoulder pain before and after each turn. Use 30° tilts, support the weak arm with a pillow, and limit time on the right side. Report the shoulder pain.</td></tr><tr><td>Offload heels</td><td>The left heel is already red: float both heels now and check them at every turn.</td></tr><tr><td>Nutrition</td><td>Eating half; ask about preferences and help with setup on her weak side.</td></tr><tr><td>Document</td><td>Record her preferences in the care plan so every shift follows them.</td></tr></tbody></table></div><div class='co pearl'><p class='label'>What stayed the same</p><p>The goal and the core steps: assess, inspect, reposition, offload, document. What changed was <b>how</b>: who, when, and which side.</p></div>"},
+
+    {f:["eo"],tag:"Wrap-up · 3 min",title:"The two answers",min:3,
+     prompt:"On your exit ticket: answer both questions for one protocol step. Then name one thing you adapted for Mr. Shah.",
+     body:"<div class='two'><div class='co concept'><p class='label'>Where does it come from?</p><p>Research, pooled and graded into an international guideline, adapted by your facility into a protocol, and applied by you at the bedside. QI data feeds back into the next version.</p></div><div class='co flag'><p class='label'>Why is it so important?</p><p>Pressure injuries cause pain, infection, and death, and most are preventable. Nursing care at the bedside is the main way they are prevented.</p></div></div><div class='two'><div class='co concept'><p class='label'>Holds firm</p><ul><li>The goal: no pressure injury</li><li>Risk assessment and skin checks</li><li>Offloading pressure and heels</li><li>Reporting and documenting</li></ul></div><div class='co pearl'><p class='label'>Flexes for the person</p><ul><li>When and how often, within the evidence</li><li>Which positions, for comfort and pain</li><li>Who gives care, for privacy</li><li>Which foods meet the need</li></ul></div></div><div class='co concept'><p class='label'>LO5 → LO6</p><p>Using the guideline is LO5. Fitting it to the person without losing the goal is LO6. Doing both is evidence-based practice.</p></div>",
+     reveal:""}
+  ];
+
+  var stageEl=document.getElementById('stage'), pipsEl=document.getElementById('pips'),
+      countEl=document.getElementById('count'), prevB=document.getElementById('prev'),
+      nextB=document.getElementById('next'), revB=document.getElementById('rev'),
+      strip=document.querySelectorAll('#strip span'), clock=document.getElementById('clock');
+  var KEY='nur111-ebp-protocol-demo', st={i:0,shown:{}};
+  try{ var s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&typeof s.i==='number') st=s; }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+
+  stages.forEach(function(s,k){
+    var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','Stage '+k+': '+s.title);
+    b.addEventListener('click',function(){ go(k); }); pipsEl.appendChild(b);
+  });
+
+  function render(){
+    var s=stages[st.i], shown=!!st.shown[st.i];
+    stageEl.innerHTML="<div class='stagehead'><span class='label'>Stage "+st.i+" · "+s.tag+"</span><h1>"+s.title+"</h1></div>"+
+      "<p class='prompt'>"+s.prompt+"</p><div class='body'>"+s.body+"</div>"+
+      "<div class='reveal' id='revealbox'"+(shown?"":" hidden")+"><span class='label'>Debrief</span>"+s.reveal+"</div>";
+    strip.forEach(function(el){ el.classList.toggle('on', s.f.indexOf(el.dataset.f)>-1); });
+    Array.prototype.forEach.call(pipsEl.children,function(b,k){
+      b.className=(k===st.i?'cur':(k<st.i?'done':'')); b.setAttribute('aria-current',k===st.i?'step':'false');
+    });
+    countEl.textContent='Stage '+st.i+' of '+(stages.length-1);
+    clock.textContent=s.tag.split('·')[0].trim();
+    prevB.disabled=st.i===0; nextB.disabled=st.i===stages.length-1;
+    revB.textContent=shown?'Hide debrief':'Reveal debrief';
+    revB.hidden=!s.reveal;
+    revB.setAttribute('aria-pressed',shown?'true':'false');
+  }
+  // ---- section timer ----
+  var tdisp=document.getElementById('tdisp'), tgo=document.getElementById('tgo'), tleft=0, tid=null, ac=null, alarmOn=false;
+  function fmt(x){ var m=Math.floor(x/60), sec=x%60; return m+':'+(sec<10?'0':'')+sec; }
+  function tdraw(){ tdisp.textContent=fmt(Math.max(0,tleft)); tdisp.classList.toggle('low', tleft>0 && tleft<=60);
+    tdisp.classList.toggle('done', tleft<=0 && alarmOn); tgo.textContent=tid?'Pause':'Start';
+    var bk=document.getElementById('backat');
+    if(bk){ if(tid){ var d=new Date(Date.now()+tleft*1000), h=d.getHours()%12||12, mm=d.getMinutes();
+        bk.textContent='Back at '+h+':'+(mm<10?'0':'')+mm; }
+      else if(tleft<=0 && alarmOn){ bk.textContent='Break is over. Take your seats.'; }
+      else { bk.textContent='Press Start to begin the break.'; } } }
+  function tstop(){ if(tid){ clearInterval(tid); tid=null; } }
+  function tset(sec){ tstop(); alarmOn=false; tleft=sec; tdraw(); }
+  function unlock(){ try{ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); } if(ac.state==='suspended') ac.resume(); }catch(e){} }
+  function alarm(){
+    alarmOn=true; tdraw(); if(!ac) return;
+    var t0=ac.currentTime;
+    for(var r=0;r<4;r++){ for(var k=0;k<3;k++){
+      var o=ac.createOscillator(), g=ac.createGain(), s0=t0+r*1.1+k*0.22;
+      o.type='square'; o.frequency.value=k%2?1046:880; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.0001,s0); g.gain.exponentialRampToValueAtTime(0.9,s0+0.01);
+      g.gain.setValueAtTime(0.9,s0+0.16); g.gain.exponentialRampToValueAtTime(0.0001,s0+0.19);
+      o.start(s0); o.stop(s0+0.2);
+    } }
+  }
+  function tick(){ tleft--; if(tleft<=0){ tleft=0; tstop(); alarm(); } tdraw(); }
+  tgo.addEventListener('click',function(){ unlock();
+    if(tid){ tstop(); } else { if(tleft<=0) tleft=(stages[st.i].min||5)*60; alarmOn=false; tid=setInterval(tick,1000); } tdraw(); });
+  document.getElementById('treset').addEventListener('click',function(){ tset((stages[st.i].min||5)*60); });
+  document.getElementById('tplus').addEventListener('click',function(){ tleft+=60; alarmOn=false; tdraw(); });
+  document.getElementById('tminus').addEventListener('click',function(){ tleft=Math.max(0,tleft-60); tdraw(); });
+  function go(k){ st.i=Math.max(0,Math.min(stages.length-1,k)); save(); render(); tset((stages[st.i].min||5)*60); window.scrollTo(0,0); }
+  prevB.addEventListener('click',function(){ go(st.i-1); });
+  nextB.addEventListener('click',function(){ go(st.i+1); });
+  revB.addEventListener('click',function(){ st.shown[st.i]=!st.shown[st.i]; save(); render();
+    if(st.shown[st.i]){ var r=document.getElementById('revealbox'); if(r) r.scrollIntoView({block:'start'}); } });
+  document.addEventListener('keydown',function(e){
+    if(e.target.closest && e.target.closest('input,textarea')) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); go(st.i+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(st.i-1); }
+    else if(e.key==='r'||e.key==='R'){ revB.click(); }
+    else if(e.key==='t'||e.key==='T'){ tgo.click(); }
+  });
+  render(); tset((stages[st.i].min||5)*60);
+})();
+</script>
+</body>
+</html>
