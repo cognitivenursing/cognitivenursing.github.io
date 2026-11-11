@@ -59,7 +59,9 @@ h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0} p{margin:0}
 .fig .tip.up{top:auto;bottom:calc(100% + .6rem)}
 .fig .tip b{font-size:1.05rem;color:#E3A33B}
 .fig .tip em{font-style:normal;border-top:1px solid rgba(255,255,255,.25);padding-top:.35rem}
-.fig .hs:hover .tip,.fig .hs:focus .tip{opacity:1;visibility:visible}
+.fig .hs:hover .tip,.fig .hs:focus .tip,.fig .hs.playing .tip{opacity:1;visibility:visible}
+.fig .hs.playing{outline:4px solid #E3A33B;outline-offset:2px}
+.figbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center}
 @media (prefers-reduced-motion:reduce){.fig .tip{transition:none}}
 main .wrap{padding-block:1.75rem 6rem;display:grid;gap:1.5rem}
 .stagetop{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}
@@ -176,7 +178,7 @@ a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border
     <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
     <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
     <p>The cases are fictional and formative and are not exam items. The protocol is a teaching example; repositioning schedules, Braden cutoffs, support-surface procedures, and policies on food from home vary by facility. Stage position is saved only in this browser. Use the arrow keys to move between stages, R to reveal, and T to start or pause the timer. The Slido results stage shows Slido Present mode inside the page when the browser allows the Slido sign-in there; otherwise use Open results in a new tab.</p>
-    <p>The 7-step figure was generated with Figure Labs (AI) and its center labels were corrected by hand; the mini step circle on each stage is drawn by the page.</p>
+    <p>The 7-step figure was generated with Figure Labs (AI) and its center labels were corrected by hand; the mini step circle on each stage is drawn by the page. The audio tour narration was generated with ElevenLabs (AI voice) from a faculty-approved script.</p>
     <p>Guideline points checked November 2026:</p>
     <ul style="margin:0;padding-left:1.125rem;display:block">
       <li>ATI Nursing: Evidence-Based Practice exemplars (Introduction to Best Practices; Individual Preferences).</li>
@@ -291,7 +293,7 @@ a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border
       out+="<button type='button' class='hs' style='left:"+h[0]+"%;top:"+h[1]+"%' aria-label='"+h[2]+"'><span class='tip"+(h[5]?' up':'')+"' role='tooltip'><b>"+h[2]+"</b>"+h[3]+(shah?"<em>For Mr. Shah: "+h[4]+"</em>":"")+"</span></button>";
     });
     out+="<button type='button' class='hs ctr' style='left:50%;top:52.4%' aria-label='Center: best care for this client'><span class='tip' role='tooltip'><b>Evidence-based practice</b>Best evidence + the nurse’s expertise + what the client wants. All three, every time.</span></button>";
-    return out+"</div><p class='small' style='text-align:center'>Hover over any step (or tap it) to learn more.</p>";
+    return out+"</div><div class='figbar'><button type='button' class='b primary' id='figtour'>▶ Listen to the tour (3 min)</button><span class='small'>Hover over a step to read about it. Click a step to hear it.</span></div>";
   }
   var stages=[
     {e:[],f:[],tag:"Start here · 2 min · LO1–LO8",title:"Why do we do it this way?",min:2,
@@ -383,6 +385,30 @@ a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border
     out+="</svg>";
     return "<div class='mini'>"+out+"<span>"+e.map(function(k){return k+' · '+STEPS[k];}).join(' + ')+"</span></div>";
   }
+  var AU=new Audio(), cur=-1, tour=false;
+  AU.preload='none';
+  function mark(){
+    document.querySelectorAll('.fig .hs').forEach(function(b,k){ b.classList.toggle('playing', cur===k+1 && !AU.paused); });
+    var t=document.getElementById('figtour');
+    if(t) t.textContent = (tour && !AU.paused) ? '❚❚ Pause the tour' : (tour && cur>-1 ? '▶ Resume the tour' : '▶ Listen to the tour (3 min)');
+  }
+  function playClip(i){ cur=i; AU.src='audio/ebp-'+i+'.mp3'; var pr=AU.play(); if(pr&&pr.catch) pr.catch(function(){}); mark(); }
+  function stopAudio(){ AU.pause(); cur=-1; tour=false; mark(); }
+  AU.addEventListener('ended',function(){ if(tour && cur<8){ playClip(cur+1); } else { cur=-1; tour=false; mark(); } });
+  AU.addEventListener('pause',mark); AU.addEventListener('play',mark);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest && e.target.closest('#figtour, .fig .hs');
+    if(!t) return;
+    if(t.id==='figtour'){
+      if(tour && !AU.paused){ AU.pause(); }
+      else if(tour && cur>-1){ AU.play(); }
+      else { tour=true; playClip(0); }
+      return;
+    }
+    var k=Array.prototype.indexOf.call(document.querySelectorAll('.fig .hs'),t)+1;
+    if(cur===k && !AU.paused){ AU.pause(); } else { tour=false; playClip(k); }
+  });
+  new MutationObserver(function(){ if(!document.querySelector('.fig')) { if(cur>-1) stopAudio(); } else mark(); }).observe(stageEl,{childList:true});
   function render(){
     var s=stages[st.i], shown=!!st.shown[st.i];
     stageEl.innerHTML="<div class='stagetop'><div class='stagehead'><span class='label'>Stage "+st.i+" · "+s.tag+"</span><h1>"+s.title+"</h1></div>"+mini(s)+"</div>"+
