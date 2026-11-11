@@ -63,6 +63,9 @@ h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0} p{margin:0}
 .fig .hs.playing{outline:4px solid #E3A33B;outline-offset:2px}
 .figbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center}
 @media (prefers-reduced-motion:reduce){.fig .tip{transition:none}}
+.srcbox{display:grid;gap:.6rem;font-size:.9rem;line-height:1.55}
+.srcbox p,.srcbox li{font-size:.9rem}
+.srcbox ul{display:grid;gap:.35rem;padding-left:1.25rem}
 main .wrap{padding-block:1.75rem 6rem;display:grid;gap:1.5rem}
 .stagetop{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}
 .stagetop .stagehead{min-width:0}
@@ -173,7 +176,7 @@ a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border
 <main>
   <div class="wrap" id="stage" aria-live="polite"></div>
   <div class="wrap">
-  <footer id="sources" style="font-size:.7rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;padding-bottom:5rem;display:flex;flex-direction:column;gap:.5rem">
+  <footer id="sources" hidden style="font-size:.7rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;padding-bottom:5rem;display:flex;flex-direction:column;gap:.5rem">
     <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
     <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
     <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
@@ -363,7 +366,11 @@ a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border
     {e:[4],f:["gs","ta"],tag:"Extra practice · if time · LO4 LO5 LO6",title:"Ms. Carter: your turn",min:5,
      prompt:"In pairs: Which protocol steps apply? Then adapt two of them to what she has told you.",
      body:T("carter")+T("protocol"),
-     reveal:"<div class='tbl wide'><table><thead><tr><th>Protocol step</th><th>Adapted for Ms. Carter</th></tr></thead><tbody><tr><td>Inspect skin</td><td>Arrange a female staff member for bathing and skin checks when possible. Explain why the heels and sacrum need checking, offer privacy, and ask how she prefers it done.</td></tr><tr><td>Reposition</td><td>Assess shoulder pain before and after each turn. Use 30° tilts, support the weak arm with a pillow, and limit time on the right side. Report the shoulder pain.</td></tr><tr><td>Float the heels</td><td>The left heel is already red: float both heels now and check them at every turn.</td></tr><tr><td>Nutrition</td><td>Eating half; ask about preferences and help with setup on her weak side.</td></tr><tr><td>Document</td><td>Record her preferences in the care plan so every shift follows them.</td></tr></tbody></table></div><div class='co pearl'><p class='label'>What stayed the same</p><p>The goal and the core steps: assess, inspect, reposition, float the heels, document. What changed was <b>how</b>: who, when, and which side.</p></div>"}
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Protocol step</th><th>Adapted for Ms. Carter</th></tr></thead><tbody><tr><td>Inspect skin</td><td>Arrange a female staff member for bathing and skin checks when possible. Explain why the heels and sacrum need checking, offer privacy, and ask how she prefers it done.</td></tr><tr><td>Reposition</td><td>Assess shoulder pain before and after each turn. Use 30° tilts, support the weak arm with a pillow, and limit time on the right side. Report the shoulder pain.</td></tr><tr><td>Float the heels</td><td>The left heel is already red: float both heels now and check them at every turn.</td></tr><tr><td>Nutrition</td><td>Eating half; ask about preferences and help with setup on her weak side.</td></tr><tr><td>Document</td><td>Record her preferences in the care plan so every shift follows them.</td></tr></tbody></table></div><div class='co pearl'><p class='label'>What stayed the same</p><p>The goal and the core steps: assess, inspect, reposition, float the heels, document. What changed was <b>how</b>: who, when, and which side.</p></div>"},
+    {e:[],f:[],tag:"Sources and credits",title:"Sources and credits",min:1,
+     prompt:"Where everything on this board came from, and how it was made.",
+     body:"<div class='srcbox'>"+document.getElementById('sources').innerHTML+"</div>",
+     reveal:""}
   ];
 
   var stageEl=document.getElementById('stage'), pipsEl=document.getElementById('pips'),
