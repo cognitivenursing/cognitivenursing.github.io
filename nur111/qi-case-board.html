@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>QI Case Board: Mr. Dean</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout: projector board. Persistent CJMM strip on top, one stage at a time below, faculty reveal under each prompt. Same navy/teal system as the module pages, scaled up. */
+:root{
+  --bg:#FFFFFF; --fg:#2F3338; --muted:#5B6470; --rule:#DDE2E8;
+  --navy:#1B3270; --navy-fg:#FFFFFF; --head:#0F5F86;
+  --concept-bg:#F2F5F8; --concept-edge:#C9D4DF;
+  --pearl-bg:#FDF6E9; --pearl-edge:#E8D5B0; --pearl-ink:#7A4E12;
+  --voice-bg:#EDF1EA; --voice-edge:#C8D3C1; --voice-ink:#36584F;
+  --flag:#B42025; --flag-bg:#FBEDED;
+  --font:"Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --fg:#E4E7EB; --muted:#A3ADB9; --rule:#2C333D; --head:#7FC3E6;
+  --concept-bg:#1C222A; --concept-edge:#323C48; --pearl-bg:#2A2419; --pearl-edge:#4A3D24; --pearl-ink:#E9C27E;
+  --voice-bg:#1C251F; --voice-edge:#33443A; --voice-ink:#9CCBB9; --flag:#F07A7E; --flag-bg:#2E1A1B; color-scheme:dark}
+
+html{font-size:clamp(15px,1.15vw + 6px,24px)}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0} p{margin:0}
+.label{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--navy);color:var(--navy-fg)}
+.top .wrap{padding-block:.6rem;display:grid;gap:.5rem}
+.toprow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
+.toprow .label{opacity:.85}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.35rem}
+.strip span{font-size:.72rem;font-weight:700;text-align:center;padding:.4rem .25rem;border-radius:6px;border:1px solid rgba(255,255,255,.28);opacity:.6;line-height:1.2}
+.strip span.on{background:var(--navy-fg);color:var(--navy);opacity:1;border-color:var(--navy-fg)}
+@media (max-width:620px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.strip.ebp{grid-template-columns:repeat(7,minmax(0,1fr))}
+.strip.ebp span{border-style:dashed}
+.strip.ebp span.on{border-style:solid;background:#E3A33B;color:#14181E;border-color:#E3A33B}
+@media (max-width:620px){.strip.ebp{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.fig{position:relative;width:100%;max-width:1100px;margin:0 auto}
+.fig img{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+.fig .hs{position:absolute;width:11%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:0;background:transparent;cursor:help;padding:0}
+.fig .hs.ctr{width:21.5%}
+.fig .hs:hover,.fig .hs:focus-visible{outline:4px solid #E3A33B;outline-offset:2px}
+.fig .tip{position:absolute;left:50%;top:calc(100% + .6rem);transform:translateX(-50%);width:min(22rem,80vw);z-index:3;background:var(--navy);color:var(--navy-fg);text-align:left;font-size:.95rem;font-weight:400;line-height:1.45;padding:.85rem 1rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:grid;gap:.35rem;opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none}
+.fig .tip.up{top:auto;bottom:calc(100% + .6rem)}
+.fig .tip b{font-size:1.05rem;color:#E3A33B}
+.fig .tip em{font-style:normal;border-top:1px solid rgba(255,255,255,.25);padding-top:.35rem}
+.fig .hs:hover .tip,.fig .hs:focus .tip,.fig .hs.playing .tip{opacity:1;visibility:visible}
+.fig .hs.playing{outline:4px solid #E3A33B;outline-offset:2px}
+.figbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center}
+@media (prefers-reduced-motion:reduce){.fig .tip{transition:none}}
+.refs{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
+.refs li{padding-left:2em;text-indent:-2em;overflow-wrap:anywhere}
+.refs .refnote{display:block;text-indent:0;color:var(--muted);font-size:.85em}
+.srcbox{display:grid;gap:.6rem;font-size:.9rem;line-height:1.55}
+.srcbox p,.srcbox li{font-size:.9rem}
+.srcbox ul:not(.refs){display:grid;gap:.35rem;padding-left:1.25rem}
+main .wrap{padding-block:1.75rem 6rem;display:grid;gap:1.5rem}
+.stagetop{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}
+.stagetop .stagehead{min-width:0}
+.mini{flex:none;width:8.5rem;display:grid;justify-items:center;gap:.2rem}
+.mini svg{width:100%;height:auto}
+.mini span{font-size:.8rem;font-weight:800;color:var(--head);text-align:center;line-height:1.2}
+@media (max-width:620px){.mini{width:5.5rem}}
+.stagehead{display:grid;gap:.35rem}
+.stagehead .label{color:var(--head)}
+.stagehead h1{font-size:2.1rem;font-weight:800}
+.prompt{font-size:1.35rem;font-weight:600;max-width:60ch}
+.body{display:grid;gap:1.1rem;min-width:0}
+.body p,.body li{font-size:1.05rem}
+ul,ol{margin:0;padding-left:1.25rem;display:grid;gap:.35rem}
+
+.patient{border:1px solid var(--rule);border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;background:var(--concept-bg)}
+.patient h3{font-size:1.25rem}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.v{border:1px solid var(--rule);border-radius:8px;padding:.6rem .8rem;display:grid;gap:.1rem;background:var(--bg)}
+.v span{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v b{font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.v small{font-size:.8rem;color:var(--muted)}
+.v.alert b{color:var(--flag)}
+
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;background:var(--concept-bg)} tr:last-child td{border-bottom:0}
+.tbl.wide table{min-width:640px}
+
+.co{border-radius:12px;padding:1rem 1.25rem;display:grid;gap:.5rem;border:1px solid}
+.co .label{display:flex;align-items:center;gap:.5rem}
+.co .label::before{content:"";width:.6rem;height:.6rem;border-radius:2px;background:currentColor}
+.concept{background:var(--concept-bg);border-color:var(--concept-edge)} .concept .label{color:var(--head)}
+.pearl{background:var(--pearl-bg);border-color:var(--pearl-edge)} .pearl .label{color:var(--pearl-ink)}
+.voice{background:var(--voice-bg);border-color:var(--voice-edge);border-radius:0} .voice .label{color:var(--voice-ink)}
+.voice blockquote{margin:0;font-style:italic;font-size:1.15rem;line-height:1.45}
+.flag{background:var(--flag-bg);border-color:var(--flag);border-width:1px 1px 1px 6px;border-radius:4px}
+.flag .label{color:var(--flag)} .flag .label::before{border-radius:50%}
+
+.reveal{border-top:2px dashed var(--rule);padding-top:1.1rem;display:grid;gap:1rem}
+.reveal .label{color:var(--head)}
+
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px)}
+.controls .wrap{padding-block:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.pips{display:flex;flex-wrap:wrap;gap:.3rem}
+.pips button{width:1.4rem;height:.55rem;border-radius:2px;border:0;padding:0;background:var(--rule);cursor:pointer}
+.pips button.done{background:var(--head)}
+.pips button.cur{background:var(--navy);outline:2px solid var(--head);outline-offset:1px}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap}
+button.b{font:inherit;font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;cursor:pointer;border:1.5px solid var(--rule);background:var(--bg);color:var(--fg)}
+button.b.primary{background:var(--navy);color:var(--navy-fg);border-color:var(--navy)}
+button.b:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--head);outline-offset:2px}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1rem}
+.two > *{min-width:0}
+.loop{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-weight:600}
+.loop span{border:1px solid var(--concept-edge);background:var(--bg);border-radius:6px;padding:.3rem .6rem}
+.loop i{font-style:normal;color:var(--muted)}
+.small{font-size:.85rem;color:var(--muted)}
+.looplink{font-weight:700;color:var(--accent,#1f6f78);text-decoration:underline;text-underline-offset:3px}
+.timer{display:flex;align-items:center;gap:.35rem;margin-left:auto}
+.top .timer .t{color:#fff;border-color:rgba(255,255,255,.5)}
+.top .timer .b{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+.top .timer .t.low{color:#fcd34d;border-color:#fcd34d}
+.timer .t{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.6rem;min-width:5.2ch;text-align:center;padding:.15rem .5rem;border-radius:8px;border:2px solid var(--rule)}
+.timer .t.low{border-color:#b45309;color:#b45309}
+.timer .t.done{background:#b42318;border-color:#b42318;color:#fff;animation:tflash .5s steps(2) infinite}
+#stage .body p.breakback{line-height:1.15;color:var(--ink,inherit);font-size:clamp(2rem,6vw,4rem);font-weight:800;margin:1rem 0}
+.timer .b.sm{padding:.45rem .6rem;font-size:.85rem}
+.slidoframe{display:grid;gap:.5rem}
+.slidoframe.fixed{position:fixed;left:0;right:0;z-index:4;background:var(--bg);grid-template-rows:auto minmax(0,1fr);padding:.5rem max(16px,env(safe-area-inset-right,0px)) .5rem max(16px,env(safe-area-inset-left,0px))}
+.slidoframe.fixed iframe{height:100%;min-height:0}
+.slidoframe iframe{width:100%;height:calc(100vh - 23rem);min-height:320px;border:1px solid var(--rule);border-radius:12px;background:#fff}
+.slidoframe iframe:fullscreen{border:0;border-radius:0;height:100vh}
+.slidobar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+a.b{font-size:.9rem;font-weight:700;border-radius:8px;padding:.55rem 1rem;border:1.5px solid var(--rule);background:var(--bg);color:var(--fg);text-decoration:none}
+@keyframes tflash{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.timer .t.done{animation:none}}
+@media (max-width:820px){.timer .t{font-size:1.2rem}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="toprow">
+      <span class="label">NUR 111 · Quality Improvement · Learning from an event · LO1–LO7</span>
+      <span class="label" id="clock"></span>
+      <div class="timer" role="group" aria-label="Section timer">
+        <span class="t" id="tdisp" aria-live="off">0:00</span>
+        <button class="b sm" id="tgo" type="button">Start</button>
+        <button class="b sm" id="tminus" type="button" aria-label="Subtract one minute">−1</button>
+        <button class="b sm" id="tplus" type="button" aria-label="Add one minute">+1</button>
+        <button class="b sm" id="treset" type="button">Reset</button>
+      </div>
+    </div>
+    <div class="strip" id="strip" aria-label="CJMM functions">
+      <span data-f="rc">Recognize cues</span><span data-f="ac">Analyze cues</span><span data-f="ph">Prioritize hypotheses</span><span data-f="gs">Generate solutions</span><span data-f="ta">Take action</span><span data-f="eo">Evaluate outcomes</span>
+    </div>
+    <div class="strip ebp" id="ebpstrip" aria-label="QI steps">
+      <span data-e="0">1 · Keep safe</span><span data-e="1">2 · Report</span><span data-e="2">3 · Learn why</span><span data-e="3">4 · Plan</span><span data-e="4">5 · Do</span><span data-e="5">6 · Study</span><span data-e="6">7 · Act</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="stage" aria-live="polite"></div>
+  <div class="wrap">
+  <footer id="sources" hidden style="font-size:.7rem;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem;padding-bottom:5rem;display:flex;flex-direction:column;gap:.5rem">
+    <p><strong>Subject-matter authority:</strong> Ashley Cooke, MSN, RN, PCCN. Faculty selected the sources, directed the content, and verified it before use.</p>
+    <p>Foundational content comes from the ATI Nursing platform used by the CCCC ADN Nursing Program and directs exemplar development. Outside sources add current best practice from the evidence base.</p>
+    <p>AI assisted under faculty direction with research, drafting, formatting, and coding.</p>
+    <p>The cases are fictional and formative and are not exam items. The benchmark numbers are made up for practice. Steps 4–7 are the Institute for Healthcare Improvement’s Plan–Do–Study–Act cycle; steps 1–3 are a teaching summary of the module’s reporting and just-culture content. Stage position is saved only in this browser. Use the arrow keys to move between stages, R to reveal, and T to start or pause the timer.</p>
+    <p><strong>References</strong> (APA 7th ed.; sources checked November 2026)</p>
+    <ul class="refs">
+      <li>ATI Nursing Education. (n.d.-a). <i>Quality improvement: Reporting</i> [Learning module]. Assessment Technologies Institute.<span class="refnote">Supports: Reporting steps; types of events</span></li>
+      <li>ATI Nursing Education. (n.d.-b). <i>Quality improvement: Sentinel events</i> [Learning module]. Assessment Technologies Institute.<span class="refnote">Supports: Sentinel events; ISBAR</span></li>
+      <li>Institute for Healthcare Improvement. (n.d.). <i>How to improve: Model for improvement</i>. <a href="https://www.ihi.org/resources/how-to-improve" target="_blank" rel="noopener">https://www.ihi.org/resources/how-to-improve</a><span class="refnote">Supports: Plan–Do–Study–Act</span></li>
+      <li>The Joint Commission. (2024). <i>Sentinel event data 2023 annual review</i>. <a href="https://www.jointcommission.org/-/media/tjc/documents/resources/patient-safety-topics/sentinel-event/2024/2024_sentinel-event-_annual-review_published-2024.pdf" target="_blank" rel="noopener">https://www.jointcommission.org/-/media/tjc/documents/resources/patient-safety-topics/sentinel-event/2024/2024_sentinel-event-_annual-review_published-2024.pdf</a><span class="refnote">Supports: Falls in 67% of events with severe temporary harm</span></li>
+      <li>The Joint Commission. (2025). <i>Sentinel event data 2024 annual review</i>. <a href="https://digitalassets.jointcommission.org/api/public/content/eac7511986c0442a9c1ae04b1aa02cc0" target="_blank" rel="noopener">https://digitalassets.jointcommission.org/api/public/content/eac7511986c0442a9c1ae04b1aa02cc0</a><span class="refnote">Supports: Sentinel event definition; 1,575 events; outcomes</span></li>
+      <li>Kohn, L. T., Corrigan, J. M., &amp; Donaldson, M. S. (Eds.). (2000). <i>To err is human: Building a safer health system</i>. National Academies Press. <a href="https://doi.org/10.17226/9728" target="_blank" rel="noopener">https://doi.org/10.17226/9728</a><span class="refnote">Supports: 1999 error estimate; systems view of error</span></li>
+      <li>Marx, D. (2001). <i>Patient safety and the “just culture”: A primer for health care executives</i>. Columbia University.<span class="refnote">Supports: Human error, at-risk, and reckless behavior</span></li>
+      <li>National Quality Forum. (2011). <i>Serious reportable events in healthcare—2011 update: A consensus report</i>. <a href="https://qualityforum.org/Publications/2011/12/SRE_2011_Final_Report.aspx" target="_blank" rel="noopener">https://qualityforum.org/Publications/2011/12/SRE_2011_Final_Report.aspx</a><span class="refnote">Supports: Never events (serious reportable events)</span></li>
+    </ul>
+  </footer>
+  </div>
+</main>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="pips" id="pips" aria-label="Stages"></div>
+    <span class="count" id="count"></span>
+    <div class="btns">
+      <button class="b" id="prev" type="button">Previous</button>
+      <button class="b" id="rev" type="button">Reveal debrief</button>
+      <button class="b primary" id="next" type="button">Next stage</button>
+    </div>
+  </div>
+</div>
+
+<template id="shah">
+  <div class="patient">
+    <h3>Vikram Shah, 79 · Day 2, admitted with pneumonia · 0800</h3>
+    <p>Weak and short of breath with activity. Spends most of the day in bed and needs one person to help him turn. Retired schoolteacher. His daughter visits each afternoon.</p>
+    <div class="vitals">
+      <div class="v"><span>Temp</span><b>37.8 °C</b><small>100.0 °F</small></div>
+      <div class="v"><span>HR</span><b>94</b><small>/min</small></div>
+      <div class="v"><span>RR</span><b>22</b><small>/min</small></div>
+      <div class="v"><span>BP</span><b>128/76</b></div>
+      <div class="v"><span>SpO₂</span><b>93%</b><small>2 L nasal cannula</small></div>
+      <div class="v"><span>Meals</span><b>~25%</b><small>of last 3 trays</small></div>
+    </div>
+  </div>
+  <div class="tbl wide"><table>
+    <thead><tr><th scope="col">Area</th><th scope="col">Finding at 0800</th></tr></thead>
+    <tbody>
+      <tr><td><b>Skin</b></td><td>Sacrum (tailbone area) is red. It turns white when pressed, then pinks up again; this is called <b>blanching</b>. Heels intact. Rest of skin intact.</td></tr>
+      <tr><td><b>Continence</b></td><td>One episode of urinary incontinence overnight; linens damp at 0500.</td></tr>
+      <tr><td><b>Position</b></td><td>Found lying flat on his back with heels resting on the mattress. Head of bed raised for breathing.</td></tr>
+      <tr><td><b>Mattress</b></td><td>Standard hospital mattress.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="braden">
+  <p class="small">The <b>Braden scale</b> is a checklist that scores six things that raise the risk of a pressure injury. A lower score means higher risk.</p>
+  <div class="tbl"><table>
+    <thead><tr><th scope="col">Braden subscale</th><th scope="col">Score</th><th scope="col">Why</th></tr></thead>
+    <tbody>
+      <tr><td>Sensory perception</td><td>3</td><td>Responds to verbal commands; can’t always say when he is uncomfortable</td></tr>
+      <tr><td>Moisture</td><td>3</td><td>Occasionally moist; incontinence overnight</td></tr>
+      <tr><td>Activity</td><td>2</td><td>Chairfast at best; mostly in bed</td></tr>
+      <tr><td>Mobility</td><td>2</td><td>Very limited; needs help to change position</td></tr>
+      <tr><td>Nutrition</td><td>2</td><td>Probably inadequate; eating about a quarter of meals</td></tr>
+      <tr><td>Friction and shear</td><td>2</td><td>Slides down in bed with the head raised</td></tr>
+      <tr><td><b>Total</b></td><td><b>14</b></td><td>Range 6–23. Lower scores mean higher risk.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="protocol">
+  <div class="co concept"><p class="label">Sample unit protocol · Pressure injury prevention</p>
+  <p class="small">A teaching example built from the international guideline. Your clinical site’s protocol will differ in its details.</p></div>
+  <div class="tbl wide"><table style="min-width:860px">
+    <thead><tr><th scope="col">Step</th><th scope="col">The protocol says</th><th scope="col">Where it comes from</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. Assess risk</b></td><td>Braden score on admission and every shift. A score at or below the unit’s cutoff starts this protocol.</td><td>Guideline: risk assessment with a structured tool plus clinical judgment. Braden scale, 1987.</td><td>You can’t prevent what you haven’t identified. The subscales show which risks to target.</td></tr>
+      <tr><td><b>2. Inspect skin</b></td><td>Check bony areas (tailbone, heels, hips, elbows, back of the head) each shift and with each turn. Press any red spot: does it blanch?</td><td>Guideline: skin and tissue assessment</td><td>Redness that blanches is a warning you can still act on. Redness that doesn’t blanch is already a stage 1 injury.</td></tr>
+      <tr><td><b>3. Reposition</b></td><td>Individualized schedule; 30° side-lying tilt, not directly on the hip.</td><td>Guideline: individualized repositioning; 30° lateral position</td><td>Unrelieved pressure cuts off blood flow to tissue over bone.</td></tr>
+      <tr><td><b>4. Float the heels</b></td><td>Pillow under the calves so the heels float.</td><td>Guideline: heel pressure injury prevention</td><td>The heel has little padding over bone and is one of the most common injury sites.</td></tr>
+      <tr><td><b>5. Prevent sliding</b></td><td>Head of bed as low as breathing allows; lift, don’t drag. Sliding while the skin stays put is called <b>shear</b>.</td><td>Guideline: positioning</td><td>Sliding stretches deep tissue over the sacrum even when the skin looks fine.</td></tr>
+      <tr><td><b>6. Manage moisture</b></td><td>Clean promptly after incontinence; apply skin barrier.</td><td>Guideline: skin care</td><td>Wet skin is softer and breaks down faster under pressure and friction.</td></tr>
+      <tr><td><b>7. Support surface</b></td><td>Request a pressure-relief mattress per unit procedure.</td><td>Guideline: mattresses and support surfaces</td><td>Spreads his weight over a larger area, so each turn has to do less work.</td></tr>
+      <tr><td><b>8. Nutrition</b></td><td>Screen; refer to the dietitian when intake is poor.</td><td>Guideline: nutrition screening and referral</td><td>Skin needs protein and energy to stay strong and to repair itself.</td></tr>
+      <tr><td><b>9. Document and report</b></td><td>Record score, skin, positions, and plan. Report new skin changes.</td><td>Facility policy; QI reporting</td><td>The next shift continues the plan, and the unit can track whether prevention is working.</td></tr>
+    </tbody>
+  </table></div>
+</template>
+
+<template id="carter">
+  <div class="patient">
+    <h3>Darlene Carter, 70 · Day 3, admitted with a stroke · 1000</h3>
+    <p>Right-sided weakness; needs help to turn. Braden score 13. Eating about half of her meals. Skin intact; left heel slightly red, blanches.</p>
+  </div>
+  <div class="co voice"><p class="label">What she says</p><blockquote>“I’d like a woman to help me bathe and check my skin, please. And lying on my right side hurts my shoulder.”</blockquote></div>
+</template>
+
+<script>
+(function(){
+  var T=function(id){return document.getElementById(id).innerHTML;};
+  function FIG(shah){
+    var H=[
+      [50,17.5,'0 · Notice','Be curious. When something seems off, or you don’t know why a task is done a certain way, stop and ask why.','His tailbone was red, so we asked: what is the best way to protect it?',''],
+      [66.5,28.7,'1 · Ask','Turn the worry into a clear question you could look up, using PICOT: Population, Intervention, Comparison, Outcome, Time.','A turning schedule based on his risk, or turning every 2 hours?',''],
+      [71.1,58.2,'2 · Find','Look for the best evidence: research studies, and the guidelines experts build from them. As a student, you will mostly use guidelines and your facility’s protocols.','The international pressure injury guideline.',''],
+      [60.75,84.2,'3 · Weigh','Decide how strong the evidence is. Many good studies combined beat one study, and one study beats opinion or “we’ve always done it this way.”','Turning and floating heels have support. The fixed 2-hour rule was a habit.','up'],
+      [40,84.2,'4 · Apply','Use the evidence together with your own judgment and what the client wants. This is where the center of the circle comes in.','The protocol, the head-of-bed decision, his sleep, and his food.','up'],
+      [29.4,58.2,'5 · Evaluate','Check whether it worked by comparing the result with the goal. If it didn’t work, go back around the circle.','Day 4: no redness, sleeping better, eating more.',''],
+      [33.9,28.7,'6 · Share','Tell others what you learned: at handoff, in the chart, and through the unit’s data. Good results can change the protocol for everyone.','Handoff, charting, and the unit’s monthly pressure injury count.','']];
+    var out="<div class='fig'><img src='images/ebp-7-steps.png' alt='The 7 steps of evidence-based practice as a cycle: 0 Notice, 1 Ask, 2 Find, 3 Weigh, 4 Apply, 5 Evaluate, 6 Share, then back to Notice. In the center: best care for this client equals best evidence plus nurse’s expertise plus what the client wants.'>";
+    H.forEach(function(h){
+      out+="<button type='button' class='hs' style='left:"+h[0]+"%;top:"+h[1]+"%' aria-label='"+h[2]+"'><span class='tip"+(h[5]?' up':'')+"' role='tooltip'><b>"+h[2]+"</b>"+h[3]+(shah?"<em>For Mr. Shah: "+h[4]+"</em>":"")+"</span></button>";
+    });
+    out+="<button type='button' class='hs ctr' style='left:50%;top:52.4%' aria-label='Center: best care for this client'><span class='tip' role='tooltip'><b>Evidence-based practice</b>Best evidence + the nurse’s expertise + what the client wants. All three, every time.</span></button>";
+    return out+"</div><div class='figbar'><button type='button' class='b primary' id='figtour'>▶ Listen to the tour (3 min)</button><span class='small'>Hover over a step to read about it. Click a step to hear it.</span></div>";
+  }
+  var stages=[
+    {e:[],f:[],tag:"Start here · 2 min · LO1–LO7",title:"When care goes wrong",min:2,
+     prompt:"Today: what happens after a mistake, or a near mistake, and how a unit keeps it from happening again.",
+     body:"<div class='two'><div class='co concept'><p class='label'>Question 1</p><p style='font-size:1.6rem;font-weight:800'>What happened?</p></div><div class='co concept'><p class='label'>Question 2</p><p style='font-size:1.6rem;font-weight:800'>How do we keep it from happening again?</p></div></div><p>Quality improvement follows the 7 steps below. Watch the orange row at the top of the screen: it lights up the step we are on.</p><div class='tbl'><table><thead><tr><th>Step</th><th>In plain words</th></tr></thead><tbody><tr><td><b>1 · Keep safe</b></td><td>Take care of the client first.</td></tr><tr><td><b>2 · Report</b></td><td>Tell the right people and file a safety report.</td></tr><tr><td><b>3 · Learn why</b></td><td>Find what in the system let it happen, without blaming.</td></tr><tr><td><b>4 · Plan</b></td><td>Choose one change to test.</td></tr><tr><td><b>5 · Do</b></td><td>Try it on a small scale.</td></tr><tr><td><b>6 · Study</b></td><td>Measure it. Did it help?</td></tr><tr><td><b>7 · Act</b></td><td>Keep it, change it, or drop it. Then start again.</td></tr></tbody></table></div>",
+     reveal:"<p class='small'>NUR 111 Quality Improvement module outcomes, verbatim. Every stage is tagged with the outcomes it serves.</p><div class='tbl wide'><table><thead><tr><th>LO</th><th>Upon completion of this module, the student will be able to:</th><th>Where today</th></tr></thead><tbody><tr><td><b>LO1</b></td><td>Define quality improvement (QI), sentinel events, and the role of reporting in promoting patient safety. (Knowledge)</td><td>Why it matters · Name it · Report it</td></tr><tr><td><b>LO2</b></td><td>Describe common types of sentinel events (e.g., falls, medication errors, wrong-site surgery) and contributing factors. (Comprehension)</td><td>0300 on 4 West · Name it · Sort it</td></tr><tr><td><b>LO3</b></td><td>Explain how the reporting of errors and near misses supports continuous quality improvement and prevents future harm. (Comprehension)</td><td>Report it · Test a change · Compared with what?</td></tr><tr><td><b>LO4</b></td><td>Identify the nurse’s role and legal/ethical responsibility in reporting sentinel events and safety concerns. (Comprehension)</td><td>Report it · Speak up</td></tr><tr><td><b>LO5</b></td><td>Recognize safety risks in clinical or simulated settings that could lead to sentinel events. (Application)</td><td>0300 on 4 West · Sort it; <b>practiced in clinical and simulation</b></td></tr><tr><td><b>LO6</b></td><td>Discuss the impact of a just culture in encouraging transparency, accountability, and system-wide learning from errors. (Analysis)</td><td>Look at the system · Your turn</td></tr><tr><td><b>LO7</b></td><td>Reflect on how nurses contribute to a culture of safety and continuous quality improvement in diverse health care settings. (Evaluation)</td><td>Wrap-up reflection</td></tr></tbody></table></div><div class='co pearl'><p class='label'>Faculty</p><p>Steps 4–7 are the Plan–Do–Study–Act cycle from the Institute for Healthcare Improvement. Steps 1–3 are a teaching summary of the module’s reporting and just-culture content, not a named model.</p></div>"},
+
+    {e:[0],f:["rc"],tag:"Step 1 · Keep safe · 4 min · LO2 LO5",title:"0300 on 4 West",min:4,
+     prompt:"Turn to a neighbor. What went wrong for Mr. Dean, and what in the room or the routine let it happen?",
+     body:"<div class='patient'><h3>Mr. Dean, 81 · Day 2, admitted with pneumonia · 4 West</h3><ul><li>Received a sleep medicine at 2200.</li><li>His bed alarm was turned off during a linen change and not turned back on.</li><li>His call light is clipped on the side of his weaker arm.</li><li>At 0300 he gets up alone to use the bathroom and falls. X-ray shows a hip fracture that needs surgery.</li></ul></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>What let it happen</th><th>Why it matters</th></tr></thead><tbody><tr><td>Sleep medicine at 2200, age 81</td><td>Drowsy and unsteady on his feet at night</td></tr><tr><td>Bed alarm left off</td><td>No warning when he got up</td></tr><tr><td>Call light on his weak side</td><td>Hard to call for help</td></tr><tr><td>No planned bathroom trip overnight</td><td>He went alone because he needed to go</td></tr><tr><td>Night shift workload</td><td>Fewer people to notice</td></tr></tbody></table></div><div class='two'><div class='co concept'><p class='label'>Step 1: Keep safe</p><p>First, take care of Mr. Dean: check him for injury, don’t move him until he is assessed, call for help, and notify the provider.</p></div><div class='co pearl'><p class='label'>Notice the question</p><p>We asked <b>what let it happen</b>, not <b>who did it</b>. Most of these causes are about the system, and fixing one nurse won’t fix them.</p></div></div>"},
+
+    {e:[0],f:["ac"],tag:"Why it matters · 3 min · LO1",title:"Why is it so important?",min:3,
+     prompt:"Guess: how many people in U.S. hospitals were dying each year from medical errors, according to a famous 1999 report?",
+     body:"<div class='co voice'><p class='label'>Think about it</p><blockquote>Mr. Dean came in for pneumonia. He will leave after hip surgery.</blockquote></div>",
+     reveal:"<div class='vitals'><div class='v alert'><span>1999 estimate</span><b>44,000–98,000</b><small>U.S. hospital deaths a year from medical error (To Err Is Human)</small></div><div class='v alert'><span>Sentinel events, 2024</span><b>1,575</b><small>reported to The Joint Commission, up 12% from 2023</small></div><div class='v'><span>Outcome</span><b>21% · 49%</b><small>of 2024 events ended in death · in severe harm</small></div><div class='v'><span>Falls</span><b>67%</b><small>of 2023 events with severe temporary harm</small></div></div><div class='two'><div class='co concept'><p class='label'>Quality improvement</p><p><b>Quality improvement (QI)</b> is the ongoing work of measuring care, finding where it falls short, and changing the system so it does better. The 1999 report’s main point: <b>most errors come from flawed systems, not bad people.</b></p></div><div class='co pearl'><p class='label'>Read the numbers carefully</p><p>Reporting to The Joint Commission is voluntary. More reports may mean more honest reporting, not necessarily more harm.</p></div></div>"},
+
+    {e:[1],f:["rc"],tag:"Step 2 · Report · 4 min · LO1 LO2",title:"Name what happened",min:4,
+     prompt:"Two questions sort almost every event. Did it reach the client? If it did, how much harm did it cause?",
+     body:"<div class='tbl wide'><table><thead><tr><th>Event</th><th>Reached the client?</th><th>Harm</th><th>Example</th></tr></thead><tbody><tr><td><b>Near miss</b> (close call)</td><td>No</td><td>None</td><td>Barcode scan catches the wrong medicine before it is given</td></tr><tr><td><b>No-harm event</b></td><td>Yes</td><td>None</td><td>A dose given 2 hours early; no change in the client</td></tr><tr><td><b>Adverse event</b></td><td>Yes</td><td>Harm</td><td>Missed turning leads to a stage 2 pressure injury</td></tr><tr><td><b>Sentinel event</b></td><td>Yes</td><td>Death, permanent harm, or severe harm</td><td>A fall that breaks a hip and needs surgery</td></tr></tbody></table></div>",
+     reveal:"<div class='co concept'><p class='label'>Sentinel event</p><p>The Joint Commission defines a <b>sentinel event</b> as a patient safety event, not caused mainly by the client’s illness, that reaches the client and results in <b>death, permanent harm, or severe harm</b>. Every one gets an immediate investigation into its root causes.</p></div><div class='two'><div class='co flag'><p class='label'>Sentinel because of what they are</p><ul><li>Surgery on the wrong site, wrong client, or wrong procedure</li><li>An object left inside after a procedure</li><li>Transfusion of incompatible blood</li><li>Suicide in a 24-hour care setting</li><li>Infant abduction</li></ul></div><div class='co pearl'><p class='label'>Mr. Dean</p><p>A fall that breaks a hip and needs surgery is severe harm: a <b>sentinel event</b>.</p><p>Sentinel event is not the same as never event. Never events are a separate fixed list from the National Quality Forum; the two lists overlap.</p></div></div>"},
+
+    {e:[1],f:["rc","ac"],tag:"Step 2 · Report · 4 min · LO1 LO2 LO5",title:"Sort it",min:4,
+     prompt:"Vote with your fingers: 1 = near miss, 2 = no-harm, 3 = adverse, 4 = sentinel. Then name one thing that let it happen.",
+     body:"<div class='two'><div class='co concept'><p class='label'>A</p><p>The nurse scans a heparin vial at the bedside. The scanner says it belongs to a different client. It is never given.</p></div><div class='co concept'><p class='label'>B</p><p>A sponge shows up on an X-ray in recovery after abdominal surgery. The client goes back to the operating room.</p></div><div class='co concept'><p class='label'>C</p><p>Turning is missed for two shifts. The client gets a stage 2 pressure injury on the tailbone.</p></div><div class='co concept'><p class='label'>D</p><p>A scheduled antibiotic is given 2 hours early. The client’s condition does not change.</p></div></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Case</th><th>Event</th><th>What let it happen (examples)</th></tr></thead><tbody><tr><td>A</td><td><b>Near miss:</b> it never reached the client</td><td>Look-alike vials stored together; the wrong chart open</td></tr><tr><td>B</td><td><b>Sentinel:</b> an object left in after a procedure is on the list</td><td>A breakdown in the count before closing</td></tr><tr><td>C</td><td><b>Adverse:</b> it reached the client and caused harm</td><td>Short staffing; no turning schedule or reminder</td></tr><tr><td>D</td><td><b>No-harm:</b> it reached the client, no harm, and it still gets reported</td><td>Interruptions; medication timing on the record</td></tr></tbody></table></div><div class='co pearl'><p class='label'>The common mix-up</p><p>Students often call A a no-harm event. Ask: <b>did it reach the client?</b> If not, it is a near miss.</p></div>"},
+
+    {e:[1],f:["ta"],tag:"Step 2 · Report · 4 min · LO3 LO4",title:"Report it",min:4,
+     prompt:"Mr. Dean is on the floor. Put these four actions in order.",
+     body:"<ul><li>Complete an occurrence report</li><li>Make him safe: assess him and get help</li><li>Document the facts and your care in his chart</li><li>Notify the charge nurse and the provider</li></ul>",
+     reveal:"<div class='co concept'><p class='label'>The order</p><ol><li><b>Make him safe:</b> assess and get help</li><li><b>Notify</b> the charge nurse and the provider</li><li><b>Document</b> the facts and your care in his chart</li><li><b>Complete an occurrence report</b> (also called an incident or safety report)</li></ol></div><div class='two'><div class='co pearl'><p class='label'>Two rules</p><p>The occurrence report is a quality document, not part of the chart. <b>Don’t write “incident report filed” in his record.</b></p><p><b>Report near misses too.</b> A near miss shows the same weak spot as a serious event, at no cost to the client.</p></div><div class='co concept'><p class='label'>Why reporting is your job</p><p>Reporting is a professional, ethical, and legal duty, and facility policy requires it. One report is a single data point. Fifty reports about the same problem get the system fixed.</p></div></div>"},
+
+    {e:[1],f:["ta"],tag:"Step 2 · Report · 2 min · LO4",title:"Speak up: call the provider",min:2,
+     prompt:"You call Mr. Dean’s provider. ISBAR keeps the call clear and complete.",
+     body:"<div class='tbl wide'><table><thead><tr><th>Letter</th><th>What you say</th></tr></thead><tbody><tr><td><b>I</b>dentify</td><td>“This is [your name], the nurse on 4 West.”</td></tr><tr><td><b>S</b>ituation</td><td>“Mr. Dean, 81, fell at 0300. He is awake and has right hip pain.”</td></tr><tr><td><b>B</b>ackground</td><td>“Day 2 of a pneumonia admission. He had a sleep medicine at 2200.”</td></tr><tr><td><b>A</b>ssessment</td><td>“His right leg is shorter and turned outward. Pain is 8 out of 10. Vital signs are [values].”</td></tr><tr><td><b>R</b>ecommendation</td><td>“I’m asking you to come evaluate him and order imaging.”</td></tr><tr><td><b>R</b>ead back</td><td>Repeat any order back to the provider to confirm it.</td></tr></tbody></table></div>",
+     reveal:"<div class='co pearl'><p class='label'>A system fix</p><p>A standard way to hand off and report makes it harder to leave out what matters. That is quality improvement built into everyday communication.</p></div>"},
+
+    {e:[2],f:["ac"],tag:"Step 3 · Learn why · 4 min · LO6",title:"Look at the system, not just the person",min:4,
+     prompt:"The nurse who changed Mr. Dean’s linens forgot to turn the bed alarm back on. Should she be fired?",
+     body:"<div class='co concept'><p class='label'>Just culture</p><p>A <b>just culture</b> responds to the behavior behind an error, not to how bad the outcome was.</p></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Behavior</th><th>What it looks like</th><th>Response</th></tr></thead><tbody><tr><td><b>Human error</b></td><td>An unintended slip or lapse</td><td><b>Console</b> the nurse and fix the system</td></tr><tr><td><b>At-risk behavior</b></td><td>A shortcut whose risk isn’t recognized or seems justified</td><td><b>Coach</b>, and remove the reason for the shortcut</td></tr><tr><td><b>Reckless behavior</b></td><td>Knowingly ignoring a big, unjustified risk</td><td><b>Sanction:</b> discipline is appropriate</td></tr></tbody></table></div><div class='two'><div class='co pearl'><p class='label'>For Mr. Dean</p><p>If she simply forgot, that is human error: support her and fix the system, for example with an alarm check at every linen change. If the unit routinely leaves alarms off at night, that is at-risk behavior: coach the whole unit. Firing her leaves the alarm problem in place for the next client.</p></div><div class='co concept'><p class='label'>Not blame-free</p><p>A just culture holds both the system and the person accountable. It also makes people more willing to report, because an honest mistake leads to a fix, not a punishment.</p></div></div>"},
+
+    {e:[2],f:["ac","gs"],tag:"Step 3 · Learn why · 4 min · LO6",title:"Your turn: console, coach, or sanction?",min:4,
+     prompt:"In small groups, decide the right response for each nurse.",
+     body:"<div class='co concept'><p class='label'>1</p><p>Two look-alike vials are stored side by side. A nurse grabs the wrong one, and the client receives it.</p></div><div class='co concept'><p class='label'>2</p><p>A nurse skips barcode scanning because the scanner is slow and “everyone on nights does it.”</p></div><div class='co concept'><p class='label'>3</p><p>After being told it breaks policy, a nurse turns off every bed alarm on the unit for the night “so no one gets woken up.”</p></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Nurse</th><th>Behavior</th><th>Response</th></tr></thead><tbody><tr><td>1</td><td>Human error</td><td><b>Console</b>, and fix the storage</td></tr><tr><td>2</td><td>At-risk behavior</td><td><b>Coach</b>, and fix the scanner and the unit habit</td></tr><tr><td>3</td><td>Reckless behavior</td><td><b>Sanction:</b> she knew the risk and the rule</td></tr></tbody></table></div><div class='co pearl'><p class='label'>The real question</p><p>In a blaming culture, which of these nurses would report honestly? Probably none of them, and the look-alike vials would stay side by side for the next nurse.</p></div>"},
+
+    {e:[3,4,5,6],f:["gs","ta","eo"],tag:"Steps 4–7 · Plan, Do, Study, Act · 4 min · LO3 LO7",title:"Test a change",min:4,
+     prompt:"4 West has had three falls this quarter, all at night on the way to the bathroom. Design a small test.",
+     body:"<div class='tbl wide'><table><thead><tr><th>Step</th><th>Ask yourself</th><th>For 4 West</th></tr></thead><tbody><tr><td><b>4 · Plan</b></td><td>What will we change, what do we predict, and how will we measure it?</td><td>?</td></tr><tr><td><b>5 · Do</b></td><td>How will we try it on a small scale?</td><td>?</td></tr><tr><td><b>6 · Study</b></td><td>What happened compared with before?</td><td>?</td></tr><tr><td><b>7 · Act</b></td><td>Keep it, change it, or drop it?</td><td>?</td></tr></tbody></table></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Step</th><th>For 4 West</th></tr></thead><tbody><tr><td><b>4 · Plan</b></td><td>Predict that offering the bathroom on night rounds, plus an alarm check after every linen change, will cut night falls. Measure falls per 1,000 patient days.</td></tr><tr><td><b>5 · Do</b></td><td>Night shift on 4 West tries it for 6 weeks.</td></tr><tr><td><b>6 · Study</b></td><td>Did falls drop? Did anything else change, like staffing or how often falls were reported?</td></tr><tr><td><b>7 · Act</b></td><td>Keep it, adjust the timing, or try something else, then run the next cycle.</td></tr></tbody></table></div><div class='two'><div class='co pearl'><p class='label'>Why test it?</p><p>Research on planned rounding shows mixed results, so a unit can’t be sure it will work there. PDSA tests whether it works <b>here</b>. That is where QI and evidence-based practice meet.</p></div><div class='co concept'><p class='label'>Reports make this possible</p><p>Without honest reports, the unit would not know about the three falls, and Study would have nothing to measure.</p></div></div>"},
+
+    {e:[5],f:["eo"],tag:"Step 6 · Study · 3 min · LO3",title:"Compared with what?",min:3,
+     prompt:"Is 4 West getting better or worse? What would you need to know first?",
+     body:"<div class='tbl'><table><thead><tr><th>Comparison</th><th>Falls per 1,000 patient days</th></tr></thead><tbody><tr><td>4 West, last quarter</td><td>2.9</td></tr><tr><td>4 West, this quarter</td><td>3.8</td></tr><tr><td>Similar units nationally</td><td>3.1</td></tr></tbody></table></div><p class='small'>Made-up numbers, for practice only.</p>",
+     reveal:"<div class='two'><div class='co concept'><p class='label'>Benchmarks</p><p>A <b>benchmark</b> is a reference point: the unit’s own past results, or similar units nationally. Rates are given <b>per 1,000 patient days</b>, so units of different sizes can be compared fairly.</p><p>Falls, pressure injuries, and catheter and central-line infections are <b>nurse-sensitive</b> measures: nursing care directly affects them.</p></div><div class='co pearl'><p class='label'>Worse, or more honest?</p><p>The jump from 2.9 to 3.8 could be a real increase, chance on a small unit, or more honest reporting after a just-culture push. One number rarely tells the whole story.</p></div></div>"},
+
+    {e:[0,1,2,3,4,5,6],f:["eo"],tag:"Wrap-up · 2 min · LO7",title:"Back around the cycle",min:2,
+     prompt:"Name what each step looked like for Mr. Dean. Then the exit ticket.",
+     body:"<div class='tbl'><table><thead><tr><th>Step</th><th>In plain words</th></tr></thead><tbody><tr><td><b>1 · Keep safe</b></td><td>Take care of the client first.</td></tr><tr><td><b>2 · Report</b></td><td>Tell the right people and file a safety report.</td></tr><tr><td><b>3 · Learn why</b></td><td>Find what in the system let it happen, without blaming.</td></tr><tr><td><b>4 · Plan</b></td><td>Choose one change to test.</td></tr><tr><td><b>5 · Do</b></td><td>Try it on a small scale.</td></tr><tr><td><b>6 · Study</b></td><td>Measure it. Did it help?</td></tr><tr><td><b>7 · Act</b></td><td>Keep it, change it, or drop it. Then start again.</td></tr></tbody></table></div>",
+     reveal:"<div class='tbl wide'><table><thead><tr><th>Step</th><th>For Mr. Dean</th></tr></thead><tbody><tr><td><b>1 · Keep safe</b></td><td>Assess him, get help, call the provider</td></tr><tr><td><b>2 · Report</b></td><td>Name it (sentinel), document, file the report, ISBAR call</td></tr><tr><td><b>3 · Learn why</b></td><td>The alarm, the call light, the sleep medicine, the bathroom trip; console, don’t fire</td></tr><tr><td><b>4–7 · PDSA</b></td><td>Test night bathroom rounds and alarm checks; measure; keep or change</td></tr></tbody></table></div><div class='co pearl'><p class='label'>Exit ticket · reflection</p><ol><li>Describe a safety event or near miss you’ve seen in clinical, without names. What kind of event was it?</li><li>What would make you hesitate to report, and what would make it easier?</li><li>What is still unclear?</li></ol></div><div class='co concept'><p class='label'>How this connects</p><p>QI asks, <b>“Is our system safe?”</b> Evidence-based practice asks, <b>“Is our practice the best it can be?”</b></p></div>"},
+    {e:[],f:[],tag:"Sources and credits",title:"Sources and credits",min:1,
+     prompt:"Where everything on this board came from, and how it was made.",
+     body:"<div class='srcbox'>"+document.getElementById('sources').innerHTML+"</div>",
+     reveal:""}
+  ];
+
+  var stageEl=document.getElementById('stage'), pipsEl=document.getElementById('pips'),
+      countEl=document.getElementById('count'), prevB=document.getElementById('prev'),
+      nextB=document.getElementById('next'), revB=document.getElementById('rev'),
+      strip=document.querySelectorAll('#strip span'), clock=document.getElementById('clock');
+  var KEY='nur111-qi-caseboard-dean', st={i:0,shown:{}};
+  try{ var s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&typeof s.i==='number') st=s; }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+
+  stages.forEach(function(s,k){
+    var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','Stage '+k+': '+s.title);
+    b.addEventListener('click',function(){ go(k); }); pipsEl.appendChild(b);
+  });
+
+  var STEPS=['Keep safe','Report','Learn why','Plan','Do','Study','Act'], STEP0=1;
+  function mini(s){
+    var e=s.e||[]; if(!e.length||e.length===7||st.i===0) return '';
+    var cx=100,cy=100,R=70,out="<svg viewBox='0 0 200 200' role='img' aria-label='QI steps: on "+e.map(function(k){return (k+STEP0)+' '+STEPS[k];}).join(' and ')+"'><circle cx='100' cy='100' r='70' fill='none' stroke='var(--rule)' stroke-width='4'/>";
+    for(var k=0;k<7;k++){ var a=-Math.PI/2+k*2*Math.PI/7, x=cx+R*Math.cos(a), y=cy+R*Math.sin(a), on=e.indexOf(k)>-1;
+      out+="<circle cx='"+x.toFixed(1)+"' cy='"+y.toFixed(1)+"' r='"+(on?22:15)+"' fill='"+(on?'#E3A33B':'var(--bg)')+"' stroke='"+(on?'#E3A33B':'var(--head)')+"' stroke-width='3'/>"+
+        "<text x='"+x.toFixed(1)+"' y='"+(y+(on?8:6)).toFixed(1)+"' text-anchor='middle' font-family='Public Sans, Arial, sans-serif' font-weight='800' font-size='"+(on?22:16)+"' fill='"+(on?'#14181E':'var(--head)')+"'>"+(k+STEP0)+"</text>"; }
+    out+="</svg>";
+    return "<div class='mini'>"+out+"<span>"+(e.length>2 ? 'Steps '+(e[0]+STEP0)+'–'+(e[e.length-1]+STEP0) : e.map(function(k){return (k+STEP0)+' · '+STEPS[k];}).join(' + '))+"</span></div>";
+  }
+  var AU=new Audio(), cur=-1, tour=false;
+  AU.preload='none';
+  function mark(){
+    document.querySelectorAll('.fig .hs').forEach(function(b,k){ b.classList.toggle('playing', cur===k+1 && !AU.paused); });
+    var t=document.getElementById('figtour');
+    if(t) t.textContent = (tour && !AU.paused) ? '❚❚ Pause the tour' : (tour && cur>-1 ? '▶ Resume the tour' : '▶ Listen to the tour (3 min)');
+  }
+  function playClip(i){ cur=i; AU.src='audio/ebp-'+i+'.mp3'; var pr=AU.play(); if(pr&&pr.catch) pr.catch(function(){}); mark(); }
+  function stopAudio(){ AU.pause(); cur=-1; tour=false; mark(); }
+  AU.addEventListener('ended',function(){ if(tour && cur<8){ playClip(cur+1); } else { cur=-1; tour=false; mark(); } });
+  AU.addEventListener('pause',mark); AU.addEventListener('play',mark);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest && e.target.closest('#figtour, .fig .hs');
+    if(!t) return;
+    if(t.id==='figtour'){
+      if(tour && !AU.paused){ AU.pause(); }
+      else if(tour && cur>-1){ AU.play(); }
+      else { tour=true; playClip(0); }
+      return;
+    }
+    var k=Array.prototype.indexOf.call(document.querySelectorAll('.fig .hs'),t)+1;
+    if(cur===k && !AU.paused){ AU.pause(); } else { tour=false; playClip(k); }
+  });
+  new MutationObserver(function(){ if(!document.querySelector('.fig')) { if(cur>-1) stopAudio(); } else mark(); }).observe(stageEl,{childList:true});
+  function render(){
+    var s=stages[st.i], shown=!!st.shown[st.i];
+    stageEl.innerHTML="<div class='stagetop'><div class='stagehead'><span class='label'>Stage "+st.i+" · "+s.tag+"</span><h1>"+s.title+"</h1></div>"+mini(s)+"</div>"+
+      "<p class='prompt'>"+s.prompt+"</p><div class='body'>"+s.body+"</div>"+
+      "<div class='reveal' id='revealbox'"+(shown?"":" hidden")+"><span class='label'>Debrief</span>"+s.reveal+"</div>";
+    strip.forEach(function(el){ el.classList.toggle('on', s.f.indexOf(el.dataset.f)>-1); });
+    document.querySelectorAll('#ebpstrip span').forEach(function(el){ el.classList.toggle('on', (s.e||[]).indexOf(+el.dataset.e)>-1); });
+    Array.prototype.forEach.call(pipsEl.children,function(b,k){
+      b.className=(k===st.i?'cur':(k<st.i?'done':'')); b.setAttribute('aria-current',k===st.i?'step':'false');
+    });
+    countEl.textContent='Stage '+st.i+' of '+(stages.length-1);
+    clock.textContent=s.tag.split('·')[0].trim();
+    prevB.disabled=st.i===0; nextB.disabled=st.i===stages.length-1;
+    revB.textContent=shown?'Hide debrief':'Reveal debrief';
+    revB.hidden=!s.reveal;
+    revB.setAttribute('aria-pressed',shown?'true':'false');
+  }
+  // ---- section timer ----
+  var tdisp=document.getElementById('tdisp'), tgo=document.getElementById('tgo'), tleft=0, tid=null, ac=null, alarmOn=false;
+  function fmt(x){ var m=Math.floor(x/60), sec=x%60; return m+':'+(sec<10?'0':'')+sec; }
+  function tdraw(){ tdisp.textContent=fmt(Math.max(0,tleft)); tdisp.classList.toggle('low', tleft>0 && tleft<=60);
+    tdisp.classList.toggle('done', tleft<=0 && alarmOn); tgo.textContent=tid?'Pause':'Start';
+    var bk=document.getElementById('backat');
+    if(bk){ if(tid){ var d=new Date(Date.now()+tleft*1000), h=d.getHours()%12||12, mm=d.getMinutes();
+        bk.textContent='Back at '+h+':'+(mm<10?'0':'')+mm; }
+      else if(tleft<=0 && alarmOn){ bk.textContent='Break is over. Take your seats.'; }
+      else { bk.textContent='Press Start to begin the break.'; } } }
+  function tstop(){ if(tid){ clearInterval(tid); tid=null; } }
+  function tset(sec){ tstop(); alarmOn=false; tleft=sec; tdraw(); }
+  function unlock(){ try{ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); } if(ac.state==='suspended') ac.resume(); }catch(e){} }
+  function alarm(){
+    alarmOn=true; tdraw(); if(!ac) return;
+    var t0=ac.currentTime;
+    for(var r=0;r<4;r++){ for(var k=0;k<3;k++){
+      var o=ac.createOscillator(), g=ac.createGain(), s0=t0+r*1.1+k*0.22;
+      o.type='square'; o.frequency.value=k%2?1046:880; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.0001,s0); g.gain.exponentialRampToValueAtTime(0.9,s0+0.01);
+      g.gain.setValueAtTime(0.9,s0+0.16); g.gain.exponentialRampToValueAtTime(0.0001,s0+0.19);
+      o.start(s0); o.stop(s0+0.2);
+    } }
+  }
+  function tick(){ tleft--; if(tleft<=0){ tleft=0; tstop(); alarm(); } tdraw(); }
+  tgo.addEventListener('click',function(){ unlock();
+    if(tid){ tstop(); } else { if(tleft<=0) tleft=(stages[st.i].min||5)*60; alarmOn=false; tid=setInterval(tick,1000); } tdraw(); });
+  document.getElementById('treset').addEventListener('click',function(){ tset((stages[st.i].min||5)*60); });
+  document.getElementById('tplus').addEventListener('click',function(){ tleft+=60; alarmOn=false; tdraw(); });
+  document.getElementById('tminus').addEventListener('click',function(){ tleft=Math.max(0,tleft-60); tdraw(); });
+  function go(k){ st.i=Math.max(0,Math.min(stages.length-1,k)); save(); render(); tset((stages[st.i].min||5)*60); window.scrollTo(0,0); }
+  prevB.addEventListener('click',function(){ go(st.i-1); });
+  nextB.addEventListener('click',function(){ go(st.i+1); });
+  revB.addEventListener('click',function(){ st.shown[st.i]=!st.shown[st.i]; save(); render();
+    if(st.shown[st.i]){ var r=document.getElementById('revealbox'); if(r) r.scrollIntoView({block:'start'}); } });
+  document.addEventListener('keydown',function(e){
+    if(e.target.closest && e.target.closest('input,textarea')) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); go(st.i+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(st.i-1); }
+    else if(e.key==='r'||e.key==='R'){ revB.click(); }
+    else if(e.key==='t'||e.key==='T'){ tgo.click(); }
+  });
+  function fitSlido(){
+    var f=document.querySelector('.slidoframe'); if(!f) return;
+    var rb=document.getElementById('revealbox');
+    if(rb && !rb.hidden){ f.classList.remove('fixed'); f.style.top=f.style.bottom=''; return; }
+    f.classList.add('fixed');
+    f.style.top=document.querySelector('.top').getBoundingClientRect().bottom+'px';
+    f.style.bottom=document.querySelector('.controls').getBoundingClientRect().height+'px';
+  }
+  new MutationObserver(fitSlido).observe(stageEl,{childList:true});
+  window.addEventListener('resize',fitSlido);
+  document.addEventListener('click',function(e){
+    if(e.target.id!=='slidofs') return;
+    var f=document.querySelector('.slidoframe iframe'); if(!f) return;
+    try{ (f.requestFullscreen||f.webkitRequestFullscreen).call(f); }catch(x){}
+  });
+  render(); tset((stages[st.i].min||5)*60);
+})();
+</script>
+</body>
+</html>
