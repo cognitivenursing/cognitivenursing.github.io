@@ -1665,6 +1665,196 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
   .welcome-orb{width:200px; height:200px;}
   #ameliaDock{bottom:132px; max-width:calc(100vw - 32px);}
 }
+
+/* ════════ TODAY · command center ════════ */
+:root{
+  --a-cccc:#4FE3D2; --a-cch:#FF8A7A; --a-regent:#A99BFF; --a-lodge:#E9B866; --a-self:#7CC4FF; --a-hol:#7383AB;
+}
+#panel-today .workspace{padding:26px 30px 40px;}
+.td-wrap{max-width:1480px;margin:0 auto;display:grid;gap:16px;
+  grid-template-columns:minmax(330px,1.02fr) 1fr 1fr;
+  grid-template-areas:
+    "hero  hero  hero"
+    "day   week  week"
+    "day   due   watch"
+    "inbox track notes";}
+.td-hero{grid-area:hero;} .td-day{grid-area:day;} .td-week{grid-area:week;} .td-due{grid-area:due;}
+.td-watch{grid-area:watch;} .td-inbox{grid-area:inbox;} .td-track{grid-area:track;} .td-notes{grid-area:notes;}
+
+.td-card{background:linear-gradient(180deg,rgba(23,38,71,0.62),rgba(16,28,58,0.55));border:1px solid var(--border);
+  border-radius:20px;padding:18px 18px 16px;min-width:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 18px 50px rgba(2,8,28,0.28);}
+.td-h{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.td-h h3{font-family:var(--font-body);font-size:12.5px;font-weight:500;color:var(--text2);letter-spacing:0;}
+.td-h .td-count{font-size:11px;color:var(--text3);}
+.td-h .td-spacer{flex:1;}
+.td-h i{color:var(--text3);font-size:15px;}
+.td-mini-btn{font-family:var(--font-body);font-size:11px;color:var(--text2);background:rgba(140,168,255,0.06);
+  border:1px solid var(--border);border-radius:999px;padding:4px 10px;cursor:pointer;display:inline-flex;gap:5px;align-items:center;}
+.td-mini-btn:hover{color:var(--text);border-color:var(--border2);}
+.td-empty{font-size:12px;color:var(--text3);line-height:1.6;padding:6px 0;}
+
+/* HERO */
+.td-hero{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:stretch;}
+.td-hello{padding:22px 24px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+.td-hello::after{content:'';position:absolute;right:-90px;top:-110px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(79,227,210,0.16),transparent 65%);pointer-events:none;}
+.td-date{font-size:12px;color:var(--text3);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.td-date .td-wx{color:var(--text2);}
+.td-greet{font-family:var(--font-reading);font-weight:400;font-size:40px;line-height:1.05;letter-spacing:-0.02em;color:var(--text);
+  font-variation-settings:'opsz' 72;}
+.td-shape{font-size:13.5px;line-height:1.6;color:var(--text2);max-width:640px;}
+.td-shape b{color:var(--text);font-weight:500;}
+.td-ask{display:flex;gap:8px;margin-top:6px;align-items:center;}
+.td-ask input{flex:1;min-width:0;background:rgba(11,21,48,0.55);border:1px solid var(--border2);border-radius:14px;
+  padding:11px 14px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;}
+.td-ask input:focus{border-color:rgba(79,227,210,0.5);}
+.td-btn{font-family:var(--font-body);font-size:12.5px;border-radius:14px;padding:10px 14px;cursor:pointer;display:inline-flex;
+  align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--border2);background:rgba(140,168,255,0.07);color:var(--text);}
+.td-btn:hover{border-color:rgba(79,227,210,0.45);}
+.td-btn.primary{background:linear-gradient(180deg,#5BEADB,var(--signal-deep));color:#06253A;border:none;font-weight:500;}
+.td-sync{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.td-sync .dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
+.td-sync .dot.ok{background:var(--signal);box-shadow:0 0 8px var(--signal);}
+.td-sync .dot.warn{background:var(--amber);}
+.td-legend{display:flex;gap:6px;flex-wrap:wrap;}
+.td-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);padding:4px 10px;border-radius:999px;
+  border:1px solid var(--border);background:rgba(11,21,48,0.35);cursor:pointer;user-select:none;font-family:var(--font-body);}
+.td-chip .sw{width:8px;height:8px;border-radius:3px;}
+.td-chip.off{opacity:.38;text-decoration:line-through;}
+
+/* NOW / NEXT */
+.td-now{display:flex;flex-direction:column;gap:12px;padding:18px 20px;}
+.td-now-row{display:flex;gap:12px;align-items:flex-start;}
+.td-now-tag{font-size:10.5px;color:var(--text3);min-width:46px;padding-top:3px;}
+.td-now-body{flex:1;min-width:0;}
+.td-now-title{font-size:15px;color:var(--text);font-weight:500;line-height:1.3;}
+.td-now-meta{font-size:11.5px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.td-prog{height:4px;border-radius:4px;background:rgba(140,168,255,0.12);margin-top:8px;overflow:hidden;}
+.td-prog>div{height:100%;border-radius:4px;}
+.td-free{font-size:12px;color:var(--signal);background:rgba(79,227,210,0.07);border:1px solid rgba(79,227,210,0.2);
+  border-radius:12px;padding:8px 12px;}
+.td-area-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.td-join{color:var(--signal);text-decoration:none;font-size:11.5px;}
+
+/* DAY TIMELINE */
+.td-dayhead{display:flex;align-items:center;gap:6px;}
+.td-daynav{background:none;border:1px solid var(--border);color:var(--text2);border-radius:8px;width:26px;height:24px;cursor:pointer;}
+.td-daynav:hover{color:var(--text);border-color:var(--border2);}
+.td-allday{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.td-ad{font-size:11.5px;color:var(--text2);border-radius:10px;padding:6px 10px;background:rgba(11,21,48,0.45);
+  border-left:3px solid;display:flex;gap:8px;align-items:center;}
+.td-ad .k{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.td-day{display:flex;flex-direction:column;}
+.td-tl{position:relative;flex:1 1 0;min-height:460px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;border-radius:12px;}
+.td-tl-inner{position:relative;margin-left:44px;}
+.td-hr{position:absolute;left:-44px;right:0;border-top:1px dashed rgba(140,168,255,0.09);}
+.td-hr span{position:absolute;left:0;top:-7px;font-size:10px;color:var(--text3);width:38px;text-align:right;}
+.td-ev{position:absolute;border-radius:10px;padding:6px 9px;overflow:hidden;font-size:11.5px;line-height:1.3;color:var(--text);
+  background:rgba(23,38,71,0.92);border:1px solid rgba(140,168,255,0.14);border-left-width:3px;cursor:default;
+  transition:transform .12s;}
+.td-ev:hover{transform:translateX(2px);z-index:3;}
+.td-ev .t{font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.td-ev .m{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.td-ev.past{opacity:.45;}
+.td-ev.clash{box-shadow:inset 0 0 0 1px rgba(255,122,138,0.55);}
+.td-nowline{position:absolute;left:-6px;right:0;height:0;border-top:2px solid var(--signal);z-index:4;pointer-events:none;}
+.td-nowline::before{content:'';position:absolute;left:-4px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--signal);
+  box-shadow:0 0 10px var(--signal);}
+
+/* WEEK */
+.td-weekgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;}
+.td-wd{border-radius:14px;padding:10px 9px;background:rgba(11,21,48,0.38);border:1px solid var(--border);cursor:pointer;
+  display:flex;flex-direction:column;gap:6px;min-height:178px;transition:border-color .12s;}
+.td-wd:hover{border-color:var(--border2);}
+.td-wd.sel{border-color:rgba(79,227,210,0.5);background:rgba(79,227,210,0.05);}
+.td-wd.today .td-wd-n{color:var(--signal);}
+.td-wd-top{display:flex;align-items:baseline;justify-content:space-between;gap:4px;}
+.td-wd-d{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.td-wd-n{font-size:20px;font-weight:300;color:var(--text);line-height:1;}
+.td-load{height:5px;border-radius:5px;background:rgba(140,168,255,0.1);display:flex;overflow:hidden;}
+.td-load>div{height:100%;}
+.td-wd-h{font-size:10px;color:var(--text3);}
+.td-wd-items{display:flex;flex-direction:column;gap:3px;}
+.td-wi{font-size:10.5px;color:var(--text2);line-height:1.25;border-left:2px solid;padding-left:5px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
+.td-wi.due{color:var(--text);}
+.td-wi.due::before{content:'◆ ';font-size:8px;}
+.td-wd-more{font-size:10px;color:var(--text3);}
+.td-wd-flag{font-size:10px;color:var(--amber);}
+
+/* DUE */
+.td-list{display:flex;flex-direction:column;gap:6px;}
+.td-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:rgba(11,21,48,0.35);
+  border:1px solid transparent;}
+.td-item:hover{border-color:var(--border);}
+.td-pill{font-size:10.5px;border-radius:999px;padding:2px 8px;white-space:nowrap;min-width:58px;text-align:center;
+  background:rgba(140,168,255,0.08);color:var(--text2);margin-top:1px;}
+.td-pill.hot{background:rgba(255,122,138,0.14);color:#FFB1BA;}
+.td-pill.warm{background:rgba(242,184,92,0.13);color:#F2CF94;}
+.td-item-b{flex:1;min-width:0;}
+.td-item-t{font-size:12.5px;color:var(--text);line-height:1.35;}
+.td-item-m{font-size:11px;color:var(--text3);margin-top:2px;}
+.td-horizon{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.td-hz{border-radius:12px;padding:8px 10px;background:rgba(11,21,48,0.35);}
+.td-hz b{display:block;font-size:18px;font-weight:300;color:var(--text);}
+.td-hz span{font-size:10.5px;color:var(--text3);line-height:1.3;display:block;}
+
+/* WATCH-OUTS */
+.td-wo{display:flex;gap:10px;padding:9px 10px;border-radius:12px;background:rgba(255,122,138,0.05);border:1px solid rgba(255,122,138,0.16);}
+.td-wo.amber{background:rgba(242,184,92,0.05);border-color:rgba(242,184,92,0.18);}
+.td-wo i{font-size:16px;color:#FF9AA6;margin-top:1px;}
+.td-wo.amber i{color:var(--amber);}
+.td-wo-t{font-size:12px;color:var(--text);line-height:1.4;}
+.td-wo-m{font-size:11px;color:var(--text3);margin-top:2px;}
+.td-allclear{font-size:12px;color:var(--signal);padding:8px 10px;border-radius:12px;background:rgba(79,227,210,0.06);}
+
+/* INBOX */
+.td-cap{display:flex;gap:6px;margin-bottom:8px;}
+.td-cap input{flex:1;min-width:0;background:rgba(11,21,48,0.55);border:1px solid var(--border2);border-radius:12px;padding:9px 12px;
+  color:var(--text);font-family:var(--font-body);font-size:12.5px;outline:none;}
+.td-cap select{background:rgba(11,21,48,0.55);border:1px solid var(--border2);border-radius:12px;color:var(--text2);
+  font-family:var(--font-body);font-size:11.5px;padding:0 8px;}
+.td-todo{display:flex;gap:9px;align-items:flex-start;padding:7px 8px;border-radius:10px;}
+.td-todo:hover{background:rgba(11,21,48,0.35);}
+.td-todo input{accent-color:var(--signal-deep);margin-top:3px;}
+.td-todo .tx{flex:1;font-size:12.5px;color:var(--text);line-height:1.4;}
+.td-todo.done .tx{color:var(--text3);text-decoration:line-through;}
+.td-todo .x{background:none;border:none;color:var(--text3);cursor:pointer;opacity:0;font-size:14px;}
+.td-todo:hover .x{opacity:1;}
+
+/* TRACKERS */
+.td-trk{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;padding:6px 0 10px;}
+.td-trk+.td-trk{border-top:1px solid var(--border);padding-top:12px;}
+.td-ring{width:96px;height:96px;position:relative;}
+.td-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.td-ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.td-ring .c b{font-size:22px;font-weight:300;color:var(--text);line-height:1;}
+.td-ring .c span{font-size:9.5px;color:var(--text3);margin-top:3px;}
+.td-trk-t{font-size:13px;color:var(--text);font-weight:500;}
+.td-trk-m{font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:3px;}
+.td-trk-m.warn{color:var(--amber);}
+
+/* NOTES */
+.td-log{font-size:12px;color:var(--text2);line-height:1.5;padding:7px 0;border-bottom:1px solid var(--border);}
+.td-log:last-child{border-bottom:none;}
+.td-log b{color:var(--text3);font-weight:400;font-size:10.5px;display:block;}
+
+@media (max-width:1180px){
+  .td-wrap{grid-template-columns:1fr 1fr;grid-template-areas:"hero hero" "watch due" "day week" "day week" "inbox track" "notes notes";}
+}
+@media (max-width:760px){
+  #panel-today .workspace{padding:16px 12px 32px;}
+  .td-wrap{grid-template-columns:1fr;grid-template-areas:"hero" "watch" "day" "due" "week" "inbox" "track" "notes";gap:12px;}
+  .td-hero{grid-template-columns:1fr;}
+  .td-greet{font-size:32px;}
+  .td-weekgrid{grid-template-columns:repeat(7,minmax(118px,1fr));overflow-x:auto;padding-bottom:4px;}
+  .td-horizon{grid-template-columns:1fr 1fr 1fr;}
+  .td-tl{flex:none;min-height:0;max-height:520px;}
+}
+@media (prefers-reduced-motion:reduce){.td-ev{transition:none;}}
+#main:has(#panel-today.active) .voicebar{display:none;}
+
 </style>
 </head>
 <body>
@@ -1709,7 +1899,10 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
     </div>
 
     <div class="sb-nav">
-      <button class="nav-tab active" onclick="switchPanel('chat')" id="tab-chat">
+      <button class="nav-tab active" onclick="switchPanel('today')" id="tab-today">
+        <i class="ti ti-layout-dashboard"></i> Today
+      </button>
+      <button class="nav-tab" onclick="switchPanel('chat')" id="tab-chat">
         <i class="ti ti-message-2"></i> Chat
         <span class="model-badge sonnet-badge">Sonnet</span>
       </button>
@@ -1784,7 +1977,82 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
     </div>
 
     <!-- ── CHAT PANEL ── -->
-    <div class="panel active" id="panel-chat">
+    <!-- ════ TODAY · command center ════ -->
+    <div class="panel active" id="panel-today">
+      <div class="workspace">
+        <div class="td-wrap">
+
+          <div class="td-hero">
+            <div class="td-card td-hello">
+              <div class="td-date"><span id="tdDate"></span><span class="td-wx" id="tdWx"></span></div>
+              <h1 class="td-greet" id="tdGreet">Good morning, Ashley</h1>
+              <div class="td-shape" id="tdShape">Loading your day…</div>
+              <form class="td-ask" onsubmit="todayAsk(event)">
+                <input id="tdAsk" placeholder="Ask Gemma about your day, or anything else…" autocomplete="off"/>
+                <button type="button" class="td-btn primary" onclick="triggerMorningBriefing()"><i class="ti ti-sun"></i> Brief me</button>
+              </form>
+              <div class="td-sync">
+                <span class="dot" id="tdSyncDot"></span><span id="tdSyncText">Calendars not connected</span>
+                <button class="td-mini-btn" onclick="loadCalendars(true)"><i class="ti ti-refresh"></i> <span id="tdSyncBtn">Connect Google</span></button>
+              </div>
+              <div class="td-legend" id="tdLegend"></div>
+            </div>
+            <div class="td-card td-now" id="tdNow"></div>
+          </div>
+
+          <div class="td-card td-day">
+            <div class="td-h td-dayhead">
+              <i class="ti ti-clock-hour-8"></i><h3 id="tdDayTitle">Today</h3><span class="td-spacer"></span>
+              <button class="td-daynav" onclick="todayShiftDay(-1)" aria-label="Previous day">‹</button>
+              <button class="td-mini-btn" onclick="todaySelectDay(0)">Today</button>
+              <button class="td-daynav" onclick="todayShiftDay(1)" aria-label="Next day">›</button>
+            </div>
+            <div class="td-allday" id="tdAllDay"></div>
+            <div class="td-tl" id="tdTimeline"></div>
+          </div>
+
+          <div class="td-card td-week">
+            <div class="td-h"><i class="ti ti-calendar-week"></i><h3>Next 7 days</h3><span class="td-count" id="tdWeekSum"></span></div>
+            <div class="td-weekgrid" id="tdWeek"></div>
+          </div>
+
+          <div class="td-card td-due">
+            <div class="td-h"><i class="ti ti-flag-3"></i><h3>Due soon</h3><span class="td-count">next 14 days</span></div>
+            <div class="td-list" id="tdDue"></div>
+            <div class="td-horizon" id="tdHorizon"></div>
+          </div>
+
+          <div class="td-card td-watch">
+            <div class="td-h"><i class="ti ti-alert-triangle"></i><h3>Watch-outs</h3><span class="td-count">next 7 days</span></div>
+            <div class="td-list" id="tdWatch"></div>
+          </div>
+
+          <div class="td-card td-inbox">
+            <div class="td-h"><i class="ti ti-inbox"></i><h3>Inbox</h3><span class="td-count" id="tdInboxCount"></span><span class="td-spacer"></span>
+              <button class="td-mini-btn" onclick="inboxClearDone()">Clear done</button></div>
+            <form class="td-cap" onsubmit="inboxAdd(event)">
+              <input id="tdCapIn" placeholder="Capture a task before it escapes…" autocomplete="off"/>
+              <select id="tdCapArea" aria-label="Area"></select>
+            </form>
+            <div id="tdInbox"></div>
+          </div>
+
+          <div class="td-card td-track">
+            <div class="td-h"><i class="ti ti-target-arrow"></i><h3>Certifications</h3></div>
+            <div id="tdTrack"></div>
+          </div>
+
+          <div class="td-card td-notes">
+            <div class="td-h"><i class="ti ti-notes"></i><h3>Gemma Notes · from Claude</h3><span class="td-spacer"></span>
+              <button class="td-mini-btn" onclick="window.open('https://docs.google.com/document/d/' + GEMMA_NOTES_DOC_ID + '/edit','_blank')"><i class="ti ti-external-link"></i> Open</button></div>
+            <div id="tdNotes"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-chat">
       <div class="msgs" id="msgs">
         <div class="welcome" id="welcome">
           <canvas class="amelia-orb welcome-orb" aria-hidden="true"></canvas>
@@ -2401,9 +2669,10 @@ function enterApp() {
   initMic();
   resolveVoice();
   startWakeWord();
-  fetchWeather();
+  fetchWeather().then(() => { try { renderTodayHero(findWatchouts(7)); } catch(e) {} });
   orbStart();
   loadGemmaNotes(false);
+  initToday();
   updateDateTimeWidget();
   if (!clockTimer) clockTimer = setInterval(updateDateTimeWidget, 60000);
   // Phones start with the menu tucked away; larger screens keep the last choice
@@ -2442,12 +2711,13 @@ function switchPanel(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  const isSonnet = (name === 'chat' || name === 'briefing');
+  const isSonnet = (name === 'chat' || name === 'briefing' || name === 'today');
   document.getElementById('personaBar').style.display = name === 'chat' ? 'flex' : 'none';
   document.getElementById('modelIndicator').textContent = isSonnet ? 'claude sonnet' : 'claude opus';
   document.getElementById('modelIndicator').className = 'model-indicator ' + (isSonnet ? 'model-sonnet' : 'model-opus');
   if (name === 'briefing' && !briefingGenerated) generateBriefing();
   if (name === 'litmap') renderLitMap();
+  if (name === 'today') renderToday();
 }
 
 // ── PERSONA ──
@@ -3387,6 +3657,8 @@ document.addEventListener('keydown', (e) => {
     switchPanel('chat');
     setTimeout(() => document.getElementById('chatInp').focus(), 100);
   }
+  // Cmd+D — Today dashboard
+  if ((e.metaKey || e.ctrlKey) && e.key === 'd') { e.preventDefault(); switchPanel('today'); }
   // Cmd+B — go to briefing
   if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
     e.preventDefault();
@@ -3708,8 +3980,8 @@ function weatherCodeToDesc(code) {
 // ── GEMMA NOTES (Google Doc written by Claude, read here) ──
 // Read-only access to Google Docs, granted once with the cognitivenursing.io account.
 const GEMMA_NOTES_DOC_ID = '1Pd4t5WC5zwXyrdd_Nanp-5sukaXvIwxQIlRwkamZlaw';
-const NOTES_SCOPE = 'https://www.googleapis.com/auth/documents.readonly';
-const NOTES_TOKEN_KEY = 'gemma_notes_token';
+const NOTES_SCOPE = 'https://www.googleapis.com/auth/documents.readonly https://www.googleapis.com/auth/calendar.readonly';
+const NOTES_TOKEN_KEY = 'gemma_google_token_v2';   // v2: adds calendar.readonly
 let gemmaNotes = { text: '', fetchedAt: null };
 let notesTokenClient = null;
 
@@ -3789,7 +4061,7 @@ async function loadGemmaNotes(interactive) {
     const doc = await r.json();
     gemmaNotes = { text: docToText(doc).slice(0, 8000), fetchedAt: new Date() };
     const firstLog = (gemmaNotes.text.split('\n').find(l => /^\d{4}-\d{2}-\d{2}/.test(l.trim())) || '').trim();
-    try { updatePCCNTracker(); } catch(e) {}
+    try { updatePCCNTracker(); renderTodayNotes(); renderTodayTrack(); } catch(e) {}
     setNotesStatus('Loaded ' + gemmaNotes.fetchedAt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }) +
       (firstLog ? ' · latest: ' + firstLog.slice(0, 140) : ''));
   } catch(e) {
@@ -4260,6 +4532,7 @@ CONTEXT:
 - APA library references: ${refCount}
 ${incPCCN ? `- PCCN renewal: ${pccnSummary}\n` : ''}${incCNE ? `- CNE certification (NLN): ${cneSummary}\n` : ''}- Regent coursework (next 7 days): ${regentSummary}
 ${notesForPrompt()}
+${calendarForPrompt()}
 ${incWx ? `- Weather: ${weatherSummary}` : ''}
 
 If GEMMA NOTES are present, use them: fold their current status and recent log entries into PRIORITIES, PCCN, CNE and DOCTORAL CORNER, and prefer them over any figure above that they contradict.
@@ -4400,6 +4673,482 @@ function closeCostOnBackdrop(e) { if (e.target.id === 'costPanel') closeCostPane
 function resetCostTracker() {
   costData = emptyCosts();
   updateCostDisplay();
+}
+
+
+// ══════════ TODAY · command center ══════════
+// Reads every calendar in ashley@cognitivenursing.io (own, CCCC, Canvas feed, Lodge, holidays)
+// with the same Google token used for Gemma Notes (calendar.readonly added to its scope).
+// Only titles and times are read: no attendees, no descriptions. Titles that carry a student
+// name (office-hours bookings) are stripped before they are shown, stored or sent to Claude.
+const AREAS = {
+  cccc:   { label:'CCCC',     color:'var(--a-cccc)' },
+  cch:    { label:'CCH',      color:'var(--a-cch)' },
+  regent: { label:'Regent',   color:'var(--a-regent)' },
+  lodge:  { label:'Lodge',    color:'var(--a-lodge)' },
+  self:   { label:'Personal', color:'var(--a-self)' },
+  hol:    { label:'Holidays', color:'var(--a-hol)' }
+};
+const TODAY_CACHE_KEY = 'gemma_today_cache_v1';
+const TODAY_HIDE_KEY  = 'gemma_today_hidden_areas';
+const INBOX_KEY       = 'gemma_inbox_v1';
+const HORIZON = [
+  { d:'2026-12-15', t:'PCCN target finish' },
+  { d:'2026-12-19', t:'Regent Session B ends' },
+  { d:'2026-12-31', t:'PCCN renewal deadline' },
+  { d:'2027-02-08', t:'CNE application' },
+  { d:'2027-03-15', t:'CNE exam week' }
+];
+
+let todayEvents = [];          // normalized events
+let todaySync = { at:null, cals:0, err:'' };
+let todayDay = 0;              // day offset shown in the timeline
+let todayHidden = new Set();
+try { todayHidden = new Set(JSON.parse(localStorage.getItem(TODAY_HIDE_KEY) || '[]')); } catch(e) {}
+
+// Dev/preview hook: window.__gemmaNow = '2026-11-13T07:40:00' pins the clock
+function tNow() { return window.__gemmaNow ? new Date(window.__gemmaNow) : new Date(); }
+function dayStart(d, off = 0) { const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() + off); return x; }
+function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function tFmt(d) { return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }).replace(':00', '').replace(' ', ' '); }
+function dFmt(d, o) { return d.toLocaleDateString('en-US', o || { weekday:'short', month:'short', day:'numeric' }); }
+function tEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function daysUntil(d) { return Math.round((dayStart(d) - dayStart(tNow())) / 86400000); }
+function relDay(d) {
+  const n = daysUntil(d);
+  if (n === 0) return 'Today'; if (n === 1) return 'Tomorrow'; if (n === -1) return 'Yesterday';
+  if (n > 1 && n < 7) return dFmt(d, { weekday:'long' });
+  return dFmt(d);
+}
+
+// ── classify + clean ──
+function cleanTitle(s) {
+  s = String(s || '(no title)').replace(/\s+/g, ' ').trim();
+  s = s.replace(/^(office hours[^()]*?)\s*\([^)]*\)\s*$/i, '$1');           // drop booked student's name
+  s = s.replace(/\s*\[(?:EDU|EFND)\s?\d{3}[^\]]*\]\s*$/i, '');                // course tag shown separately
+  return s.replace(/\s*[—-]\s*$/, '');
+}
+function calLabel(e) {
+  const n = e.calName || '';
+  if (/cccc\.edu/i.test(n)) return 'CCCC calendar';
+  if (/cognitivenursing/i.test(n)) return 'personal calendar';
+  if (/canvas/i.test(n)) return 'Canvas';
+  return n.split('@')[0];
+}
+function courseOf(s) { const m = String(s || '').match(/\b(EDU|EFND|NUR)\s?(\d{3})\b/i); return m ? m[1].toUpperCase() + ' ' + m[2] : ''; }
+function classifyEvent(cal, title) {
+  const id = cal.id || '', name = (cal.summary || '').toLowerCase(), t = String(title || '').toLowerCase();
+  if (/holiday/.test(id)) return 'hol';
+  if (/canvas|instructure/.test(name)) return 'regent';
+  if (/lodge|blackmer|scottish rite|masonic/.test(name)) return 'lodge';
+  if (/\bcch\b|\bicu\b|\bprn\b/.test(t)) return 'cch';
+  if (/\b(efnd|edu)\s?\d{3}\b|regent|plantinga|\bcwv\b|dissertation/.test(t)) return 'regent';
+  if (/lodge|blackmer|scottish rite|kcch|stated communication/.test(t)) return 'lodge';
+  if (/cccc\.edu$/.test(id)) return 'cccc';
+  return 'self';
+}
+function normalizeEvent(cal, e) {
+  if (e.status === 'cancelled' || e.eventType === 'workingLocation') return null;
+  const allDay = !!(e.start && e.start.date);
+  const start = allDay ? new Date(e.start.date + 'T00:00:00') : new Date(e.start.dateTime);
+  const end   = allDay ? new Date(e.end.date + 'T00:00:00')   : new Date(e.end.dateTime);
+  const raw = e.summary || '';
+  const area = classifyEvent(cal, raw);
+  const canvas = /canvas|instructure/i.test(cal.summary || '');
+  return {
+    id: cal.id + '|' + e.id, calName: cal.summaryOverride || cal.summary || cal.id, area,
+    title: cleanTitle(raw), course: courseOf(raw), allDay, start, end,
+    link: e.htmlLink || '', join: e.hangoutLink || (/^https?:\/\/\S*zoom\.us\//.test(e.location || '') ? e.location : ''),
+    free: e.transparency === 'transparent' || e.eventType === 'outOfOffice' || /\b(break|no classes|out of office)\b/i.test(raw),
+    due: allDay && canvas,
+    milestone: allDay && /^(target|start|due)\s*:/i.test(raw)
+  };
+}
+
+// ── fetch ──
+async function gcal(url, token) {
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+  if (r.status === 401 || r.status === 403) { const err = new Error('auth ' + r.status); err.auth = true; throw err; }
+  if (!r.ok) throw new Error('Google Calendar error ' + r.status);
+  return r.json();
+}
+async function loadCalendars(interactive, _retry) {
+  let token = getStoredNotesToken();
+  if (!token) {
+    if (!interactive) { renderToday(); return; }
+    try { setTodaySync('warn', 'Asking Google for permission…'); token = await requestNotesToken(); }
+    catch(e) { setTodaySync('warn', 'Could not connect: ' + e.message); return; }
+  }
+  try {
+    setTodaySync('', 'Syncing calendars…');
+    const list = await gcal('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader&fields=items(id,summary,summaryOverride,hidden)', token);
+    const cals = (list.items || []).filter(c => !c.hidden);
+    const tMin = dayStart(tNow(), -1).toISOString(), tMax = dayStart(tNow(), 16).toISOString();
+    const res = await Promise.allSettled(cals.map(c => gcal(
+      'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(c.id) + '/events?singleEvents=true&orderBy=startTime&maxResults=250' +
+      '&timeMin=' + encodeURIComponent(tMin) + '&timeMax=' + encodeURIComponent(tMax) +
+      '&fields=items(id,status,summary,start,end,transparency,eventType,htmlLink,hangoutLink,location)', token)
+      .then(j => (j.items || []).map(e => normalizeEvent(c, e)).filter(Boolean))));
+    const authFail = res.find(r => r.status === 'rejected' && r.reason && r.reason.auth);
+    if (authFail && !res.some(r => r.status === 'fulfilled')) throw authFail.reason;
+    todayEvents = res.filter(r => r.status === 'fulfilled').flatMap(r => r.value);
+    const failed = res.filter(r => r.status === 'rejected').length;
+    todaySync = { at: new Date(), cals: cals.length - failed, err: failed ? failed + ' calendar(s) could not be read' : '' };
+    try { localStorage.setItem(TODAY_CACHE_KEY, JSON.stringify({ sync: todaySync, events: todayEvents })); } catch(e) {}
+    renderToday();
+    if (interactive) loadGemmaNotes(false).then(() => { try { renderTodayNotes(); renderTodayTrack(); renderTodayHero(findWatchouts(7)); } catch(e) {} });
+  } catch(e) {
+    if (e.auth) {
+      try { sessionStorage.removeItem(NOTES_TOKEN_KEY); } catch(_) {}
+      if (interactive && !_retry) return loadCalendars(true, true);
+      setTodaySync('warn', 'Google access expired · showing saved copy');
+      return;
+    }
+    setTodaySync('warn', e.message + ' · showing saved copy');
+  }
+}
+function loadTodayCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(TODAY_CACHE_KEY) || 'null');
+    if (!c) return;
+    todayEvents = c.events.map(e => ({ ...e, start: new Date(e.start), end: new Date(e.end) }));
+    todaySync = { ...c.sync, at: c.sync.at ? new Date(c.sync.at) : null, cached: true };
+  } catch(e) {}
+}
+function setTodaySync(state, text) {
+  const dot = document.getElementById('tdSyncDot'), tx = document.getElementById('tdSyncText');
+  if (dot) dot.className = 'dot ' + state; if (tx) tx.textContent = text;
+}
+
+// ── derived views ──
+function visibleEvents() { return todayEvents.filter(e => !todayHidden.has(e.area)); }
+function eventsOnDay(off, evs = visibleEvents()) {
+  const s = dayStart(tNow(), off), e = dayStart(tNow(), off + 1);
+  return evs.filter(x => x.start < e && x.end > s).sort((a,b) => a.start - b.start);
+}
+function busyHours(evs) {             // union of timed, non-free events, in hours
+  const iv = evs.filter(e => !e.allDay && !e.free && e.area !== 'hol').map(e => [ +e.start, +e.end ]).sort((a,b) => a[0]-b[0]);
+  let tot = 0, cur = null;
+  iv.forEach(([s, e]) => { if (!cur || s > cur[1]) { if (cur) tot += cur[1]-cur[0]; cur = [s, e]; } else cur[1] = Math.max(cur[1], e); });
+  if (cur) tot += cur[1]-cur[0];
+  return tot / 3600000;
+}
+function isShift(e) { return !e.allDay && (e.end - e.start) >= 8 * 3600000 && (e.area === 'cch' || /clinical|rotation/i.test(e.title)); }
+function dueItems(daysAhead = 14) {
+  const s = dayStart(tNow()), lim = dayStart(tNow(), daysAhead + 1);
+  return visibleEvents().filter(e => (e.due || e.milestone) && e.start >= s && e.start < lim).sort((a,b) => a.start - b.start);
+}
+
+function findWatchouts(days = 7) {
+  const out = [], seen = new Set();
+  for (let off = 0; off < days; off++) {
+    const day = eventsOnDay(off, todayEvents.filter(e => e.area !== 'hol'));
+    const timed = day.filter(e => !e.allDay && !e.free);
+    const when = relDay(dayStart(tNow(), off));
+    // 1. double-booked: group everything that overlaps into one warning
+    const uniq = timed.filter((e, i) => !timed.slice(0, i).some(p => p.title === e.title && +p.start === +e.start));
+    let grp = [], gEnd = 0;
+    const flush = () => {
+      if (grp.length > 1) {
+        grp.forEach(e => e.clash = true);
+        const s = new Date(Math.min(...grp.map(e => +e.start))), en = new Date(Math.max(...grp.map(e => +e.end)));
+        out.push({ off, sev:'red', icon:'ti-arrows-cross',
+          t: `${when}: ${grp.length === 2 ? 'two' : grp.length} commitments overlap, ${tFmt(s)}–${tFmt(en)}`,
+          m: grp.map(e => `${tEsc(e.title)} (${tFmt(e.start)}–${tFmt(e.end)})`).join(' · ') + ' · decide which one gets you' });
+      }
+      grp = [];
+    };
+    uniq.forEach(e => { if (grp.length && e.start >= gEnd) flush(); gEnd = grp.length ? Math.max(gEnd, +e.end) : +e.end; grp.push(e); });
+    flush();
+    // 2. same course, two different times that day (a duplicate entry with a wrong time)
+    const byCourse = {};
+    timed.filter(e => e.course).forEach(e => (byCourse[e.course] = byCourse[e.course] || []).push(e));
+    Object.entries(byCourse).forEach(([c, list]) => {
+      const live = list.filter(e => /live|class|drop/i.test(e.title));
+      if (live.length > 1 && new Set(live.map(e => +e.start)).size > 1) {
+        out.push({ off, sev:'amber', icon:'ti-copy',
+          t: `${when}: two ${c} live-class entries at different times`,
+          m: live.map(e => `${tFmt(e.start)} on ${calLabel(e)}`).join(' and ') + ' · confirm the real time in Canvas, delete the other' });
+      }
+    });
+    // 3. something due on a long shift day
+    const shift = timed.find(isShift);
+    const dues = day.filter(e => e.due && sameDay(e.start, dayStart(tNow(), off)));
+    if (shift && dues.length) out.push({ off, sev:'red', icon:'ti-clock-exclamation',
+      t: `${when}: ${dues.map(d => '<b>' + tEsc(d.title) + '</b>').join(', ')} due on a ${Math.round((shift.end - shift.start)/3600000)}-hour ${shift.area === 'cch' ? 'ICU shift' : 'clinical'} day`,
+      m: `Shift ${tFmt(shift.start)}–${tFmt(shift.end)} · submit it the day before` });
+    // 4. evening commitment stacked on a long shift
+    if (shift) timed.filter(e => e !== shift && e.start >= shift.end && (e.start - shift.end) < 5 * 3600000).forEach(e =>
+      out.push({ off, sev:'amber', icon:'ti-battery-2',
+        t: `${when}: <b>${tEsc(e.title)}</b> at ${tFmt(e.start)} right after a ${Math.round((shift.end - shift.start)/3600000)}-hour ${shift.area === 'cch' ? 'ICU shift' : 'clinical day'}`,
+        m: `Off the floor ${tFmt(shift.end)} · plan travel and food now` }));
+  }
+  return out.sort((a,b) => a.off - b.off || (a.sev === 'red' ? -1 : 1));
+}
+
+// ── render ──
+function renderToday() {
+  if (!document.getElementById('panel-today')) return;
+  todayEvents.forEach(e => { e.clash = false; });
+  const watch = findWatchouts(7);                       // marks clashes, so run first
+  renderTodayHero(watch);
+  renderTodayNow();
+  renderTodayLegend();
+  renderTodayDay();
+  renderTodayWeek();
+  renderTodayDue();
+  renderTodayWatch(watch);
+  renderInbox();
+  renderTodayTrack();
+  renderTodayNotes();
+}
+
+function renderTodayHero(watch) {
+  const now = tNow(), h = now.getHours();
+  const greet = h < 12 ? 'Good morning, Ashley' : h < 17 ? 'Good afternoon, Ashley' : 'Good evening, Ashley';
+  document.getElementById('tdGreet').textContent = greet;
+  document.getElementById('tdDate').textContent = dFmt(now, { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('tdWx').textContent = (typeof weatherData !== 'undefined' && weatherData) ? `· ${weatherData.icon} ${weatherData.temp}°F ${weatherData.desc}` : '';
+
+  const shape = document.getElementById('tdShape');
+  if (!todayEvents.length) {
+    shape.innerHTML = 'Connect Google once and Gemma pulls in your CCCC, CCH, Regent (Canvas), Lodge and personal calendars here.';
+  } else {
+    const today = eventsOnDay(0).filter(e => e.area !== 'hol');
+    const timed = today.filter(e => !e.allDay && !e.free);
+    const left = timed.filter(e => e.end > now);
+    const hrs = busyHours(today);
+    const due7 = dueItems(6).length;
+    const reds = watch.filter(w => w.sev === 'red' && w.off === 0).length;
+    let s;
+    if (!timed.length) s = `Nothing timed on the calendar today.`;
+    else if (!left.length) s = `Today's calendar is done. <b>${timed.length}</b> commitments behind you.`;
+    else s = `<b>${left.length}</b> ${left.length === 1 ? 'commitment' : 'commitments'} left today, about <b>${hrs.toFixed(hrs < 10 ? 1 : 0)} hours</b> booked` +
+      (timed[0].start > now ? `, starting <b>${tFmt(timed[0].start)}</b>` : '') + '.';
+    const tom = eventsOnDay(1).find(isShift);
+    if (tom) s += ` Tomorrow is a <b>${tFmt(tom.start)}–${tFmt(tom.end)} ${tom.area === 'cch' ? 'ICU shift' : 'clinical day'}</b>.`;
+    s += ` <b>${due7}</b> ${due7 === 1 ? 'thing' : 'things'} due this week` + (reds ? `, and <b style="color:#FFB1BA">${reds} conflict${reds > 1 ? 's' : ''} today</b>.` : '.');
+    shape.innerHTML = s;
+  }
+  if (todaySync.at) {
+    const ago = Math.round((tNow() - todaySync.at) / 60000);
+    setTodaySync(todaySync.cached ? 'warn' : 'ok', `${todaySync.cals} calendars · ${todaySync.cached ? 'saved copy from ' : 'synced '}` +
+      (ago < 1 ? 'just now' : ago < 90 ? ago + ' min ago' : tFmt(todaySync.at) + ' ' + dFmt(todaySync.at)) + (todaySync.err ? ' · ' + todaySync.err : ''));
+    document.getElementById('tdSyncBtn').textContent = 'Sync';
+  }
+}
+
+function renderTodayNow() {
+  const el = document.getElementById('tdNow'), now = tNow();
+  const upcoming = visibleEvents().filter(e => !e.allDay && !e.free && e.area !== 'hol' && e.end > now).sort((a,b) => a.start - b.start);
+  const current = upcoming.filter(e => e.start <= now);
+  const next = upcoming.find(e => e.start > now);
+  const row = (tag, e, isNow) => {
+    const pct = isNow ? Math.min(100, (now - e.start) / (e.end - e.start) * 100) : 0;
+    const mins = Math.round((e.start - now) / 60000);
+    const lead = isNow ? `until ${tFmt(e.end)}` : mins < 60 ? `in ${mins} min` : mins < 1440 && sameDay(e.start, now) ? `at ${tFmt(e.start)}` : `${relDay(e.start)} ${tFmt(e.start)}`;
+    return `<div class="td-now-row"><div class="td-now-tag">${tag}</div><div class="td-now-body">
+      <div class="td-now-title">${tEsc(e.title)}</div>
+      <div class="td-now-meta"><span class="td-area-dot" style="background:${AREAS[e.area].color}"></span>${AREAS[e.area].label}${e.course ? ' · ' + e.course : ''} · ${lead}
+      ${e.join ? `· <a class="td-join" href="${tEsc(e.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>
+      ${isNow ? `<div class="td-prog"><div style="width:${pct}%;background:${AREAS[e.area].color}"></div></div>` : ''}</div></div>`;
+  };
+  let html = '<div class="td-h" style="margin-bottom:2px"><i class="ti ti-player-play"></i><h3>Right now</h3></div>';
+  if (!todayEvents.length) html += '<div class="td-empty">Your current and next commitment will show here once calendars are connected.</div>';
+  else {
+    if (current.length) html += current.slice(0, 2).map(e => row('Now', e, true)).join('');
+    else html += `<div class="td-free"><i class="ti ti-coffee"></i> Open time${next ? ' until ' + (sameDay(next.start, now) ? tFmt(next.start) : relDay(next.start) + ' ' + tFmt(next.start)) : ''}</div>`;
+    if (next) html += row('Next', next, false);
+    const after = upcoming.filter(e => e.start > now && e !== next && sameDay(e.start, now)).slice(0, 2);
+    if (after.length) html += `<div class="td-now-meta" style="margin-left:58px">Then ${after.map(e => tEsc(e.title) + ' ' + tFmt(e.start)).join(' · ')}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderTodayLegend() {
+  const present = new Set(todayEvents.map(e => e.area));
+  document.getElementById('tdLegend').innerHTML = Object.entries(AREAS).filter(([k]) => present.has(k) || k !== 'hol').map(([k, a]) =>
+    `<span class="td-chip ${todayHidden.has(k) ? 'off' : ''}" onclick="todayToggleArea('${k}')"><span class="sw" style="background:${a.color}"></span>${a.label}</span>`).join('');
+}
+function todayToggleArea(k) {
+  todayHidden.has(k) ? todayHidden.delete(k) : todayHidden.add(k);
+  try { localStorage.setItem(TODAY_HIDE_KEY, JSON.stringify([...todayHidden])); } catch(e) {}
+  renderToday();
+}
+
+function renderTodayDay() {
+  const off = todayDay, d0 = dayStart(tNow(), off), d1 = dayStart(tNow(), off + 1), now = tNow();
+  document.getElementById('tdDayTitle').textContent = (off === 0 ? 'Today' : relDay(d0)) + (off === 0 || Math.abs(off) > 1 ? '' : '') + ' · ' + dFmt(d0, { weekday:'short', month:'short', day:'numeric' });
+  const evs = eventsOnDay(off);
+  const allDay = evs.filter(e => e.allDay);
+  document.getElementById('tdAllDay').innerHTML = allDay.map(e =>
+    `<div class="td-ad" style="border-left-color:${AREAS[e.area].color}"><span class="k">${e.due ? 'Due' : e.milestone ? 'Goal' : 'All day'}</span>${tEsc(e.title)}${e.course ? ` <span style="color:var(--text3)">· ${e.course}</span>` : ''}</div>`).join('');
+
+  const timed = evs.filter(e => !e.allDay);
+  const tl = document.getElementById('tdTimeline');
+  if (!timed.length) { tl.innerHTML = `<div class="td-empty">${todayEvents.length ? 'No timed events. Protect it.' : 'Connect calendars to see your day.'}</div>`; return; }
+  const PX = 46;
+  let h0 = 7, h1 = 20;
+  timed.forEach(e => { const s = Math.max(e.start, d0), en = Math.min(e.end, d1);
+    h0 = Math.min(h0, new Date(s).getHours()); h1 = Math.max(h1, Math.ceil((en - d0) / 3600000)); });
+  h1 = Math.min(24, h1);
+  // lanes for overlaps
+  const items = timed.map(e => ({ e, s: Math.max(+e.start, +d0), en: Math.min(+e.end, +d1) })).sort((a,b) => a.s - b.s || b.en - a.en);
+  let cluster = [], clusters = [], cEnd = 0;
+  items.forEach(it => { if (cluster.length && it.s >= cEnd) { clusters.push(cluster); cluster = []; } cEnd = cluster.length ? Math.max(cEnd, it.en) : it.en; cluster.push(it); });
+  if (cluster.length) clusters.push(cluster);
+  clusters.forEach(cl => { const lanes = []; cl.forEach(it => { let i = lanes.findIndex(end => end <= it.s); if (i < 0) { i = lanes.length; lanes.push(0); } lanes[i] = it.en; it.lane = i; }); cl.forEach(it => it.n = lanes.length); });
+
+  let html = `<div class="td-tl-inner" style="height:${(h1 - h0) * PX + 8}px">`;
+  for (let h = h0; h <= h1; h++) html += `<div class="td-hr" style="top:${(h - h0) * PX}px"><span>${h === 12 ? 'Noon' : (h % 12 || 12) + (h < 12 ? 'a' : 'p')}</span></div>`;
+  items.forEach(it => {
+    const e = it.e, top = (it.s - d0) / 3600000 * PX - h0 * PX, hgt = Math.max(24, (it.en - it.s) / 3600000 * PX - 3);
+    const w = 100 / it.n;
+    html += `<div class="td-ev ${e.end < now ? 'past' : ''} ${e.clash ? 'clash' : ''}" title="${tEsc(e.title)} · ${tEsc(e.calName)}"
+      style="top:${top}px;height:${hgt}px;left:calc(${it.lane * w}% + 2px);width:calc(${w}% - 6px);border-left-color:${AREAS[e.area].color}">
+      <div class="t">${tEsc(e.title)}</div>${hgt > 34 ? `<div class="m">${tFmt(e.start)}–${tFmt(e.end)}${e.join ? ' · <a class="td-join" href="' + tEsc(e.join) + '" target="_blank" rel="noopener">Join</a>' : ''}</div>` : ''}</div>`;
+  });
+  if (off === 0 && now.getHours() >= h0 && now.getHours() < h1) html += `<div class="td-nowline" style="top:${(now - d0) / 3600000 * PX - h0 * PX}px"></div>`;
+  html += '</div>';
+  tl.innerHTML = html;
+  if (off === 0) { const y = Math.max(0, ((now - d0) / 3600000 - h0 - 1.5) * PX); tl.scrollTop = y; } else tl.scrollTop = 0;
+}
+function todayShiftDay(n) { todaySelectDay(todayDay + n); }
+function todaySelectDay(n) { todayDay = Math.max(-1, Math.min(14, n)); renderTodayDay(); renderTodayWeek(); }
+
+function renderTodayWeek() {
+  let html = '', tot = 0;
+  for (let off = 0; off < 7; off++) {
+    const d = dayStart(tNow(), off), evs = eventsOnDay(off);
+    const hrs = busyHours(evs); tot += hrs;
+    const byArea = {}; evs.filter(e => !e.allDay && !e.free && e.area !== 'hol').forEach(e => byArea[e.area] = (byArea[e.area] || 0) + (Math.min(e.end, dayStart(d, 1)) - Math.max(e.start, d)) / 3600000);
+    const sumA = Object.values(byArea).reduce((a,b) => a+b, 0) || 1;
+    const loadW = Math.min(100, hrs / 12 * 100);
+    const shown = evs.filter(e => e.area !== 'hol' || e.allDay);
+    const items = shown.slice(0, 5).map(e => `<div class="td-wi ${e.due ? 'due' : ''}" style="border-color:${AREAS[e.area].color}" title="${tEsc(e.title)}">${e.allDay ? '' : tFmt(e.start) + ' '}${tEsc(e.title)}</div>`).join('');
+    const flag = evs.some(isShift) ? `<div class="td-wd-flag">${evs.find(isShift).area === 'cch' ? '12-hr ICU' : 'Clinical'}</div>` : '';
+    html += `<div class="td-wd ${off === 0 ? 'today' : ''} ${off === todayDay ? 'sel' : ''}" onclick="todaySelectDay(${off})">
+      <div class="td-wd-top"><span class="td-wd-d">${off === 0 ? 'Today' : dFmt(d, { weekday:'short' })}</span><span class="td-wd-n">${d.getDate()}</span></div>
+      <div class="td-load" title="${hrs.toFixed(1)} h booked"><div style="width:${loadW}%;display:flex">${Object.entries(byArea).map(([a, v]) => `<div style="width:${v / sumA * 100}%;background:${AREAS[a].color}"></div>`).join('')}</div></div>
+      <div class="td-wd-h">${hrs ? hrs.toFixed(hrs < 10 ? 1 : 0) + ' h booked' : 'Open'}</div>${flag}
+      <div class="td-wd-items">${items}</div>${shown.length > 5 ? `<div class="td-wd-more">+${shown.length - 5} more</div>` : ''}</div>`;
+  }
+  document.getElementById('tdWeek').innerHTML = html;
+  document.getElementById('tdWeekSum').textContent = todayEvents.length ? `${Math.round(tot)} h booked` : '';
+}
+
+function renderTodayDue() {
+  const list = dueItems(14);
+  document.getElementById('tdDue').innerHTML = list.length ? list.map(e => {
+    const n = daysUntil(e.start);
+    const cls = n <= 1 ? 'hot' : n <= 3 ? 'warm' : '';
+    const shiftThatDay = eventsOnDay(n, todayEvents).find(isShift);
+    return `<div class="td-item"><span class="td-pill ${cls}">${n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : 'in ' + n + ' d'}</span>
+      <div class="td-item-b"><div class="td-item-t">${e.milestone ? '<span style="color:var(--text3)">Goal · </span>' : ''}${tEsc(e.title.replace(/^(target|start|due)\s*:\s*/i, ''))}</div>
+      <div class="td-item-m">${dFmt(e.start)}${e.due ? ' · 11:59 pm' : ''}${e.course ? ' · ' + e.course : ''}${shiftThatDay ? ' · <span style="color:var(--amber)">shift day</span>' : ''}</div></div></div>`;
+  }).join('') : `<div class="td-empty">${todayEvents.length ? 'Nothing due in the next two weeks.' : 'Canvas due dates and your TARGET goals appear here.'}</div>`;
+  document.getElementById('tdHorizon').innerHTML = HORIZON.map(h => ({ ...h, n: daysUntil(new Date(h.d + 'T00:00:00')) }))
+    .filter(h => h.n >= 0).slice(0, 3).map(h => `<div class="td-hz"><b>${h.n}</b><span>days · ${h.t}</span></div>`).join('');
+}
+
+function renderTodayWatch(watch) {
+  document.getElementById('tdWatch').innerHTML = !todayEvents.length ? '<div class="td-empty">Gemma checks the week for double-bookings, work due on shift days and evenings stacked on long shifts.</div>'
+    : watch.length ? watch.slice(0, 6).map(w => `<div class="td-wo ${w.sev === 'amber' ? 'amber' : ''}"><i class="ti ${w.icon}"></i><div><div class="td-wo-t">${w.t}</div><div class="td-wo-m">${w.m}</div></div></div>`).join('')
+      + (watch.length > 6 ? `<div class="td-empty">+${watch.length - 6} more</div>` : '')
+    : '<div class="td-allclear"><i class="ti ti-circle-check"></i> No clashes or pinch points in the next 7 days.</div>';
+}
+
+// ── inbox ──
+function inboxLoad() { try { return JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); } catch(e) { return []; } }
+function inboxSave(v) { try { localStorage.setItem(INBOX_KEY, JSON.stringify(v)); } catch(e) {} }
+function inboxAdd(ev) {
+  ev.preventDefault();
+  const inp = document.getElementById('tdCapIn'), text = inp.value.trim(); if (!text) return;
+  const v = inboxLoad(); v.unshift({ id: Date.now(), text, area: document.getElementById('tdCapArea').value, done: false });
+  inboxSave(v); inp.value = ''; renderInbox();
+}
+function inboxToggle(id) { const v = inboxLoad(); const it = v.find(x => x.id === id); if (it) it.done = !it.done; inboxSave(v); renderInbox(); }
+function inboxDel(id) { inboxSave(inboxLoad().filter(x => x.id !== id)); renderInbox(); }
+function inboxClearDone() { inboxSave(inboxLoad().filter(x => !x.done)); renderInbox(); }
+function renderInbox() {
+  const sel = document.getElementById('tdCapArea');
+  if (sel && !sel.options.length) sel.innerHTML = Object.entries(AREAS).filter(([k]) => k !== 'hol').map(([k, a]) => `<option value="${k}">${a.label}</option>`).join('');
+  const v = inboxLoad(), open = v.filter(x => !x.done).length;
+  document.getElementById('tdInboxCount').textContent = open ? open + ' open' : '';
+  document.getElementById('tdInbox').innerHTML = v.length ? v.slice(0, 12).map(x =>
+    `<div class="td-todo ${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} onchange="inboxToggle(${x.id})"/>
+     <span class="td-area-dot" style="background:${(AREAS[x.area] || AREAS.self).color};margin-top:6px"></span>
+     <span class="tx">${tEsc(x.text)}</span><button class="x" onclick="inboxDel(${x.id})" aria-label="Delete">×</button></div>`).join('')
+    : '<div class="td-empty">Empty. Anything you capture here is folded into your morning briefing. Stays on this device.</div>';
+}
+
+// ── certifications ──
+function ring(pct, color) {
+  const r = 42, c = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 96 96"><circle cx="48" cy="48" r="${r}" fill="none" stroke="rgba(140,168,255,0.12)" stroke-width="7"/>
+    <circle cx="48" cy="48" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c * Math.min(1, pct)} ${c}"/></svg>`;
+}
+function renderTodayTrack() {
+  let html = '';
+  try {
+    const p = getPCCNStatus();
+    const open = ['A','B','C'].filter(k => p.need[k] > 0).map(k => `${k} ${fmtH(p.need[k])}`).join(', ');
+    html += `<div class="td-trk"><div class="td-ring">${ring(p.done / 100, 'var(--signal)')}<div class="c"><b>${fmtH(p.done)}</b><span>of 100 CERPs</span></div></div>
+      <div><div class="td-trk-t">PCCN renewal</div>
+      <div class="td-trk-m">${p.left === 0 ? 'All requirements met. Submit the renewal.' : `${fmtH(p.left)} to go${open ? ' · minimums open: ' + open : ''}`}</div>
+      <div class="td-trk-m ${p.behind ? 'warn' : ''}">${p.left === 0 ? p.daysToDeadline + ' days to Dec 31' : p.daysToTarget > 0 ? `~${p.perWeek.toFixed(1)}/week to finish by Dec 15${p.behind ? ' · behind pace' : ''}` : p.daysToDeadline + ' days to the Dec 31 deadline'}</div></div></div>`;
+  } catch(e) {}
+  try {
+    const c = getCNEStatus();
+    const total = Math.round((new Date(CNE.exam + 'T00:00:00') - new Date('2026-10-24T00:00:00')) / 86400000);
+    html += `<div class="td-trk"><div class="td-ring">${ring(1 - c.daysToExam / total, 'var(--a-regent)')}<div class="c"><b>${Math.max(0, c.daysToExam)}</b><span>days to CNE</span></div></div>
+      <div><div class="td-trk-t">CNE exam · week of Mar 15</div>
+      <div class="td-trk-m">${c.phase ? tEsc(c.phase.name) : 'Between phases'}${c.daysToApply > 0 ? ` · apply in ${c.daysToApply} days` : ''}</div>
+      <div class="td-trk-m" style="color:var(--text3)">${c.phase ? tEsc(c.phase.next) : ''}</div></div></div>`;
+  } catch(e) {}
+  document.getElementById('tdTrack').innerHTML = html || '<div class="td-empty">Trackers unavailable.</div>';
+}
+
+function renderTodayNotes() {
+  const el = document.getElementById('tdNotes');
+  const txt = (typeof gemmaNotes !== 'undefined' && gemmaNotes.text) || '';
+  if (!txt) { el.innerHTML = '<div class="td-empty">Not loaded yet. Sync above connects Gemma Notes and your calendars in one step.</div>'; return; }
+  const logs = txt.split('\n').map(l => l.trim()).filter(l => /^\d{4}-\d{2}-\d{2}/.test(l)).slice(0, 4);
+  el.innerHTML = logs.length ? logs.map(l => { const m = l.match(/^(\d{4}-\d{2}-\d{2})\s*[:·—-]?\s*(.*)$/);
+      return `<div class="td-log"><b>${dFmt(new Date(m[1] + 'T00:00:00'))}</b>${tEsc((m[2] || '').slice(0, 220))}</div>`; }).join('')
+    : `<div class="td-log">${tEsc(txt.slice(0, 300))}</div>`;
+}
+
+// ── ask + briefing hooks ──
+function todayAsk(ev) {
+  ev.preventDefault();
+  const q = document.getElementById('tdAsk').value.trim(); if (!q) return;
+  document.getElementById('tdAsk').value = '';
+  switchPanel('chat');
+  document.getElementById('chatInp').value = q; sendChat();
+}
+
+// Text block for Claude: titles + times only, student names already stripped
+function calendarForPrompt() {
+  if (!todayEvents.length) return '';
+  const line = e => `${e.allDay ? (e.due ? 'DUE' : 'all day') : tFmt(e.start) + '–' + tFmt(e.end)} [${AREAS[e.area].label}] ${e.title}${e.course ? ' (' + e.course + ')' : ''}`;
+  const day = off => eventsOnDay(off, todayEvents).filter(e => e.area !== 'hol').map(line).join('; ') || 'nothing scheduled';
+  const due = dueItems(7).map(e => `${dFmt(e.start)}: ${e.title}${e.course ? ' (' + e.course + ')' : ''}`).join('; ') || 'none';
+  const w = findWatchouts(7).map(x => x.t.replace(/<[^>]+>/g, '') + ' (' + x.m.replace(/<[^>]+>/g, '') + ')').join(' | ') || 'none';
+  const inbox = inboxLoad().filter(x => !x.done).map(x => x.text).slice(0, 10).join('; ');
+  return `\nCALENDAR (live from Google; Canvas due dates override the Regent syllabus list above if they differ):
+- Today: ${day(0)}
+- Tomorrow: ${day(1)}
+- Due in the next 7 days: ${due}
+- Watch-outs: ${w}${inbox ? '\n- Open inbox items: ' + inbox : ''}
+Lead PRIORITIES with any watch-out for today or tomorrow, and plan work around shift days.\n`;
+}
+
+function initToday() {
+  loadTodayCache();
+  renderToday();
+  loadCalendars(false);
+  setInterval(() => { if (document.getElementById('panel-today').classList.contains('active')) { renderTodayHero(findWatchouts(7)); renderTodayNow(); if (todayDay === 0) renderTodayDay(); } }, 60000);
 }
 
 // ── INIT ──
