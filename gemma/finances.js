@@ -34,10 +34,10 @@
       },
       extraShifts: [],
       debts: [
-        { name: 'Camper loan', lender: '', balance: null, rate: null, payment: null, inBudget: true },
-        { name: 'Truck loan', lender: '', balance: null, rate: null, payment: null, inBudget: true },
-        { name: 'Jeep loan', lender: '', balance: null, rate: null, payment: null, inBudget: true },
-        { name: 'Credit card', lender: '', balance: null, rate: null, payment: null, inBudget: true }
+        { name: 'Camper loan', lender: '', balance: null, rate: null, payment: null, inBudget: true, group: 'vehicle' },
+        { name: 'Truck loan', lender: '', balance: null, rate: null, payment: null, inBudget: true, group: 'vehicle' },
+        { name: 'Jeep loan', lender: '', balance: null, rate: null, payment: null, inBudget: true, group: 'vehicle' },
+        { name: 'Credit card', lender: '', balance: null, rate: null, payment: null, inBudget: true, group: 'card' }
       ],
       savings: { goal: null, targetDate: '', entries: [] }
     };
@@ -172,7 +172,10 @@
       if (Array.isArray(d.bills)) d.bills.forEach(b => { if ((b.name || '').trim() === 'Mortgage') b.name = 'Mortgage (incl. escrow)'; });
       d.migrations.hoiEscrow = true;
     }
-    d.debts.forEach(x => { if (!x.id) x.id = uid(); });
+    d.debts.forEach(x => {
+      if (!x.id) x.id = uid();
+      if (!x.group) x.group = /camper|truck|jeep|\bcar\b|auto|vehicle|\brv\b|boat|motorcycle/i.test((x.name || '') + ' ' + (x.lender || '')) ? 'vehicle' : 'card';
+    });
     if (!Array.isArray(d.accounts)) {
       d.accounts = [
         { inst: 'SECU', name: "Ashley's Allowance", type: 'Checking' },
@@ -257,7 +260,9 @@
   function totals() {
     const inc = data.budget.income.reduce((s, x) => s + num(x.amount), 0);
     const exp = data.budget.expenses.reduce((s, x) => s + num(x.amount), 0);
-    const debtPay = data.debts.filter(d => d.inBudget !== false).reduce((s, d) => s + num(d.payment), 0);
+    const payOf = g => data.debts.filter(d => d.group === g && d.inBudget !== false).reduce((s, d) => s + num(d.payment), 0);
+    const vehPay = payOf('vehicle'), cardPay = payOf('card');
+    const debtPay = vehPay + cardPay;
     const medPay = data.medical.reduce((s, m) => s + num(m.payment), 0);
     const medBal = data.medical.reduce((s, m) => s + num(m.balance), 0);
     const left = inc - exp - debtPay - medPay;
@@ -267,8 +272,10 @@
     const year = String(new Date().getFullYear());
     const shiftsYTD = data.extraShifts.filter(s => (s.date || '').startsWith(year)).reduce((s, x) => s + num(x.amount), 0) +
       data.transactions.filter(t => t.type === 'Extra shift' && (t.date || '').startsWith(year)).reduce((s, t) => s + num(t.amount), 0);
-    return { inc, exp, debtPay, medPay, medBal, left, debtBal, saved, shiftsYTD };
+    return { inc, exp, debtPay, vehPay, cardPay, medPay, medBal, left, debtBal, saved, shiftsYTD };
   }
+
+  function debtGroup(id) { const d = data.debts.find(x => x.id === id); return d ? d.group : 'card'; }
 
   function monthStats(month) {
     const st = { inc: 0, out: 0, save: 0, byCat: {}, byDebt: {}, byMed: {} };
@@ -279,7 +286,7 @@
       else if (T.dir === 'save') st.save += a;
       else {
         st.out += a;
-        const c = T.debt ? 'Debt payments' : T.med ? 'Medical' : (t.cat || 'Other');
+        const c = T.debt ? (debtGroup(t.debtId) === 'vehicle' ? 'Transportation' : 'Credit card payments') : T.med ? 'Medical' : (t.cat || 'Other');
         st.byCat[c] = (st.byCat[c] || 0) + a;
         if (T.debt && t.debtId) st.byDebt[t.debtId] = (st.byDebt[t.debtId] || 0) + a;
         if (T.med && t.medId) st.byMed[t.medId] = (st.byMed[t.medId] || 0) + a;
@@ -331,11 +338,17 @@
     const expenseRows = d.budget.expenses.map((x, i) =>
       '<tr><td>' + cellText('budget.expenses.' + i + '.name', x.name, 'Bill or expense') + '</td><td>' + cellSelect('budget.expenses.' + i + '.cat', x.cat || 'Other', CATS) + '</td><td class="r">' + cellNum('budget.expenses.' + i + '.amount', x.amount) + '</td><td>' + delBtn('budget.expenses', i) + '</td></tr>').join('');
 
-    const debtRows = d.debts.map((x, i) =>
-      '<tr><td>' + cellText('debts.' + i + '.name', x.name, 'Debt') + '</td><td>' + cellText('debts.' + i + '.lender', x.lender, 'Lender') + '</td>' +
+    const debtRow = (x, i) =>
+      '<tr><td>' + cellText('debts.' + i + '.name', x.name, x.group === 'vehicle' ? 'Vehicle' : 'Card') + '</td><td>' + cellText('debts.' + i + '.lender', x.lender, x.group === 'vehicle' ? 'Lender' : 'Issuer') + '</td>' +
       '<td class="r">' + cellNum('debts.' + i + '.balance', x.balance) + '</td><td class="r">' + cellPct('debts.' + i + '.rate', x.rate) + '</td><td class="r">' + cellNum('debts.' + i + '.payment', x.payment) + '</td>' +
       '<td class="c"><input type="checkbox" class="fin-check" data-path="debts.' + i + '.inBudget" data-type="bool"' + (x.inBudget !== false ? ' checked' : '') + ' title="Count this payment in the monthly budget"></td>' +
-      '<td class="fin-calc" id="finDebtCalc' + i + '"></td><td>' + delBtn('debts', i) + '</td></tr>').join('');
+      '<td class="fin-calc" id="finDebtCalc' + i + '"></td><td>' + delBtn('debts', i) + '</td></tr>';
+    const vehRows = d.debts.map((x, i) => x.group === 'vehicle' ? debtRow(x, i) : '').join('');
+    const cardRows = d.debts.map((x, i) => x.group !== 'vehicle' ? debtRow(x, i) : '').join('');
+    const debtTable = (rows, g) =>
+      '<table class="fin-table fin-debts"><thead><tr><th>' + (g === 'vehicle' ? 'Vehicle' : 'Card') + '</th><th>' + (g === 'vehicle' ? 'Lender' : 'Issuer') + '</th><th class="r">Balance</th><th class="r">APR %</th><th class="r">Payment</th><th class="c">In budget</th><th>Payoff at this payment</th><th></th></tr></thead><tbody>' + rows + '</tbody>' +
+      '<tfoot><tr><td>Total</td><td></td><td class="r fin-money" id="finT' + g + 'Bal"></td><td></td><td class="r fin-money" id="finT' + g + 'Pay"></td><td></td><td id="fin' + g + 'Free"></td><td></td></tr></tfoot></table>' +
+      '<button class="btn btn-secondary fin-add" data-add="debts" data-group="' + g + '"><i class="ti ti-plus"></i> ' + (g === 'vehicle' ? 'Add vehicle loan' : 'Add credit card') + '</button>';
 
     const medRows = d.medical.map((x, i) =>
       '<tr><td>' + cellText('medical.' + i + '.name', x.name, 'Company') + '</td>' +
@@ -380,23 +393,27 @@
           '</div>' +
           '<div class="ws-card fin-card"><div class="fin-card-title">Where it goes</div>' +
             '<div class="fin-flow" id="finFlow"></div>' +
-            '<div class="fin-note">Debt payments come from the Debt tracker below (rows with "In budget" checked), so you never enter them twice. Extra CCH shifts are left out on purpose. They\'re bonus money, logged separately.</div>' +
+            '<div class="fin-note">Vehicle loan, credit card and medical payments come from their trackers below (rows with "In budget" checked), so you never enter them twice. Extra CCH shifts are left out on purpose. They\'re bonus money, logged separately.</div>' +
           '</div>' +
         '</div>' +
         '<div class="ws-card fin-card" style="margin-top:14px"><div class="fin-card-title">Bills &amp; expenses</div>' +
           '<table class="fin-table"><thead><tr><th>Item</th><th>Category</th><th class="r">Monthly</th><th></th></tr></thead><tbody>' + expenseRows + '</tbody>' +
           '<tfoot><tr><td>Total bills &amp; expenses</td><td></td><td class="r fin-money" id="finTExp"></td><td></td></tr>' +
-          '<tr><td>+ Debt payments (from tracker)</td><td></td><td class="r fin-money" id="finTDebtPay"></td><td></td></tr>' +
+          '<tr><td>+ Vehicle loans (Transportation, from tracker)</td><td></td><td class="r fin-money" id="finTVehPayB"></td><td></td></tr>' +
+          '<tr><td>+ Credit card payments (from tracker)</td><td></td><td class="r fin-money" id="finTCardPayB"></td><td></td></tr>' +
           '<tr><td>+ Medical payments (from tracker)</td><td></td><td class="r fin-money" id="finTMedPay"></td><td></td></tr></tfoot></table>' + addBtn('budget.expenses', 'Add expense') +
         '</div>' +
       '</div>' +
 
-      // debts
-      '<div class="ws-section"><div class="ws-section-title">Debt tracker · highest rate first is the cheapest payoff order</div>' +
-        '<div class="ws-card fin-card fin-scroll">' +
-          '<table class="fin-table fin-debts"><thead><tr><th>Debt</th><th>Lender</th><th class="r">Balance</th><th class="r">APR %</th><th class="r">Payment</th><th class="c">In budget</th><th>Payoff at this payment</th><th></th></tr></thead><tbody>' + debtRows + '</tbody>' +
-          '<tfoot><tr><td>Total</td><td></td><td class="r fin-money" id="finTDebt"></td><td></td><td class="r fin-money" id="finTDebtPay2"></td><td></td><td id="finDebtFree"></td><td></td></tr></tfoot></table>' + addBtn('debts', 'Add debt') +
-          '<div class="fin-note">Payoff estimates assume a fixed rate and the same payment every month. Check balances against your lender statements; escrow, fees and rate changes will shift these dates.</div>' +
+      // vehicle loans (Transportation) and credit cards
+      '<div class="ws-section"><div class="ws-section-title">Transportation · vehicle loans</div>' +
+        '<div class="ws-card fin-card fin-scroll">' + debtTable(vehRows, 'vehicle') +
+          '<div class="fin-note">Vehicle loan payments count under Transportation in the budget and in Spending vs plan. Payoff estimates assume a fixed rate and the same payment every month; check balances against your lender statements.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ws-section"><div class="ws-section-title">Credit cards · highest rate first is the cheapest payoff order</div>' +
+        '<div class="ws-card fin-card fin-scroll">' + debtTable(cardRows, 'card') +
+          '<div class="fin-note">Payoff dates assume no new charges and the same payment every month. Interest on cards usually compounds daily, so treat these as estimates and check the statement balance.</div>' +
         '</div>' +
       '</div>' +
 
@@ -463,14 +480,19 @@
     set('finKCash', anyBal ? $$(cash) : '—'); set('finTAcct', $$(cash));
     set('finTAcctBal', $$(data.accounts.reduce((s, a) => s + num(a.balance), 0)));
     const kl = $('finKLeft'); if (kl) kl.dataset.neg = t.left < 0 ? '1' : '';
-    set('finTInc', $$(t.inc)); set('finTExp', $$(t.exp)); set('finTDebtPay', $$(t.debtPay));
-    set('finTDebt', $$(t.debtBal)); set('finTDebtPay2', $$(data.debts.reduce((s, x) => s + num(x.payment), 0)));
+    set('finTInc', $$(t.inc)); set('finTExp', $$(t.exp)); set('finTVehPayB', $$(t.vehPay)); set('finTCardPayB', $$(t.cardPay));
+    ['vehicle', 'card'].forEach(g => {
+      const ds = data.debts.filter(x => (x.group || 'card') === g);
+      set('finT' + g + 'Bal', $$(ds.reduce((s2, x) => s2 + num(x.balance), 0)));
+      set('finT' + g + 'Pay', $$(ds.reduce((s2, x) => s2 + num(x.payment), 0)));
+    });
     set('finTSaved', $$(t.saved)); set('finTShifts', $$(t.shiftsYTD));
 
     // Where it goes (by category)
     const byCat = {};
     data.budget.expenses.forEach(x => { const c = x.cat || 'Other'; byCat[c] = (byCat[c] || 0) + num(x.amount); });
-    if (t.debtPay) byCat['Debt payments'] = t.debtPay;
+    if (t.vehPay) byCat['Transportation'] = (byCat['Transportation'] || 0) + t.vehPay;
+    if (t.cardPay) byCat['Credit card payments'] = t.cardPay;
     if (t.medPay) byCat['Medical payments'] = t.medPay;
     const rows = Object.entries(byCat).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
     const flow = $('finFlow');
@@ -482,15 +504,16 @@
     }
 
     // Debt payoff per row
-    let lastPayoff = null, unknown = false;
+    const last = { vehicle: null, card: null }, unknown = { vehicle: false, card: false };
     data.debts.forEach((x, i) => {
       const el = $('finDebtCalc' + i); if (!el) return;
       const a = amortize(x.balance, x.rate, x.payment);
-      if (!a) { el.innerHTML = '<span class="fin-dim">enter balance &amp; payment</span>'; unknown = true; return; }
+      const g = x.group === 'vehicle' ? 'vehicle' : 'card';
+      if (!a) { el.innerHTML = '<span class="fin-dim">enter balance &amp; payment</span>'; unknown[g] = true; return; }
       if (a.paid) { el.innerHTML = '<span class="fin-ok">paid off</span>'; return; }
-      if (a.never) { el.innerHTML = '<span class="fin-bad">Payment doesn\'t cover interest (<span class="fin-money">' + $$(a.monthlyInterest) + '</span>/mo)</span>'; unknown = true; return; }
+      if (a.never) { el.innerHTML = '<span class="fin-bad">Payment doesn\'t cover interest (<span class="fin-money">' + $$(a.monthlyInterest) + '</span>/mo)</span>'; unknown[g] = true; return; }
       const end = addMonths(new Date(), a.months);
-      if (!lastPayoff || end > lastPayoff) lastPayoff = end;
+      if (!last[g] || end > last[g]) last[g] = end;
       const paidMo = monthStats(localDate().slice(0, 7)).byDebt[x.id] || 0;
       el.innerHTML = '<b>' + monthLabel(end) + '</b> <span class="fin-dim">· ' + a.months + ' mo · <span class="fin-money">' + $$(a.interest) + '</span> interest</span>' +
         (paidMo ? ' <span class="fin-ok">· paid this month <span class="fin-money">' + $$(paidMo) + '</span></span>' : '');
@@ -505,8 +528,10 @@
         : run <= 0.005 ? '<span class="fin-ok">paid off</span>' : '<b class="fin-money">' + $$(run) + '</b>';
     });
     set('finTMedRun', $$(medRun));
-    const df = $('finDebtFree');
-    if (df) df.innerHTML = lastPayoff ? ('All listed debts paid: <b>' + monthLabel(lastPayoff) + '</b>' + (unknown ? ' <span class="fin-dim">(some rows incomplete)</span>' : '')) : '';
+    ['vehicle', 'card'].forEach(g => {
+      const el = $('fin' + g + 'Free');
+      if (el) el.innerHTML = last[g] ? ((g === 'vehicle' ? 'All vehicles paid: <b>' : 'All cards paid: <b>') + monthLabel(last[g]) + '</b>' + (unknown[g] ? ' <span class="fin-dim">(some rows incomplete)</span>' : '')) : '';
+    });
 
     // Savings plan
     const p = savingsPlan(t);
@@ -589,6 +614,7 @@
           'savings.entries': { date: today, amount: null, note: '' }
         }[add.dataset.add];
         if (['debts', 'accounts', 'bills', 'medical'].includes(add.dataset.add)) blank.id = uid();
+        if (add.dataset.group) blank.group = add.dataset.group;
         list.push(blank); render(); queueSave();
         const rows = ws.querySelectorAll('[data-path^="' + add.dataset.add + '.' + (list.length - 1) + '."]');
         if (rows[0]) rows[0].focus();
@@ -880,9 +906,10 @@
     const mLabel = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const planned = {};
     data.budget.expenses.forEach(x => { const c = x.cat || 'Other'; planned[c] = (planned[c] || 0) + num(x.amount); });
-    if (t.debtPay) planned['Debt payments'] = t.debtPay;
+    if (t.vehPay) planned['Transportation'] = (planned['Transportation'] || 0) + t.vehPay;
+    if (t.cardPay) planned['Credit card payments'] = t.cardPay;
     if (t.medPay) planned['Medical'] = (planned['Medical'] || 0) + t.medPay;
-    const cats = [...new Set([...CATS, 'Debt payments'])].filter(c => (planned[c] || 0) > 0 || (st.byCat[c] || 0) > 0);
+    const cats = [...new Set([...CATS, 'Credit card payments'])].filter(c => (planned[c] || 0) > 0 || (st.byCat[c] || 0) > 0);
     const catRows = cats.map(c => {
       const p = planned[c] || 0, sp = st.byCat[c] || 0, left = p - sp, pct = p > 0 ? Math.min(100, sp / p * 100) : 100;
       return '<tr><td>' + esc(c) + '</td><td class="r fin-money">' + $$(p) + '</td><td class="r fin-money">' + $$(sp) + '</td>' +
@@ -924,7 +951,7 @@
                   : '<div class="fin-dim" style="font-size:13px">Nothing logged for this month yet.</div>') +
         '</div>' +
       '</div>' +
-      '<div class="fin-note">Debt payments show as "paid this month" in the Debt tracker; update each balance from your lender statement, since the interest/principal split comes from the lender. "To savings" entries count toward the Savings goal automatically, as do "Extra shift" entries toward the shift total, so don\'t also add them to those tables.</div>' +
+      '<div class="fin-note">Debt payments show as "paid this month" on that vehicle loan or card; update each balance from your lender statement, since the interest/principal split comes from the lender. "To savings" entries count toward the Savings goal automatically, as do "Extra shift" entries toward the shift total, so don\'t also add them to those tables.</div>' +
     '</div>';
   }
 
