@@ -191,6 +191,7 @@
         balance: owed == null ? null : Math.max(0, owed - num(m.paidBefore)), payment: m.planAmount == null ? null : m.planAmount, inBudget: true, notes: m.notes || '' };
     });
     d.medical.forEach(x => { if (!x.id) x.id = uid(); });
+    d.bills.forEach(b => { if (b.kind === 'Medical payment') { b.kind = 'Bill'; b.cat = 'Medical'; delete b.medId; } });
     return d;
   }
 
@@ -248,7 +249,7 @@
     const inc = data.budget.income.reduce((s, x) => s + num(x.amount), 0);
     const exp = data.budget.expenses.reduce((s, x) => s + num(x.amount), 0);
     const debtPay = data.debts.filter(d => d.inBudget !== false).reduce((s, d) => s + num(d.payment), 0);
-    const medPay = data.medical.filter(m => m.inBudget !== false).reduce((s, m) => s + num(m.payment), 0);
+    const medPay = data.medical.reduce((s, m) => s + num(m.payment), 0);
     const medBal = data.medical.reduce((s, m) => s + num(m.balance), 0);
     const left = inc - exp - debtPay - medPay;
     const debtBal = data.debts.reduce((s, d) => s + num(d.balance), 0);
@@ -328,10 +329,9 @@
       '<td class="fin-calc" id="finDebtCalc' + i + '"></td><td>' + delBtn('debts', i) + '</td></tr>').join('');
 
     const medRows = d.medical.map((x, i) =>
-      '<tr><td>' + cellText('medical.' + i + '.name', x.name, 'Medical bill') + '</td><td>' + cellText('medical.' + i + '.provider', x.provider, 'Provider') + '</td>' +
+      '<tr><td>' + cellText('medical.' + i + '.name', x.name, 'Company') + '</td>' +
       '<td class="r">' + cellNum('medical.' + i + '.balance', x.balance) + '</td><td class="r">' + cellNum('medical.' + i + '.payment', x.payment) + '</td>' +
-      '<td class="c"><input type="checkbox" class="fin-check" data-path="medical.' + i + '.inBudget" data-type="bool"' + (x.inBudget !== false ? ' checked' : '') + ' title="Count this payment in the monthly budget"></td>' +
-      '<td class="fin-calc" id="finMedCalc' + i + '"></td><td>' + delBtn('medical', i) + '</td></tr>').join('');
+      '<td class="r fin-calc" id="finMedCalc' + i + '"></td><td>' + delBtn('medical', i) + '</td></tr>').join('');
 
     const shiftRows = d.extraShifts.map((x, i) =>
       '<tr><td>' + cellDate('extraShifts.' + i + '.date', x.date) + '</td><td class="r">' + cellNum('extraShifts.' + i + '.amount', x.amount) + '</td><td>' + cellSelect('extraShifts.' + i + '.dest', x.dest || 'Undecided', SHIFT_DEST) + '</td><td>' + cellText('extraShifts.' + i + '.note', x.note, 'Note') + '</td><td>' + delBtn('extraShifts', i) + '</td></tr>').join('');
@@ -392,11 +392,11 @@
       '</div>' +
 
       // medical bills (interest-free)
-      '<div class="ws-section"><div class="ws-section-title">Medical bills · interest-free</div>' +
+      '<div class="ws-section"><div class="ws-section-title">Medical bills</div>' +
         '<div class="ws-card fin-card fin-scroll">' +
-          '<table class="fin-table fin-debts"><thead><tr><th>Medical bill</th><th>Provider</th><th class="r">Balance</th><th class="r">Payment</th><th class="c">In budget</th><th>Payoff at this payment</th><th></th></tr></thead><tbody>' + medRows + '</tbody>' +
-          '<tfoot><tr><td>Total</td><td></td><td class="r fin-money" id="finTMed"></td><td class="r fin-money" id="finTMedPay2"></td><td></td><td id="finMedFree"></td><td></td></tr></tfoot></table>' + addBtn('medical', 'Add medical bill') +
-          '<div class="fin-note">Log payments in Quick Add as <b>Medical payment</b> and they show as "paid this month" here; update each balance from the provider\'s statement. For a due date and reminder, add it in Bills &amp; due dates with Kind "Medical payment". Before paying, check each bill against your insurer\'s EOB.</div>' +
+          '<table class="fin-table fin-medtbl"><thead><tr><th>Company</th><th class="r">Amount owed</th><th class="r">Payment / month</th><th class="r">Running balance</th><th></th></tr></thead><tbody>' + medRows + '</tbody>' +
+          '<tfoot><tr><td>Total</td><td class="r fin-money" id="finTMed"></td><td class="r fin-money" id="finTMedPay2"></td><td class="r fin-money" id="finTMedRun"></td><td></td></tr></tfoot></table>' + addBtn('medical', 'Add medical bill') +
+          '<div class="fin-note">Running balance = amount owed minus payments logged in Quick Add as <b>Medical payment</b> for that company.</div>' +
         '</div>' +
       '</div>' +
 
@@ -487,21 +487,15 @@
         (paidMo ? ' <span class="fin-ok">· paid this month <span class="fin-money">' + $$(paidMo) + '</span></span>' : '');
     });
     set('finTMed', $$(t.medBal)); set('finTMedPay', $$(t.medPay)); set('finTMedPay2', $$(data.medical.reduce((s, x) => s + num(x.payment), 0)));
-    let lastMed = null, medUnknown = false;
-    const medMo = monthStats(localDate().slice(0, 7)).byMed;
+    let medRun = 0;
     data.medical.forEach((x, i) => {
+      const paid = data.transactions.filter(t => t.medId === x.id).reduce((s2, t) => s2 + num(t.amount), 0);
+      const run = num(x.balance) - paid; medRun += Math.max(0, run);
       const el = $('finMedCalc' + i); if (!el) return;
-      const a = amortize(x.balance, 0, x.payment);
-      const paidMo = medMo[x.id] || 0;
-      const paidTxt = paidMo ? ' <span class="fin-ok">· paid this month <span class="fin-money">' + $$(paidMo) + '</span></span>' : '';
-      if (!a) { el.innerHTML = '<span class="fin-dim">enter balance &amp; payment</span>' + paidTxt; medUnknown = true; return; }
-      if (a.paid) { el.innerHTML = '<span class="fin-ok">paid off</span>'; return; }
-      const end = addMonths(new Date(), a.months);
-      if (!lastMed || end > lastMed) lastMed = end;
-      el.innerHTML = '<b>' + monthLabel(end) + '</b> <span class="fin-dim">· ' + a.months + ' mo</span>' + paidTxt;
+      el.innerHTML = (x.balance == null || x.balance === '') ? '<span class="fin-dim">—</span>'
+        : run <= 0.005 ? '<span class="fin-ok">paid off</span>' : '<b class="fin-money">' + $$(run) + '</b>';
     });
-    const mf = $('finMedFree');
-    if (mf) mf.innerHTML = lastMed ? ('All medical bills paid: <b>' + monthLabel(lastMed) + '</b>' + (medUnknown ? ' <span class="fin-dim">(some rows incomplete)</span>' : '')) : '';
+    set('finTMedRun', $$(medRun));
     const df = $('finDebtFree');
     if (df) df.innerHTML = lastPayoff ? ('All listed debts paid: <b>' + monthLabel(lastPayoff) + '</b>' + (unknown ? ' <span class="fin-dim">(some rows incomplete)</span>' : '')) : '';
 
@@ -555,7 +549,7 @@
       const type = el.dataset.type;
       const v = type === 'num' ? (el.value === '' ? null : parseFloat(el.value)) : type === 'bool' ? el.checked : el.value;
       setPath(el.dataset.path, v);
-      if (e.type === 'change' && /^medical\.\d+\.(name|provider)$/.test(el.dataset.path)) { render(); queueSave(); return; }
+      if (e.type === 'change' && /^medical\.\d+\.(name|balance)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^bills\.\d+\./.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^accounts\.\d+\.(name|inst|last4)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId|medId|accountId|toAccountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
@@ -579,7 +573,7 @@
           'budget.income': { name: '', amount: null },
           'budget.expenses': { name: '', cat: 'Other', amount: null },
           'debts': { name: '', lender: '', balance: null, rate: null, payment: null, inBudget: true },
-          'medical': { name: '', provider: '', balance: null, payment: null, inBudget: true, notes: '' },
+          'medical': { name: '', balance: null, payment: null },
           'bills': { name: '', kind: 'Bill', cat: 'Utilities', amount: null, dueDay: null, freq: 'Monthly', startMonth: 1, autopay: false, accountId: '', paid: {} },
           'accounts': { inst: 'SECU', name: '', type: 'Savings', last4: '', balance: null, asOf: today, notes: '' },
           'extraShifts': { date: today, amount: null, dest: 'Savings', note: '' },
@@ -692,7 +686,6 @@
   function billAmount(b) {
     if (b.amount != null && b.amount !== '') return num(b.amount);
     if (b.kind === 'Debt payment' && b.debtId) { const d = data.debts.find(x => x.id === b.debtId); if (d) return num(d.payment); }
-    if (b.kind === 'Medical payment' && b.medId) { const m = data.medical.find(x => x.id === b.medId); if (m) return num(m.payment); }
     return 0;
   }
   function dueLabel(st) {
@@ -755,14 +748,13 @@
   }
 
   // ── medical bills ──
-  function medPairs() { return data.medical.map(m => [m.id, (m.name || 'Medical bill') + (m.provider ? ' · ' + m.provider : '')]); }
+  function medPairs() { return data.medical.map(m => [m.id, m.name || 'Medical bill']); }
 
   function billsHTML() {
-    const kinds = ['Bill', 'Debt payment', 'Medical payment'];
+    const kinds = ['Bill', 'Debt payment'];
     const rows = data.bills.map((b, i) => {
       const st = billStatus(b), lp = lastPaid(b);
       const detail = b.kind === 'Debt payment' ? selectVL('bills.' + i + '.debtId', b.debtId || '', [['', 'pick loan']].concat(debtPairs()))
-        : b.kind === 'Medical payment' ? selectVL('bills.' + i + '.medId', b.medId || '', [['', 'pick medical bill']].concat(medPairs()))
         : cellSelect('bills.' + i + '.cat', b.cat || 'Other', CATS);
       const amtPh = (b.debtId || b.medId) && (b.amount == null || b.amount === '') ? ' placeholder="' + esc(billAmount(b).toFixed(2)) + '"' : '';
       return '<tr>' +
@@ -862,11 +854,6 @@
     let marked = '';
     if (T.debt) data.bills.forEach(b => {
       if (b.debtId !== tx.debtId) return;
-      const st = billStatus(b);
-      if (st && !st.paid && st.days <= 20) { b.paid[st.key] = { txId: tx.id, date: tx.date }; marked = ' Marked ' + (b.name || 'the bill') + ' paid for ' + monthLabel(st.due) + '.'; }
-    });
-    if (T.med && tx.medId) data.bills.forEach(b => {
-      if (b.medId !== tx.medId) return;
       const st = billStatus(b);
       if (st && !st.paid && st.days <= 20) { b.paid[st.key] = { txId: tx.id, date: tx.date }; marked = ' Marked ' + (b.name || 'the bill') + ' paid for ' + monthLabel(st.due) + '.'; }
     });
