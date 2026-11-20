@@ -1884,8 +1884,9 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
 .fin-table tfoot td{border-bottom:none;padding:8px 6px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;}
 .fin-table .r{text-align:right;} .fin-table .c{text-align:center;}
 .fin-debts{min-width:860px;}
-.fin-cell{width:100%;background:transparent;border:0.5px solid transparent;border-radius:6px;padding:7px 8px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;}
-.fin-cell:hover{border-color:var(--border2);}
+.fin-cell{width:100%;background:var(--navy3);border:0.5px solid var(--border2);border-radius:6px;padding:7px 8px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;}
+.fin-cell:hover{border-color:var(--teal2);}
+.fin-cell::placeholder{color:var(--text3);}
 .fin-cell:focus{border-color:var(--teal2);background:var(--navy3);}
 select.fin-cell{cursor:pointer;} select.fin-cell option{background:var(--navy3);}
 .fin-num{text-align:right;font-variant-numeric:tabular-nums;min-width:90px;}
@@ -1911,6 +1912,8 @@ select.fin-cell{cursor:pointer;} select.fin-cell option{background:var(--navy3);
 .fin-gate{max-width:460px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;font-size:13.5px;color:var(--text2);line-height:1.6;}
 .fin-loading{color:var(--text3);font-family:var(--font-mono);font-size:12px;padding:20px 0;}
 .fin-blurred .fin-money{filter:blur(7px);user-select:none;}
+.fin-blurred input.fin-money{filter:none;color:transparent;}
+.fin-blurred input.fin-money:focus{color:var(--text);}
 </style>
 </head>
 <body>
