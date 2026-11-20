@@ -1858,6 +1858,59 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
 @media (prefers-reduced-motion:reduce){.td-ev{transition:none;}}
 #main:has(#panel-today.active) .voicebar{display:none;}
 
+
+/* ── FINANCES ── */
+.fin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.fin-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.fin-status{font-size:11px;font-family:var(--font-mono);color:var(--text3);}
+.fin-status[data-kind="ok"]{color:var(--teal);}
+.fin-status[data-kind="err"]{color:var(--red);}
+.fin-status[data-kind="pending"]{color:var(--amber);}
+.fin-menu{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.fin-conflict{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--red-bg);border:0.5px solid rgba(255,122,138,0.3);color:var(--text);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;}
+.fin-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:26px;}
+.fin-kpi{background:var(--navy2);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;}
+.fin-kpi-l{font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.fin-kpi-v{font-size:20px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;}
+.fin-kpi-v[data-neg="1"]{color:var(--red);}
+.fin-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:900px){.fin-grid2{grid-template-columns:1fr;}}
+.fin-card{padding:16px 18px;}
+.fin-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;}
+.fin-scroll{overflow-x:auto;}
+.fin-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
+.fin-table th{text-align:left;padding:6px 6px;font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;border-bottom:0.5px solid var(--border2);font-weight:400;white-space:nowrap;}
+.fin-table td{padding:3px 4px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+.fin-table tfoot td{border-bottom:none;padding:8px 6px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;}
+.fin-table .r{text-align:right;} .fin-table .c{text-align:center;}
+.fin-debts{min-width:860px;}
+.fin-cell{width:100%;background:transparent;border:0.5px solid transparent;border-radius:6px;padding:7px 8px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;}
+.fin-cell:hover{border-color:var(--border2);}
+.fin-cell:focus{border-color:var(--teal2);background:var(--navy3);}
+select.fin-cell{cursor:pointer;} select.fin-cell option{background:var(--navy3);}
+.fin-num{text-align:right;font-variant-numeric:tabular-nums;min-width:90px;}
+.fin-form .fin-cell{border-color:var(--border2);background:var(--navy3);text-align:left;}
+.fin-check{width:16px;height:16px;accent-color:var(--teal2);cursor:pointer;}
+.fin-del{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;border-radius:4px;}
+.fin-del:hover{color:var(--red);}
+.fin-add{font-size:12px;padding:6px 12px;}
+.fin-calc{font-size:12px;color:var(--text2);white-space:nowrap;}
+.fin-dim{color:var(--text3);} .fin-ok{color:var(--teal);} .fin-bad{color:var(--red);}
+.fin-note{font-size:11.5px;color:var(--text3);line-height:1.55;margin-top:10px;}
+.fin-flow{display:flex;flex-direction:column;gap:7px;}
+.fin-bar-row{display:grid;grid-template-columns:minmax(90px,1.2fr) 2fr auto 36px;gap:8px;align-items:center;font-size:12.5px;color:var(--text2);}
+.fin-bar{height:8px;background:var(--navy4);border-radius:4px;overflow:hidden;}
+.fin-bar span{display:block;height:100%;background:var(--brass);border-radius:4px;}
+.fin-bar-left .fin-bar span{background:var(--teal2);}
+.fin-bar-left{color:var(--text);font-weight:600;border-top:0.5px solid var(--border);padding-top:7px;}
+.fin-bar-v{text-align:right;font-variant-numeric:tabular-nums;}
+.fin-bar-p{text-align:right;font-size:11px;font-family:var(--font-mono);color:var(--text3);}
+.fin-progress{height:10px;background:var(--navy4);border-radius:5px;overflow:hidden;margin:16px 0 10px;}
+.fin-progress-fill{height:100%;background:var(--teal2);border-radius:5px;transition:width .3s;}
+.fin-plan{font-size:13px;color:var(--text2);line-height:1.7;}
+.fin-gate{max-width:460px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;font-size:13.5px;color:var(--text2);line-height:1.6;}
+.fin-loading{color:var(--text3);font-family:var(--font-mono);font-size:12px;padding:20px 0;}
+.fin-blurred .fin-money{filter:blur(7px);user-select:none;}
 </style>
 </head>
 <body>
@@ -1924,6 +1977,10 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
       <button class="nav-tab" onclick="switchPanel('briefing')" id="tab-briefing">
         <i class="ti ti-sun"></i> Daily Briefing
         <span class="model-badge sonnet-badge">Sonnet</span>
+      </button>
+      <button class="nav-tab" onclick="switchPanel('finance')" id="tab-finance">
+        <i class="ti ti-report-money"></i> Finances
+        <i class="ti ti-lock" style="margin-left:auto;font-size:12px;"></i>
       </button>
     </div>
 
@@ -2448,6 +2505,11 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
       </div>
     </div>
 
+    <!-- ── FINANCES PANEL (private; data lives in the gemma-finance Worker) ── -->
+    <div class="panel" id="panel-finance">
+      <div class="workspace" id="financeWorkspace"></div>
+    </div>
+
   </div><!-- /main -->
 
 <!-- ── WAKE WORD INDICATOR ── -->
@@ -2579,6 +2641,7 @@ canvas.amelia-orb{display:block; flex-shrink:0;}
 
 </div><!-- /app -->
 
+<script src="finances.js"></script>
 <script>
 // ── CONFIG ──
 const MODEL_SONNET = 'claude-sonnet-5-5';
@@ -2658,6 +2721,7 @@ async function onGoogleCredential(resp) {
     if (!r.ok) { showLockError(data.error?.message || ('Sign-in failed (' + r.status + ').')); return; }
     session = data;
     try { localStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+    if (window.financeAuth) window.financeAuth(resp.credential);
     enterApp();
   } catch(e) {
     showLockError('Could not reach Gemma\'s server. Check your connection and try again.');
@@ -2695,6 +2759,7 @@ function sessionExpired() {
 function signOut() {
   session = null; history = []; streaming = false;
   try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+  if (window.financeSignOut) window.financeSignOut();
   window.speechSynthesis.cancel();
   stopMic();
   stopWakeWord();
@@ -2721,6 +2786,10 @@ function switchPanel(name) {
   if (name === 'briefing' && !briefingGenerated) generateBriefing();
   if (name === 'litmap') renderLitMap();
   if (name === 'today') renderToday();
+  if (name === 'finance') {
+    document.getElementById('modelIndicator').textContent = 'private · no AI';
+    if (window.financeOpen) window.financeOpen();
+  }
 }
 
 // ── PERSONA ──
