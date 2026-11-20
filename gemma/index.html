@@ -1930,6 +1930,23 @@ select.fin-cell{cursor:pointer;} select.fin-cell option{background:var(--navy3);
 .fin-qa-lab{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);color:var(--text3);}
 .fin-accts{min-width:1050px;} .fin-last4{width:70px;font-variant-numeric:tabular-nums;}
 @media (max-width:760px){.fin-qa-lab{width:100%;flex:1 1 100%;}.fin-qa-lab .fin-qa-sel{flex:1;}}
+.fin-due-row{display:grid;grid-template-columns:170px 1fr auto auto;gap:12px;align-items:center;padding:10px 4px;border-bottom:0.5px solid var(--border);}
+.fin-due-row:last-of-type{border-bottom:none;}
+.fin-due-row.late{background:rgba(255,122,138,0.06);border-radius:8px;}
+.fin-due-date{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--text);}
+.fin-due-name{font-size:13.5px;color:var(--text);}
+.fin-due-amt{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text);}
+.fin-due-act{display:flex;align-items:center;gap:8px;}
+.fin-due-total{text-align:right;font-size:13px;color:var(--text2);padding-top:10px;}
+.fin-badge{display:inline-block;width:fit-content;font-size:10.5px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;background:var(--navy4);color:var(--text2);}
+.fin-badge.warn{background:rgba(242,184,92,0.15);color:var(--amber);}
+.fin-badge.bad{background:rgba(255,122,138,0.15);color:var(--red);}
+.fin-badge.auto{background:rgba(157,140,255,0.15);color:var(--brass2);}
+.fin-pay{padding:6px 12px;font-size:12px;}
+.fin-linkbtn{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;padding:0;font-family:var(--font-body);}
+.fin-linkbtn:hover{color:var(--text);}
+.fin-bills{min-width:1300px;} .fin-bills td:nth-child(2){min-width:135px;} .fin-day{width:70px;text-align:center;}
+@media (max-width:760px){.fin-due-row{grid-template-columns:1fr auto;}.fin-due-date{grid-column:1/-1;flex-direction:row;align-items:center;gap:8px;}.fin-due-act{grid-column:1/-1;}}
 .fin-blurred .fin-money{filter:blur(7px);user-select:none;}
 .fin-blurred input.fin-money{filter:none;color:transparent;}
 .fin-blurred input.fin-money:focus{color:var(--text);}

@@ -162,6 +162,7 @@
     d.debts = d.debts || [];
     d.savings = Object.assign({ goal: null, targetDate: '', entries: [] }, d.savings || {});
     d.transactions = d.transactions || [];
+    d.debts.forEach(x => { if (!x.id) x.id = uid(); });
     if (!Array.isArray(d.accounts)) {
       d.accounts = [
         { inst: 'SECU', name: "Ashley's Allowance", type: 'Checking' },
@@ -173,7 +174,14 @@
       ].map(a => Object.assign({ last4: '', balance: null, asOf: '', notes: '' }, a));
     }
     d.accounts.forEach(x => { if (!x.id) x.id = uid(); });
-    d.debts.forEach(x => { if (!x.id) x.id = uid(); });
+    if (!Array.isArray(d.bills)) {
+      // Start the tracker from what's already in the debt tracker and budget
+      d.bills = d.debts.map(x => ({ name: x.name, kind: 'Debt payment', debtId: x.id, amount: x.payment == null ? null : x.payment }))
+        .concat(d.budget.expenses.filter(x => x.cat !== 'Food' && x.cat !== 'Transportation' && x.name)
+          .map(x => ({ name: x.name, kind: 'Bill', cat: x.cat || 'Other', amount: x.amount == null ? null : x.amount })))
+        .map(b => Object.assign({ dueDay: null, freq: 'Monthly', startMonth: 1, autopay: false, accountId: '', paid: {} }, b));
+    }
+    d.bills.forEach(x => { if (!x.id) x.id = uid(); if (!x.paid) x.paid = {}; });
     return d;
   }
 
@@ -273,7 +281,7 @@
 
   // ── rendering ──
   function cellNum(path, v, extra) {
-    return '<input class="fin-cell fin-num fin-money" type="number" inputmode="decimal" step="0.01" data-path="' + path + '" data-type="num" value="' + (v == null ? '' : esc(v)) + '" placeholder="0.00"' + (extra || '') + '>';
+    return '<input class="fin-cell fin-num fin-money" type="number" inputmode="decimal" step="0.01" data-path="' + path + '" data-type="num" value="' + (v == null ? '' : esc(v)) + '"' + (extra && extra.indexOf('placeholder') >= 0 ? '' : ' placeholder="0.00"') + (extra || '') + '>';
   }
   function cellPct(path, v) {
     return '<input class="fin-cell fin-num" type="number" inputmode="decimal" step="0.01" data-path="' + path + '" data-type="num" value="' + (v == null ? '' : esc(v)) + '" placeholder="0.00">';
@@ -334,7 +342,7 @@
         kpi('Monthly income', 'finKInc') + kpi('Bills + debt payments', 'finKOut') + kpi('Left for savings', 'finKLeft') + kpi('Total debt', 'finKDebt') + kpi('Cash in accounts', 'finKCash') + kpi('Saved toward goal', 'finKSaved') +
       '</div>' +
 
-      quickAddHTML() + monthHTML() + accountsHTML() +
+      dueSoonHTML() + quickAddHTML() + monthHTML() + accountsHTML() + billsHTML() +
 
       // budget
       '<div class="ws-section"><div class="ws-section-title">Monthly budget · base plan (2 scheduled CCH shifts)</div>' +
@@ -502,12 +510,19 @@
       const type = el.dataset.type;
       const v = type === 'num' ? (el.value === '' ? null : parseFloat(el.value)) : type === 'bool' ? el.checked : el.value;
       setPath(el.dataset.path, v);
+      if (e.type === 'change' && /^bills\.\d+\./.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^accounts\.\d+\.(name|inst|last4)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId|accountId|toAccountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       updateDerived();
       queueSave();
     };
     ws.onclick = (e) => {
+      const bp = e.target.closest('[data-billpay]');
+      if (bp) { billPay(+bp.dataset.billpay, true); return; }
+      const bm = e.target.closest('[data-billmark]');
+      if (bm) { billPay(+bm.dataset.billmark, false); return; }
+      const bu = e.target.closest('[data-billundo]');
+      if (bu) { billUndo(+bu.dataset.billundo); return; }
       const qt = e.target.closest('[data-qatype]');
       if (qt) { qaType = qt.dataset.qatype; ws.querySelectorAll('[data-qatype]').forEach(b => b.classList.toggle('on', b === qt)); setQAFields(); $('qaAmount').focus(); return; }
       if (e.target.closest('#qaSave')) { qaSave(); return; }
@@ -518,11 +533,12 @@
           'budget.income': { name: '', amount: null },
           'budget.expenses': { name: '', cat: 'Other', amount: null },
           'debts': { name: '', lender: '', balance: null, rate: null, payment: null, inBudget: true },
+          'bills': { name: '', kind: 'Bill', cat: 'Utilities', amount: null, dueDay: null, freq: 'Monthly', startMonth: 1, autopay: false, accountId: '', paid: {} },
           'accounts': { inst: 'SECU', name: '', type: 'Savings', last4: '', balance: null, asOf: today, notes: '' },
           'extraShifts': { date: today, amount: null, dest: 'Savings', note: '' },
           'savings.entries': { date: today, amount: null, note: '' }
         }[add.dataset.add];
-        if (add.dataset.add === 'debts' || add.dataset.add === 'accounts') blank.id = uid();
+        if (['debts', 'accounts', 'bills'].includes(add.dataset.add)) blank.id = uid();
         list.push(blank); render(); queueSave();
         const rows = ws.querySelectorAll('[data-path^="' + add.dataset.add + '.' + (list.length - 1) + '."]');
         if (rows[0]) rows[0].focus();
@@ -605,6 +621,118 @@
     return out;
   }
 
+  // ── due dates ──
+  const FREQ = { 'Monthly': 1, 'Every 2 months': 2, 'Quarterly': 3, 'Every 6 months': 6, 'Yearly': 12 };
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function ymKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function dueOn(y, m, day) { const last = new Date(y, m + 1, 0).getDate(); return new Date(y, m, Math.min(day, last)); }
+  function isPaid(b, key) {
+    const p = b.paid && b.paid[key]; if (!p) return false;
+    if (p.txId && !data.transactions.some(t => t.id === p.txId)) return false;   // its entry was deleted
+    return true;
+  }
+  function billStatus(b) {
+    const day = parseInt(b.dueDay, 10); if (!day || day < 1 || day > 31) return null;
+    const iv = FREQ[b.freq] || 1, start = ((parseInt(b.startMonth, 10) || 1) - 1);
+    const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let y = now.getFullYear(), m = now.getMonth();
+    for (let k = 0; k < 12 && iv > 1 && (((m - start) % iv) + iv) % iv !== 0; k++) { m--; if (m < 0) { m = 11; y--; } }
+    let due = dueOn(y, m, day), key = ymKey(due);
+    if (isPaid(b, key)) { m += iv; while (m > 11) { m -= 12; y++; } due = dueOn(y, m, day); key = ymKey(due); }
+    return { due, key, days: Math.round((due - today) / 864e5), paid: isPaid(b, key) };
+  }
+  function billAmount(b) {
+    if (b.amount != null && b.amount !== '') return num(b.amount);
+    if (b.debtId) { const d = data.debts.find(x => x.id === b.debtId); if (d) return num(d.payment); }
+    return 0;
+  }
+  function dueLabel(st) {
+    if (st.days < 0) return '<span class="fin-badge bad">' + (-st.days) + ' day' + (st.days === -1 ? '' : 's') + ' late</span>';
+    if (st.days === 0) return '<span class="fin-badge warn">due today</span>';
+    if (st.days <= 3) return '<span class="fin-badge warn">in ' + st.days + ' day' + (st.days === 1 ? '' : 's') + '</span>';
+    return '<span class="fin-badge">in ' + st.days + ' days</span>';
+  }
+  function lastPaid(b) {
+    const keys = Object.keys(b.paid || {}).filter(k => isPaid(b, k)).sort();
+    return keys.length ? { key: keys[keys.length - 1], p: b.paid[keys[keys.length - 1]] } : null;
+  }
+
+  function billPay(i, log) {
+    const b = data.bills[i], st = billStatus(b); if (!st) return;
+    const entry = { date: localDate() };
+    if (log) {
+      const amt = billAmount(b);
+      if (!amt) { alert('Enter the amount for ' + (b.name || 'this bill') + ' first.'); return; }
+      const tx = { id: uid(), date: localDate(), type: b.kind === 'Debt payment' ? 'Debt payment' : 'Bill', amount: amt, note: (b.name || '') + ' (' + MONTHS[st.due.getMonth()] + ' due)' };
+      if (tx.type === 'Bill') tx.cat = b.cat || 'Other'; else tx.debtId = b.debtId;
+      if (b.accountId) tx.accountId = b.accountId;
+      data.transactions.push(tx); entry.txId = tx.id;
+    }
+    b.paid[st.key] = entry;
+    render(); queueSave();
+  }
+  function billUndo(i) {
+    const b = data.bills[i], lp = lastPaid(b); if (!lp) return;
+    if (!confirm('Undo "paid" for ' + (b.name || 'this bill') + ' (' + lp.key + ')' + (lp.p.txId ? ' and remove its Quick Add entry' : '') + '?')) return;
+    if (lp.p.txId) data.transactions = data.transactions.filter(t => t.id !== lp.p.txId);
+    delete b.paid[lp.key];
+    render(); queueSave();
+  }
+
+  function dueSoonHTML() {
+    const items = data.bills.map((b, i) => ({ b, i, st: billStatus(b) })).filter(x => x.st && !x.st.paid && x.st.days <= 14)
+      .sort((a, c) => a.st.days - c.st.days);
+    const unset = data.bills.filter(b => !billStatus(b)).length;
+    const rows = items.map(({ b, i, st }) => {
+      const acct = data.accounts.find(a => a.id === b.accountId);
+      return '<div class="fin-due-row' + (st.days < 0 ? ' late' : '') + '">' +
+        '<div class="fin-due-date"><b>' + st.due.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + '</b>' + dueLabel(st) + '</div>' +
+        '<div class="fin-due-name">' + esc(b.name || '(unnamed)') + (b.autopay ? ' <span class="fin-badge auto">autopay</span>' : '') +
+          (acct ? '<div class="fin-dim" style="font-size:11.5px">from ' + esc(acctLabel(acct)) + '</div>' : '') + '</div>' +
+        '<div class="fin-due-amt fin-money">' + $$(billAmount(b)) + '</div>' +
+        '<div class="fin-due-act"><button class="btn btn-primary fin-pay" data-billpay="' + i + '" title="Mark paid and log it in Quick Add"><i class="ti ti-check"></i> Paid</button>' +
+        '<button class="fin-linkbtn" data-billmark="' + i + '" title="Mark paid without adding a Quick Add entry (already logged)">mark only</button></div></div>';
+    }).join('');
+    const total = items.reduce((s, x) => s + billAmount(x.b), 0);
+    return '<div class="ws-section"><div class="ws-section-title">Due soon · overdue and next 14 days</div>' +
+      '<div class="ws-card fin-card">' +
+      (rows || '<div class="fin-dim" style="font-size:13px">' + (data.bills.length ? 'Nothing due in the next 14 days.' : 'Add bills in "Bills & due dates" below.') + '</div>') +
+      (rows ? '<div class="fin-due-total">Total due: <b class="fin-money">' + $$(total) + '</b></div>' : '') +
+      (unset ? '<div class="fin-note">' + unset + ' bill' + (unset === 1 ? '' : 's') + ' in the tracker still need a due day.</div>' : '') +
+      '</div></div>';
+  }
+
+  function billsHTML() {
+    const kinds = ['Bill', 'Debt payment'];
+    const rows = data.bills.map((b, i) => {
+      const st = billStatus(b), lp = lastPaid(b);
+      const detail = b.kind === 'Debt payment' ? selectVL('bills.' + i + '.debtId', b.debtId || '', [['', 'pick loan']].concat(debtPairs()))
+        : cellSelect('bills.' + i + '.cat', b.cat || 'Other', CATS);
+      const amtPh = b.debtId && (b.amount == null || b.amount === '') ? ' placeholder="' + esc(billAmount(b).toFixed(2)) + '"' : '';
+      return '<tr>' +
+        '<td>' + cellText('bills.' + i + '.name', b.name, 'Bill name') + '</td>' +
+        '<td>' + cellSelect('bills.' + i + '.kind', b.kind || 'Bill', kinds) + '</td>' +
+        '<td>' + detail + '</td>' +
+        '<td class="r">' + cellNum('bills.' + i + '.amount', b.amount, amtPh) + '</td>' +
+        '<td><input class="fin-cell fin-day" type="number" min="1" max="31" inputmode="numeric" data-path="bills.' + i + '.dueDay" data-type="num" value="' + (b.dueDay == null ? '' : esc(b.dueDay)) + '" placeholder="day"></td>' +
+        '<td>' + cellSelect('bills.' + i + '.freq', b.freq || 'Monthly', Object.keys(FREQ)) + '</td>' +
+        '<td>' + ((FREQ[b.freq] || 1) > 1 ? selectVL('bills.' + i + '.startMonth', String(b.startMonth || 1), MONTHS.map((n, k) => [String(k + 1), n])) : '<span class="fin-dim" style="padding-left:8px">—</span>') + '</td>' +
+        '<td class="c"><input type="checkbox" class="fin-check" data-path="bills.' + i + '.autopay" data-type="bool"' + (b.autopay ? ' checked' : '') + '></td>' +
+        '<td>' + selectVL('bills.' + i + '.accountId', b.accountId || '', [['', '—']].concat(acctPairs())) + '</td>' +
+        '<td class="fin-calc">' + (st ? (st.paid ? '<span class="fin-ok">paid</span>' : '<b>' + st.due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</b> ' + dueLabel(st))
+              : '<span class="fin-dim">set due day</span>') +
+          (lp ? '<div class="fin-dim" style="font-size:11px">last paid ' + esc(lp.p.date || lp.key) + ' · <button class="fin-linkbtn" data-billundo="' + i + '">undo</button></div>' : '') + '</td>' +
+        '<td>' + (st && !st.paid ? '<button class="btn btn-secondary fin-pay" data-billpay="' + i + '">Paid</button>' : '') + '</td>' +
+        '<td>' + delBtn('bills', i) + '</td></tr>';
+    }).join('');
+    return '<div class="ws-section"><div class="ws-section-title">Bills &amp; due dates</div>' +
+      '<div class="ws-card fin-card fin-scroll">' +
+        '<table class="fin-table fin-bills"><thead><tr><th>Bill</th><th>Kind</th><th>Category / loan</th><th class="r">Amount</th><th>Due day</th><th>Repeats</th><th>Starting</th><th class="c">Autopay</th><th>Pay from</th><th>Next due</th><th></th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        addBtn('bills', 'Add bill') +
+        '<div class="fin-note">Due day is the day of the month (use 31 for "last day"; shorter months use their last day). For quarterly, 6-month and yearly bills, "Starting" is the first month it\'s due in the year. <b>Paid</b> marks this cycle paid and logs it in Quick Add from the "Pay from" account; <b>mark only</b> skips the log if you already entered it. Logging a Debt payment in Quick Add marks that loan paid automatically. Loan amounts left blank use the payment from the Debt tracker.</div>' +
+      '</div></div>';
+  }
+
   function accountsHTML() {
     const rows = data.accounts.map((a, i) =>
       '<tr><td>' + cellText('accounts.' + i + '.inst', a.inst, 'Bank') + '</td>' +
@@ -671,11 +799,18 @@
     if ($('qaAcct').value) tx.accountId = $('qaAcct').value;
     if (T.dir === 'save' && $('qaTo').value) tx.toAccountId = $('qaTo').value;
     data.transactions.push(tx);
+    // A logged loan payment marks that loan's due date as paid
+    let marked = '';
+    if (T.debt) data.bills.forEach(b => {
+      if (b.debtId !== tx.debtId) return;
+      const st = billStatus(b);
+      if (st && !st.paid && st.days <= 20) { b.paid[st.key] = { txId: tx.id, date: tx.date }; marked = ' Marked ' + (b.name || 'the bill') + ' paid for ' + monthLabel(st.due) + '.'; }
+    });
     qaDate = tx.date;
     viewMonth = tx.date.slice(0, 7);
     render(); queueSave();
     const label = T.debt ? (data.debts.find(x => x.id === tx.debtId) || {}).name : (tx.cat || qaType);
-    const m = $('qaMsg'); m.textContent = 'Added ' + $$(tx.amount) + ' · ' + qaType + (T.cat || T.debt ? ' · ' + label : '') + '. Undo by deleting it below.'; m.dataset.kind = 'ok';
+    const m = $('qaMsg'); m.textContent = 'Added ' + $$(tx.amount) + ' · ' + qaType + (T.cat || T.debt ? ' · ' + label : '') + '.' + marked + ' Undo by deleting it below.'; m.dataset.kind = 'ok';
     $('qaAmount').focus();
   }
 
