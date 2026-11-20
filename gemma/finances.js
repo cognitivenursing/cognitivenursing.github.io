@@ -172,12 +172,12 @@
       if (Array.isArray(d.bills)) d.bills.forEach(b => { if ((b.name || '').trim() === 'Mortgage') b.name = 'Mortgage (incl. escrow)'; });
       d.migrations.hoiEscrow = true;
     }
-    if (!d.migrations.hoiEscrow2) {
+    if (!d.migrations.hoiEscrow3) {
       // Ashley confirmed homeowners insurance is paid through escrow: remove those rows even if filled in
-      const isHOI2 = x => /home\s*owners?['’]?\s*insurance/i.test(x.name || '');
+      const isHOI2 = x => /home\s*owner\S*\s*insurance/i.test(x.name || '');
       d.budget.expenses = d.budget.expenses.filter(x => !isHOI2(x));
       if (Array.isArray(d.bills)) d.bills = d.bills.filter(b => !isHOI2(b));
-      d.migrations.hoiEscrow2 = true;
+      d.migrations.hoiEscrow3 = true;
     }
     d.debts.forEach(x => {
       if (!x.id) x.id = uid();
