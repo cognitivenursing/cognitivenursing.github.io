@@ -172,6 +172,13 @@
       if (Array.isArray(d.bills)) d.bills.forEach(b => { if ((b.name || '').trim() === 'Mortgage') b.name = 'Mortgage (incl. escrow)'; });
       d.migrations.hoiEscrow = true;
     }
+    if (!d.migrations.hoiEscrow2) {
+      // Ashley confirmed homeowners insurance is paid through escrow: remove those rows even if filled in
+      const isHOI2 = x => /home\s*owners?['’]?\s*insurance/i.test(x.name || '');
+      d.budget.expenses = d.budget.expenses.filter(x => !isHOI2(x));
+      if (Array.isArray(d.bills)) d.bills = d.bills.filter(b => !isHOI2(b));
+      d.migrations.hoiEscrow2 = true;
+    }
     d.debts.forEach(x => {
       if (!x.id) x.id = uid();
       if (!x.group) x.group = /camper|truck|jeep|\bcar\b|auto|vehicle|\brv\b|boat|motorcycle/i.test((x.name || '') + ' ' + (x.lender || '')) ? 'vehicle' : 'card';
