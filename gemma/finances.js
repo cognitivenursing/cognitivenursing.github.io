@@ -21,13 +21,12 @@
           { name: 'CCH: 2 scheduled shifts (take-home)', amount: null }
         ],
         expenses: [
-          { name: 'Mortgage', cat: 'Housing', amount: null },
+          { name: 'Mortgage (incl. escrow)', cat: 'Housing', amount: null },
           { name: 'Electric', cat: 'Utilities', amount: null },
           { name: 'Water / sewer', cat: 'Utilities', amount: null },
           { name: 'Phone', cat: 'Phone & internet', amount: null },
           { name: 'Internet', cat: 'Phone & internet', amount: null },
           { name: 'Auto insurance', cat: 'Insurance', amount: null },
-          { name: 'Homeowners insurance', cat: 'Insurance', amount: null },
           { name: 'Groceries', cat: 'Food', amount: null },
           { name: 'Fuel', cat: 'Transportation', amount: null },
           { name: 'Subscriptions', cat: 'Subscriptions', amount: null }
@@ -163,6 +162,16 @@
     d.debts = d.debts || [];
     d.savings = Object.assign({ goal: null, targetDate: '', entries: [] }, d.savings || {});
     d.transactions = d.transactions || [];
+    // Homeowners insurance is paid through mortgage escrow: drop the separate starter line once
+    d.migrations = d.migrations || {};
+    if (!d.migrations.hoiEscrow) {
+      const isHOI = x => /^homeowners insurance$/i.test((x.name || '').trim());
+      d.budget.expenses = d.budget.expenses.filter(x => !(isHOI(x) && (x.amount == null || x.amount === '')));
+      if (Array.isArray(d.bills)) d.bills = d.bills.filter(b => !(isHOI(b) && !b.dueDay && (b.amount == null || b.amount === '')));
+      d.budget.expenses.forEach(x => { if ((x.name || '').trim() === 'Mortgage') x.name = 'Mortgage (incl. escrow)'; });
+      if (Array.isArray(d.bills)) d.bills.forEach(b => { if ((b.name || '').trim() === 'Mortgage') b.name = 'Mortgage (incl. escrow)'; });
+      d.migrations.hoiEscrow = true;
+    }
     d.debts.forEach(x => { if (!x.id) x.id = uid(); });
     if (!Array.isArray(d.accounts)) {
       d.accounts = [
