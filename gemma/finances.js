@@ -49,6 +49,21 @@
   let saveTimer = null, saving = false, dirty = false, loaded = false, loading = false;
   let blurred = true;
 
+  // Quick Add / transactions
+  const TX_TYPES = {
+    'Paycheck':     { dir: 'in',   icon: 'ti-cash' },
+    'Extra shift':  { dir: 'in',   icon: 'ti-stethoscope' },
+    'Other income': { dir: 'in',   icon: 'ti-plus' },
+    'Purchase':     { dir: 'out',  icon: 'ti-shopping-cart', cat: true },
+    'Bill':         { dir: 'out',  icon: 'ti-file-invoice', cat: true },
+    'Debt payment': { dir: 'out',  icon: 'ti-credit-card', debt: true },
+    'To savings':   { dir: 'save', icon: 'ti-pig-money' }
+  };
+  function localDate(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+  let viewMonth = localDate().slice(0, 7);
+  let qaType = 'Purchase', qaDate = '', qaCat = 'Food', qaDebt = '', focusQA = false;
+
   function loadFinSession() {
     try {
       const s = JSON.parse(localStorage.getItem(FIN_SESSION_KEY) || 'null');
@@ -113,6 +128,7 @@
   function financeOpen() {
     if (!finSession) finSession = loadFinSession();
     if (!finSession) { renderGate(''); return; }
+    if (location.hash === '#quickadd') focusQA = true;
     if (!loaded) loadData(); else render();
   }
 
@@ -126,7 +142,7 @@
       if (r.status === 401) { renderGate('Your finance sign-in expired. Sign in again.'); return; }
       if (!r.ok) { renderGate(r.body.error || ('Could not load (' + r.status + ')')); return; }
       if (r.body && r.body.data) { data = normalize(r.body.data); updatedAt = r.body.updatedAt; }
-      else { data = template(); updatedAt = null; }
+      else { data = normalize(template()); updatedAt = null; }
       loaded = true; dirty = false;
       render();
       setStatus(updatedAt ? 'Saved ' + new Date(updatedAt).toLocaleString() : 'New. Nothing saved yet', 'ok');
@@ -144,6 +160,8 @@
     d.extraShifts = d.extraShifts || [];
     d.debts = d.debts || [];
     d.savings = Object.assign({ goal: null, targetDate: '', entries: [] }, d.savings || {});
+    d.transactions = d.transactions || [];
+    d.debts.forEach(x => { if (!x.id) x.id = uid(); });
     return d;
   }
 
@@ -203,10 +221,29 @@
     const debtPay = data.debts.filter(d => d.inBudget !== false).reduce((s, d) => s + num(d.payment), 0);
     const left = inc - exp - debtPay;
     const debtBal = data.debts.reduce((s, d) => s + num(d.balance), 0);
-    const saved = data.savings.entries.reduce((s, e) => s + num(e.amount), 0);
+    const saved = data.savings.entries.reduce((s, e) => s + num(e.amount), 0) +
+      data.transactions.filter(t => t.type === 'To savings').reduce((s, t) => s + num(t.amount), 0);
     const year = String(new Date().getFullYear());
-    const shiftsYTD = data.extraShifts.filter(s => (s.date || '').startsWith(year)).reduce((s, x) => s + num(x.amount), 0);
+    const shiftsYTD = data.extraShifts.filter(s => (s.date || '').startsWith(year)).reduce((s, x) => s + num(x.amount), 0) +
+      data.transactions.filter(t => t.type === 'Extra shift' && (t.date || '').startsWith(year)).reduce((s, t) => s + num(t.amount), 0);
     return { inc, exp, debtPay, left, debtBal, saved, shiftsYTD };
+  }
+
+  function monthStats(month) {
+    const st = { inc: 0, out: 0, save: 0, byCat: {}, byDebt: {} };
+    data.transactions.forEach(t => {
+      if (!(t.date || '').startsWith(month)) return;
+      const T = TX_TYPES[t.type] || TX_TYPES['Purchase'], a = num(t.amount);
+      if (T.dir === 'in') st.inc += a;
+      else if (T.dir === 'save') st.save += a;
+      else {
+        st.out += a;
+        const c = T.debt ? 'Debt payments' : (t.cat || 'Other');
+        st.byCat[c] = (st.byCat[c] || 0) + a;
+        if (T.debt && t.debtId) st.byDebt[t.debtId] = (st.byDebt[t.debtId] || 0) + a;
+      }
+    });
+    return st;
   }
 
   function savingsPlan(t) {
@@ -285,6 +322,8 @@
         kpi('Monthly income', 'finKInc') + kpi('Bills + debt payments', 'finKOut') + kpi('Left for savings', 'finKLeft') + kpi('Total debt', 'finKDebt') + kpi('Saved toward goal', 'finKSaved') +
       '</div>' +
 
+      quickAddHTML() + monthHTML() +
+
       // budget
       '<div class="ws-section"><div class="ws-section-title">Monthly budget · base plan (2 scheduled CCH shifts)</div>' +
         '<div class="fin-grid2">' +
@@ -334,12 +373,14 @@
         '<div class="ws-card fin-card">' +
           '<table class="fin-table"><thead><tr><th>Date</th><th class="r">Take-home</th><th>Sent to</th><th>Note</th><th></th></tr></thead><tbody>' + shiftRows + '</tbody>' +
           '<tfoot><tr><td>This year</td><td class="r fin-money" id="finTShifts"></td><td colspan="3" id="finShiftSplit"></td></tr></tfoot></table>' + addBtn('extraShifts', 'Log extra shift') +
-          '<div class="fin-note">If you put shift money into savings, also add it under Deposits so it counts toward the goal.</div>' +
+          '<div class="fin-note">Shifts logged with Quick Add count in "This year" automatically; this table is for anything you want to track separately. If shift money goes to savings, log it as "To savings" in Quick Add so it counts toward the goal.</div>' +
         '</div>' +
       '</div>';
 
     applyBlur();
     wire();
+    setQAFields();
+    if (focusQA) { focusQA = false; const a = $('qaAmount'); if (a) { $('finQA').scrollIntoView({ block: 'start' }); a.focus(); } }
     updateDerived();
     setStatus(dirty ? 'Unsaved changes…' : (updatedAt ? 'Saved ' + new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'New. Nothing saved yet'), dirty ? 'pending' : 'ok');
   }
@@ -382,7 +423,9 @@
       if (a.never) { el.innerHTML = '<span class="fin-bad">Payment doesn\'t cover interest (<span class="fin-money">' + $$(a.monthlyInterest) + '</span>/mo)</span>'; unknown = true; return; }
       const end = addMonths(new Date(), a.months);
       if (!lastPayoff || end > lastPayoff) lastPayoff = end;
-      el.innerHTML = '<b>' + monthLabel(end) + '</b> <span class="fin-dim">· ' + a.months + ' mo · <span class="fin-money">' + $$(a.interest) + '</span> interest</span>';
+      const paidMo = monthStats(localDate().slice(0, 7)).byDebt[x.id] || 0;
+      el.innerHTML = '<b>' + monthLabel(end) + '</b> <span class="fin-dim">· ' + a.months + ' mo · <span class="fin-money">' + $$(a.interest) + '</span> interest</span>' +
+        (paidMo ? ' <span class="fin-ok">· paid this month <span class="fin-money">' + $$(paidMo) + '</span></span>' : '');
     });
     const df = $('finDebtFree');
     if (df) df.innerHTML = lastPayoff ? ('All listed debts paid: <b>' + monthLabel(lastPayoff) + '</b>' + (unknown ? ' <span class="fin-dim">(some rows incomplete)</span>' : '')) : '';
@@ -437,13 +480,17 @@
       const type = el.dataset.type;
       const v = type === 'num' ? (el.value === '' ? null : parseFloat(el.value)) : type === 'bool' ? el.checked : el.value;
       setPath(el.dataset.path, v);
+      if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       updateDerived();
       queueSave();
     };
     ws.onclick = (e) => {
+      const qt = e.target.closest('[data-qatype]');
+      if (qt) { qaType = qt.dataset.qatype; ws.querySelectorAll('[data-qatype]').forEach(b => b.classList.toggle('on', b === qt)); setQAFields(); $('qaAmount').focus(); return; }
+      if (e.target.closest('#qaSave')) { qaSave(); return; }
       const add = e.target.closest('[data-add]');
       if (add) {
-        const list = getList(add.dataset.add), today = new Date().toISOString().slice(0, 10);
+        const list = getList(add.dataset.add), today = localDate();
         const blank = {
           'budget.income': { name: '', amount: null },
           'budget.expenses': { name: '', cat: 'Other', amount: null },
@@ -464,6 +511,11 @@
         list.splice(i, 1); render(); queueSave();
       }
     };
+    $('finMonth').onchange = (e) => { if (e.target.value) { viewMonth = e.target.value; render(); } };
+    ['qaAmount', 'qaNote'].forEach(id => { $(id).onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); qaSave(); } }; });
+    $('qaDate').onchange = (e) => { qaDate = e.target.value; };
+    $('qaCat').onchange = (e) => { qaCat = e.target.value; };
+    $('qaDebt').onchange = (e) => { qaDebt = e.target.value; };
     $('finBlurBtn').onclick = () => {
       blurred = !blurred;
       try { localStorage.setItem(FIN_BLUR_KEY, blurred ? '1' : '0'); } catch (e) {}
@@ -482,7 +534,7 @@
     $('finExport').onclick = () => {
       const blob = new Blob([JSON.stringify({ data, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'gemma-finances-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+      a.download = 'gemma-finances-' + localDate() + '.json'; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
     $('finImport').onchange = async (e) => {
@@ -500,6 +552,105 @@
       if (r.ok && r.body && r.body.data) { data = normalize(r.body.data); render(); queueSave(); }
       else alert('Could not load that backup.');
     };
+  }
+
+  function selectVL(path, value, pairs, cls) {
+    return '<select class="' + (cls || 'fin-cell') + '"' + (path ? ' data-path="' + path + '" data-type="text"' : '') + '>' +
+      pairs.map(p => '<option value="' + esc(p[0]) + '"' + (p[0] === value ? ' selected' : '') + '>' + esc(p[1]) + '</option>').join('') + '</select>';
+  }
+  function debtPairs() { return data.debts.map(x => [x.id, x.name || '(unnamed debt)']); }
+
+  function quickAddHTML() {
+    if (!qaDebt && data.debts[0]) qaDebt = data.debts[0].id;
+    return '<div class="ws-section" id="finQA"><div class="ws-section-title">Quick add · log money as it moves</div>' +
+      '<div class="ws-card fin-card">' +
+        '<div class="fin-qa-types">' + Object.keys(TX_TYPES).map(k =>
+          '<button class="fin-qa-type' + (k === qaType ? ' on' : '') + '" data-qatype="' + esc(k) + '"><i class="ti ' + TX_TYPES[k].icon + '"></i> ' + esc(k) + '</button>').join('') + '</div>' +
+        '<div class="fin-qa-row">' +
+          '<input id="qaAmount" class="text-input fin-qa-amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" aria-label="Amount">' +
+          '<input id="qaDate" class="text-input fin-qa-date" type="date" value="' + esc(qaDate || localDate()) + '" aria-label="Date">' +
+          selectVL('', qaCat, CATS.map(c => [c, c]), 'text-input fin-qa-sel" id="qaCat') +
+          selectVL('', qaDebt, debtPairs(), 'text-input fin-qa-sel" id="qaDebt') +
+          '<input id="qaNote" class="text-input fin-qa-note" type="text" placeholder="Note (store, what, who)" aria-label="Note">' +
+          '<button class="btn btn-primary" id="qaSave"><i class="ti ti-plus"></i> Add</button>' +
+        '</div>' +
+        '<div class="fin-qa-msg" id="qaMsg"></div>' +
+      '</div></div>';
+  }
+
+  function setQAFields() {
+    const T = TX_TYPES[qaType] || {};
+    const c = $('qaCat'), d = $('qaDebt'); if (!c || !d) return;
+    c.style.display = T.cat ? '' : 'none';
+    d.style.display = T.debt ? '' : 'none';
+    if (qaType === 'Bill' && qaCat === 'Food') { qaCat = 'Utilities'; c.value = qaCat; }
+  }
+
+  function qaSave() {
+    const amt = parseFloat($('qaAmount').value);
+    const msg = $('qaMsg');
+    if (!isFinite(amt) || amt <= 0) { msg.textContent = 'Enter an amount first.'; msg.dataset.kind = 'err'; $('qaAmount').focus(); return; }
+    const T = TX_TYPES[qaType];
+    if (T.debt && !data.debts.length) { msg.textContent = 'Add the debt in the Debt tracker first.'; msg.dataset.kind = 'err'; return; }
+    const tx = { id: uid(), date: $('qaDate').value || localDate(), type: qaType, amount: Math.round(amt * 100) / 100, note: $('qaNote').value.trim() };
+    if (T.cat) tx.cat = $('qaCat').value;
+    if (T.debt) tx.debtId = $('qaDebt').value;
+    data.transactions.push(tx);
+    qaDate = tx.date;
+    viewMonth = tx.date.slice(0, 7);
+    render(); queueSave();
+    const label = T.debt ? (data.debts.find(x => x.id === tx.debtId) || {}).name : (tx.cat || qaType);
+    const m = $('qaMsg'); m.textContent = 'Added ' + $$(tx.amount) + ' · ' + qaType + (T.cat || T.debt ? ' · ' + label : '') + '. Undo by deleting it below.'; m.dataset.kind = 'ok';
+    $('qaAmount').focus();
+  }
+
+  function monthHTML() {
+    const st = monthStats(viewMonth), t = totals();
+    const [y, m] = viewMonth.split('-').map(Number);
+    const mLabel = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const planned = {};
+    data.budget.expenses.forEach(x => { const c = x.cat || 'Other'; planned[c] = (planned[c] || 0) + num(x.amount); });
+    if (t.debtPay) planned['Debt payments'] = t.debtPay;
+    const cats = [...new Set([...CATS, 'Debt payments'])].filter(c => (planned[c] || 0) > 0 || (st.byCat[c] || 0) > 0);
+    const catRows = cats.map(c => {
+      const p = planned[c] || 0, sp = st.byCat[c] || 0, left = p - sp, pct = p > 0 ? Math.min(100, sp / p * 100) : 100;
+      return '<tr><td>' + esc(c) + '</td><td class="r fin-money">' + $$(p) + '</td><td class="r fin-money">' + $$(sp) + '</td>' +
+        '<td class="r"><span class="fin-money ' + (left < 0 ? 'fin-bad' : '') + '">' + (left < 0 ? '−' + $$(-left) + ' over' : $$(left)) + '</span></td>' +
+        '<td style="width:22%"><span class="fin-bar' + (left < 0 ? ' fin-bar-over' : '') + '"><span style="width:' + pct.toFixed(1) + '%"></span></span></td></tr>';
+    }).join('');
+
+    const idx = data.transactions.map((x, i) => i).filter(i => (data.transactions[i].date || '').startsWith(viewMonth))
+      .sort((a, b) => (data.transactions[b].date || '').localeCompare(data.transactions[a].date || '') || b - a);
+    const typePairs = Object.keys(TX_TYPES).map(k => [k, k]);
+    const txRows = idx.map(i => {
+      const x = data.transactions[i], T = TX_TYPES[x.type] || {};
+      const detail = T.cat ? selectVL('transactions.' + i + '.cat', x.cat || 'Other', CATS.map(c => [c, c]))
+        : T.debt ? selectVL('transactions.' + i + '.debtId', x.debtId, debtPairs()) : '<span class="fin-dim" style="padding-left:8px">—</span>';
+      return '<tr class="fin-tx-' + (T.dir || 'out') + '"><td>' + cellDate('transactions.' + i + '.date', x.date) + '</td><td>' + selectVL('transactions.' + i + '.type', x.type, typePairs) + '</td>' +
+        '<td>' + detail + '</td><td class="r">' + cellNum('transactions.' + i + '.amount', x.amount) + '</td><td>' + cellText('transactions.' + i + '.note', x.note, '') + '</td><td>' + delBtn('transactions', i) + '</td></tr>';
+    }).join('');
+
+    const net = st.inc - st.out - st.save;
+    return '<div class="ws-section"><div class="fin-month-head"><div class="ws-section-title" style="margin:0">Following the money · ' + esc(mLabel) + '</div>' +
+        '<input type="month" class="text-input" id="finMonth" value="' + esc(viewMonth) + '" style="width:auto">' + '</div>' +
+      '<div class="fin-kpis fin-kpis-sm">' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Money in</div><div class="fin-kpi-v fin-money fin-ok">' + $$(st.inc) + '</div><div class="fin-kpi-s">plan ' + '<span class="fin-money">' + $$(t.inc) + '</span></div></div>' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Money out</div><div class="fin-kpi-v fin-money">' + $$(st.out) + '</div><div class="fin-kpi-s">plan <span class="fin-money">' + $$(t.exp + t.debtPay) + '</span></div></div>' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">To savings</div><div class="fin-kpi-v fin-money">' + $$(st.save) + '</div><div class="fin-kpi-s">plan <span class="fin-money">' + $$(Math.max(0, t.left)) + '</span></div></div>' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Not yet assigned</div><div class="fin-kpi-v fin-money" data-neg="' + (net < 0 ? '1' : '') + '">' + $$(net) + '</div><div class="fin-kpi-s">in − out − savings</div></div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="ws-card fin-card"><div class="fin-card-title">Spending vs plan</div>' +
+          (catRows ? '<table class="fin-table"><thead><tr><th>Category</th><th class="r">Plan</th><th class="r">Spent</th><th class="r">Left</th><th></th></tr></thead><tbody>' + catRows + '</tbody></table>'
+                   : '<div class="fin-dim" style="font-size:13px">Fill in the budget below and log purchases to see this.</div>') +
+        '</div>' +
+        '<div class="ws-card fin-card fin-scroll" style="margin-top:14px"><div class="fin-card-title">Entries (' + idx.length + ')</div>' +
+          (txRows ? '<table class="fin-table fin-tx"><thead><tr><th>Date</th><th>Type</th><th>Category / debt</th><th class="r">Amount</th><th>Note</th><th></th></tr></thead><tbody>' + txRows + '</tbody></table>'
+                  : '<div class="fin-dim" style="font-size:13px">Nothing logged for this month yet.</div>') +
+        '</div>' +
+      '</div>' +
+      '<div class="fin-note">Debt payments show as "paid this month" in the Debt tracker; update each balance from your lender statement, since the interest/principal split comes from the lender. "To savings" entries count toward the Savings goal automatically, as do "Extra shift" entries toward the shift total, so don\'t also add them to those tables.</div>' +
+    '</div>';
   }
 
   function renderGate(msg) {
