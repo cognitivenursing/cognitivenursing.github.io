@@ -62,7 +62,8 @@
   function localDate(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
   let viewMonth = localDate().slice(0, 7);
-  let qaType = 'Purchase', qaDate = '', qaCat = 'Food', qaDebt = '', focusQA = false;
+  let qaType = 'Purchase', qaDate = '', qaCat = 'Food', qaDebt = '', qaAcct = '', qaTo = '', focusQA = false;
+  const ACCT_TYPES = ['Checking', 'Savings', 'Money market', 'Share term certificate', 'IRA', 'Holiday / vacation savings', 'Other'];
 
   function loadFinSession() {
     try {
@@ -161,6 +162,17 @@
     d.debts = d.debts || [];
     d.savings = Object.assign({ goal: null, targetDate: '', entries: [] }, d.savings || {});
     d.transactions = d.transactions || [];
+    if (!Array.isArray(d.accounts)) {
+      d.accounts = [
+        { inst: 'SECU', name: "Ashley's Allowance", type: 'Checking' },
+        { inst: 'SECU', name: "Kim's Checking", type: 'Checking' },
+        { inst: 'SECU', name: 'Doctorate Account', type: 'Savings' },
+        { inst: 'SECU', name: 'Household Checking', type: 'Checking' },
+        { inst: 'SECU', name: 'Money Market', type: 'Money market' },
+        { inst: 'SECU', name: 'Share', type: 'Savings' }
+      ].map(a => Object.assign({ last4: '', balance: null, asOf: '', notes: '' }, a));
+    }
+    d.accounts.forEach(x => { if (!x.id) x.id = uid(); });
     d.debts.forEach(x => { if (!x.id) x.id = uid(); });
     return d;
   }
@@ -319,10 +331,10 @@
 
       // summary
       '<div class="fin-kpis">' +
-        kpi('Monthly income', 'finKInc') + kpi('Bills + debt payments', 'finKOut') + kpi('Left for savings', 'finKLeft') + kpi('Total debt', 'finKDebt') + kpi('Saved toward goal', 'finKSaved') +
+        kpi('Monthly income', 'finKInc') + kpi('Bills + debt payments', 'finKOut') + kpi('Left for savings', 'finKLeft') + kpi('Total debt', 'finKDebt') + kpi('Cash in accounts', 'finKCash') + kpi('Saved toward goal', 'finKSaved') +
       '</div>' +
 
-      quickAddHTML() + monthHTML() +
+      quickAddHTML() + monthHTML() + accountsHTML() +
 
       // budget
       '<div class="ws-section"><div class="ws-section-title">Monthly budget · base plan (2 scheduled CCH shifts)</div>' +
@@ -395,6 +407,16 @@
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     set('finKInc', $$(t.inc)); set('finKOut', $$(t.exp + t.debtPay)); set('finKLeft', $$(t.left));
     set('finKDebt', $$(t.debtBal)); set('finKSaved', $$(t.saved));
+    const est = acctEstimates(); let cash = 0, anyBal = false;
+    data.accounts.forEach((a, i) => {
+      const e = est[a.id], el = $('finAcctEst' + i);
+      if (e == null) { if (el) el.innerHTML = '<span class="fin-dim">enter balance</span>'; return; }
+      anyBal = true; cash += e.value;
+      if (el) el.innerHTML = '<b class="fin-money' + (e.value < 0 ? ' fin-bad' : '') + '">' + $$(e.value) + '</b>' +
+        (e.change ? ' <span class="fin-dim">(' + (e.change > 0 ? '+' : '−') + '<span class="fin-money">' + $$(Math.abs(e.change)) + '</span> logged since)</span>' : '');
+    });
+    set('finKCash', anyBal ? $$(cash) : '—'); set('finTAcct', $$(cash));
+    set('finTAcctBal', $$(data.accounts.reduce((s, a) => s + num(a.balance), 0)));
     const kl = $('finKLeft'); if (kl) kl.dataset.neg = t.left < 0 ? '1' : '';
     set('finTInc', $$(t.inc)); set('finTExp', $$(t.exp)); set('finTDebtPay', $$(t.debtPay));
     set('finTDebt', $$(t.debtBal)); set('finTDebtPay2', $$(data.debts.reduce((s, x) => s + num(x.payment), 0)));
@@ -480,7 +502,8 @@
       const type = el.dataset.type;
       const v = type === 'num' ? (el.value === '' ? null : parseFloat(el.value)) : type === 'bool' ? el.checked : el.value;
       setPath(el.dataset.path, v);
-      if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
+      if (e.type === 'change' && /^accounts\.\d+\.(name|inst|last4)$/.test(el.dataset.path)) { render(); queueSave(); return; }
+      if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId|accountId|toAccountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       updateDerived();
       queueSave();
     };
@@ -495,9 +518,11 @@
           'budget.income': { name: '', amount: null },
           'budget.expenses': { name: '', cat: 'Other', amount: null },
           'debts': { name: '', lender: '', balance: null, rate: null, payment: null, inBudget: true },
+          'accounts': { inst: 'SECU', name: '', type: 'Savings', last4: '', balance: null, asOf: today, notes: '' },
           'extraShifts': { date: today, amount: null, dest: 'Savings', note: '' },
           'savings.entries': { date: today, amount: null, note: '' }
         }[add.dataset.add];
+        if (add.dataset.add === 'debts' || add.dataset.add === 'accounts') blank.id = uid();
         list.push(blank); render(); queueSave();
         const rows = ws.querySelectorAll('[data-path^="' + add.dataset.add + '.' + (list.length - 1) + '."]');
         if (rows[0]) rows[0].focus();
@@ -516,6 +541,8 @@
     $('qaDate').onchange = (e) => { qaDate = e.target.value; };
     $('qaCat').onchange = (e) => { qaCat = e.target.value; };
     $('qaDebt').onchange = (e) => { qaDebt = e.target.value; };
+    $('qaAcct').onchange = (e) => { qaAcct = e.target.value; };
+    $('qaTo').onchange = (e) => { qaTo = e.target.value; };
     $('finBlurBtn').onclick = () => {
       blurred = !blurred;
       try { localStorage.setItem(FIN_BLUR_KEY, blurred ? '1' : '0'); } catch (e) {}
@@ -558,6 +585,46 @@
     return '<select class="' + (cls || 'fin-cell') + '"' + (path ? ' data-path="' + path + '" data-type="text"' : '') + '>' +
       pairs.map(p => '<option value="' + esc(p[0]) + '"' + (p[0] === value ? ' selected' : '') + '>' + esc(p[1]) + '</option>').join('') + '</select>';
   }
+  function acctLabel(a) { return [a.inst, a.name || a.type].filter(Boolean).join(' ') + (a.last4 ? ' ··' + a.last4 : ''); }
+  function acctPairs() { return data.accounts.map(a => [a.id, acctLabel(a)]); }
+
+  // Estimated balance now = statement balance + Quick Add entries tagged to the account after the "as of" date
+  function acctEstimates() {
+    const out = {};
+    data.accounts.forEach(a => {
+      if (a.balance == null || a.balance === '') return;
+      let change = 0;
+      data.transactions.forEach(t => {
+        if (a.asOf && !((t.date || '') > a.asOf)) return;
+        const T = TX_TYPES[t.type] || {}, amt = num(t.amount);
+        if (t.accountId === a.id) change += T.dir === 'in' ? amt : -amt;
+        if (T.dir === 'save' && t.toAccountId === a.id) change += amt;
+      });
+      out[a.id] = { value: num(a.balance) + change, change };
+    });
+    return out;
+  }
+
+  function accountsHTML() {
+    const rows = data.accounts.map((a, i) =>
+      '<tr><td>' + cellText('accounts.' + i + '.inst', a.inst, 'Bank') + '</td>' +
+      '<td>' + cellText('accounts.' + i + '.name', a.name, 'Nickname (e.g. Emergency fund)') + '</td>' +
+      '<td>' + cellSelect('accounts.' + i + '.type', a.type || 'Other', ACCT_TYPES) + '</td>' +
+      '<td><input class="fin-cell fin-last4" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]*" data-path="accounts.' + i + '.last4" data-type="text" value="' + esc(a.last4) + '" placeholder="1234"></td>' +
+      '<td class="r">' + cellNum('accounts.' + i + '.balance', a.balance) + '</td>' +
+      '<td>' + cellDate('accounts.' + i + '.asOf', a.asOf) + '</td>' +
+      '<td class="fin-calc" id="finAcctEst' + i + '"></td>' +
+      '<td>' + cellText('accounts.' + i + '.notes', a.notes, 'Purpose, auto-transfers…') + '</td>' +
+      '<td>' + delBtn('accounts', i) + '</td></tr>').join('');
+    return '<div class="ws-section"><div class="ws-section-title">Accounts</div>' +
+      '<div class="ws-card fin-card fin-scroll">' +
+        '<table class="fin-table fin-accts"><thead><tr><th>Bank</th><th>Account</th><th>Type</th><th>Last 4</th><th class="r">Balance</th><th>As of</th><th>Estimated now</th><th>Notes</th><th></th></tr></thead><tbody>' + rows + '</tbody>' +
+        '<tfoot><tr><td>Total</td><td></td><td></td><td></td><td class="r fin-money" id="finTAcctBal"></td><td></td><td class="fin-money" id="finTAcct"></td><td></td><td></td></tr></tfoot></table>' +
+        addBtn('accounts', 'Add account') +
+        '<div class="fin-note">Enter each balance from SECU online banking or your statement, with the date. "Estimated now" adds the Quick Add entries tagged to that account after that date, so pick the account when you log a paycheck, purchase or transfer. Re-enter the real balance every week or two to catch anything not logged. Last 4 digits only, never the full account number.</div>' +
+      '</div></div>';
+  }
+
   function debtPairs() { return data.debts.map(x => [x.id, x.name || '(unnamed debt)']); }
 
   function quickAddHTML() {
@@ -571,6 +638,8 @@
           '<input id="qaDate" class="text-input fin-qa-date" type="date" value="' + esc(qaDate || localDate()) + '" aria-label="Date">' +
           selectVL('', qaCat, CATS.map(c => [c, c]), 'text-input fin-qa-sel" id="qaCat') +
           selectVL('', qaDebt, debtPairs(), 'text-input fin-qa-sel" id="qaDebt') +
+          '<label class="fin-qa-lab" id="qaAcctWrap"><span id="qaAcctLab">From</span>' + selectVL('', qaAcct, [['', 'no account']].concat(acctPairs()), 'text-input fin-qa-sel" id="qaAcct') + '</label>' +
+          '<label class="fin-qa-lab" id="qaToWrap"><span>To</span>' + selectVL('', qaTo, [['', 'no account']].concat(acctPairs()), 'text-input fin-qa-sel" id="qaTo') + '</label>' +
           '<input id="qaNote" class="text-input fin-qa-note" type="text" placeholder="Note (store, what, who)" aria-label="Note">' +
           '<button class="btn btn-primary" id="qaSave"><i class="ti ti-plus"></i> Add</button>' +
         '</div>' +
@@ -583,6 +652,10 @@
     const c = $('qaCat'), d = $('qaDebt'); if (!c || !d) return;
     c.style.display = T.cat ? '' : 'none';
     d.style.display = T.debt ? '' : 'none';
+    const hasA = data.accounts.length > 0;
+    $('qaAcctWrap').style.display = hasA ? '' : 'none';
+    $('qaToWrap').style.display = hasA && T.dir === 'save' ? '' : 'none';
+    $('qaAcctLab').textContent = T.dir === 'in' ? 'Into' : 'From';
     if (qaType === 'Bill' && qaCat === 'Food') { qaCat = 'Utilities'; c.value = qaCat; }
   }
 
@@ -595,6 +668,8 @@
     const tx = { id: uid(), date: $('qaDate').value || localDate(), type: qaType, amount: Math.round(amt * 100) / 100, note: $('qaNote').value.trim() };
     if (T.cat) tx.cat = $('qaCat').value;
     if (T.debt) tx.debtId = $('qaDebt').value;
+    if ($('qaAcct').value) tx.accountId = $('qaAcct').value;
+    if (T.dir === 'save' && $('qaTo').value) tx.toAccountId = $('qaTo').value;
     data.transactions.push(tx);
     qaDate = tx.date;
     viewMonth = tx.date.slice(0, 7);
@@ -625,9 +700,12 @@
     const txRows = idx.map(i => {
       const x = data.transactions[i], T = TX_TYPES[x.type] || {};
       const detail = T.cat ? selectVL('transactions.' + i + '.cat', x.cat || 'Other', CATS.map(c => [c, c]))
-        : T.debt ? selectVL('transactions.' + i + '.debtId', x.debtId, debtPairs()) : '<span class="fin-dim" style="padding-left:8px">—</span>';
+        : T.debt ? selectVL('transactions.' + i + '.debtId', x.debtId, debtPairs())
+        : (T.dir === 'save' && data.accounts.length) ? selectVL('transactions.' + i + '.toAccountId', x.toAccountId || '', [['', 'to: no account']].concat(acctPairs()))
+        : '<span class="fin-dim" style="padding-left:8px">—</span>';
+      const acctCell = data.accounts.length ? selectVL('transactions.' + i + '.accountId', x.accountId || '', [['', '—']].concat(acctPairs())) : '<span class="fin-dim">—</span>';
       return '<tr class="fin-tx-' + (T.dir || 'out') + '"><td>' + cellDate('transactions.' + i + '.date', x.date) + '</td><td>' + selectVL('transactions.' + i + '.type', x.type, typePairs) + '</td>' +
-        '<td>' + detail + '</td><td class="r">' + cellNum('transactions.' + i + '.amount', x.amount) + '</td><td>' + cellText('transactions.' + i + '.note', x.note, '') + '</td><td>' + delBtn('transactions', i) + '</td></tr>';
+        '<td>' + detail + '</td><td>' + acctCell + '</td><td class="r">' + cellNum('transactions.' + i + '.amount', x.amount) + '</td><td>' + cellText('transactions.' + i + '.note', x.note, '') + '</td><td>' + delBtn('transactions', i) + '</td></tr>';
     }).join('');
 
     const net = st.inc - st.out - st.save;
@@ -645,7 +723,7 @@
                    : '<div class="fin-dim" style="font-size:13px">Fill in the budget below and log purchases to see this.</div>') +
         '</div>' +
         '<div class="ws-card fin-card fin-scroll" style="margin-top:14px"><div class="fin-card-title">Entries (' + idx.length + ')</div>' +
-          (txRows ? '<table class="fin-table fin-tx"><thead><tr><th>Date</th><th>Type</th><th>Category / debt</th><th class="r">Amount</th><th>Note</th><th></th></tr></thead><tbody>' + txRows + '</tbody></table>'
+          (txRows ? '<table class="fin-table fin-tx"><thead><tr><th>Date</th><th>Type</th><th>Category / debt / to</th><th>Account</th><th class="r">Amount</th><th>Note</th><th></th></tr></thead><tbody>' + txRows + '</tbody></table>'
                   : '<div class="fin-dim" style="font-size:13px">Nothing logged for this month yet.</div>') +
         '</div>' +
       '</div>' +
