@@ -10,7 +10,7 @@
   const FIN_BLUR_KEY    = 'gemma_finance_blur';
   const FIN_ALLOWED     = 'ashley@cognitivenursing.io';
 
-  const CATS = ['Housing', 'Utilities', 'Insurance', 'Food', 'Transportation', 'Phone & internet', 'Subscriptions', 'Medical', 'Personal', 'Giving', 'Other'];
+  const CATS = ['Housing', 'Utilities', 'Insurance', 'Food', 'Transportation', 'Phone & internet', 'Subscriptions', 'Medical', 'Tax services', 'Personal', 'Giving', 'Other'];
   const SHIFT_DEST = ['Savings', 'Debt', 'Spending', 'Undecided'];
 
   function template() {
