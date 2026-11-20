@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Money</title>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Money"/>
+<meta name="theme-color" content="#0B1530"/>
+<link rel="apple-touch-icon" href="money-180.png"/>
+<link rel="icon" type="image/png" href="money-192.png"/>
+<link rel="manifest" href="money.webmanifest"/>
+<script>
+  // Opened from the home-screen icon: go straight to Quick Add in Gemma.
+  (function () {
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (standalone) location.replace('./#quickadd');
+  })();
+</script>
+<style>
+  body{margin:0;min-height:100vh;background:#0B1530;color:#E8EEFF;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
+  .card{max-width:420px;text-align:center;}
+  img{width:96px;height:96px;border-radius:22px;}
+  h1{font-size:22px;font-weight:600;margin:16px 0 6px;}
+  p{color:#A5B3D6;font-size:15px;line-height:1.55;margin:0 0 14px;}
+  ol{text-align:left;color:#A5B3D6;font-size:15px;line-height:1.6;padding-left:22px;margin:0 0 20px;}
+  b{color:#E8EEFF;}
+  a.btn{display:inline-block;background:#1FB5A6;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;}
+  .os{display:none;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="money-180.png" alt="">
+    <h1>Money</h1>
+    <p>Add this page to your home screen to get a one-tap Quick Add app for Gemma Finances.</p>
+    <ol class="os" id="ios">
+      <li>Tap the <b>Share</b> button (square with an arrow) at the bottom of Safari.</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
+      <li>Keep the name <b>Money</b> and tap <b>Add</b>.</li>
+    </ol>
+    <ol class="os" id="android">
+      <li>Tap Chrome's <b>⋮</b> menu (top right).</li>
+      <li>Tap <b>Add to Home screen</b> (or <b>Install app</b>).</li>
+      <li>Keep the name <b>Money</b> and tap <b>Add</b> / <b>Install</b>.</li>
+    </ol>
+    <ol class="os" id="other">
+      <li>Open this page on your phone: <b>cognitivenursing.io/gemma/money.html</b></li>
+      <li>Use your browser's <b>Add to Home Screen</b> option.</li>
+    </ol>
+    <a class="btn" href="./#quickadd">Open Quick Add now</a>
+  </div>
+<script>
+  var ua = navigator.userAgent;
+  var id = /iPhone|iPad|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : 'other';
+  document.getElementById(id).style.display = 'block';
+</script>
+</body>
+</html>
