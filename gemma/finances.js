@@ -10,7 +10,8 @@
   const FIN_BLUR_KEY    = 'gemma_finance_blur';
   const FIN_ALLOWED     = 'ashley@cognitivenursing.io';
 
-  const CATS = ['Housing', 'Utilities', 'Insurance', 'Food', 'Transportation', 'Phone & internet', 'Subscriptions', 'Personal', 'Giving', 'Other'];
+  const CATS = ['Housing', 'Utilities', 'Insurance', 'Food', 'Transportation', 'Phone & internet', 'Subscriptions', 'Medical', 'Personal', 'Giving', 'Other'];
+  const MED_STATUS = ['Waiting on insurance', 'Owed', 'Payment plan', 'Disputing', 'Paid'];
   const SHIFT_DEST = ['Savings', 'Debt', 'Spending', 'Undecided'];
 
   function template() {
@@ -57,12 +58,13 @@
     'Purchase':     { dir: 'out',  icon: 'ti-shopping-cart', cat: true },
     'Bill':         { dir: 'out',  icon: 'ti-file-invoice', cat: true },
     'Debt payment': { dir: 'out',  icon: 'ti-credit-card', debt: true },
+    'Medical payment': { dir: 'out', icon: 'ti-first-aid-kit', med: true },
     'To savings':   { dir: 'save', icon: 'ti-pig-money' }
   };
   function localDate(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
   let viewMonth = localDate().slice(0, 7);
-  let qaType = 'Purchase', qaDate = '', qaCat = 'Food', qaDebt = '', qaAcct = '', qaTo = '', focusQA = false;
+  let qaType = 'Purchase', qaDate = '', qaCat = 'Food', qaDebt = '', qaMed = '', qaAcct = '', qaTo = '', focusQA = false;
   const ACCT_TYPES = ['Checking', 'Savings', 'Money market', 'Share term certificate', 'IRA', 'Holiday / vacation savings', 'Other'];
 
   function loadFinSession() {
@@ -182,6 +184,8 @@
         .map(b => Object.assign({ dueDay: null, freq: 'Monthly', startMonth: 1, autopay: false, accountId: '', paid: {} }, b));
     }
     d.bills.forEach(x => { if (!x.id) x.id = uid(); if (!x.paid) x.paid = {}; });
+    d.medical = d.medical || [];
+    d.medical.forEach(x => { if (!x.id) x.id = uid(); if (!x.paid) x.paid = {}; });
     return d;
   }
 
@@ -258,7 +262,7 @@
       else if (T.dir === 'save') st.save += a;
       else {
         st.out += a;
-        const c = T.debt ? 'Debt payments' : (t.cat || 'Other');
+        const c = T.debt ? 'Debt payments' : T.med ? 'Medical' : (t.cat || 'Other');
         st.byCat[c] = (st.byCat[c] || 0) + a;
         if (T.debt && t.debtId) st.byDebt[t.debtId] = (st.byDebt[t.debtId] || 0) + a;
       }
@@ -342,7 +346,7 @@
         kpi('Monthly income', 'finKInc') + kpi('Bills + debt payments', 'finKOut') + kpi('Left for savings', 'finKLeft') + kpi('Total debt', 'finKDebt') + kpi('Cash in accounts', 'finKCash') + kpi('Saved toward goal', 'finKSaved') +
       '</div>' +
 
-      dueSoonHTML() + quickAddHTML() + monthHTML() + accountsHTML() + billsHTML() +
+      dueSoonHTML() + quickAddHTML() + monthHTML() + accountsHTML() + billsHTML() + medicalHTML() +
 
       // budget
       '<div class="ws-section"><div class="ws-section-title">Monthly budget · base plan (2 scheduled CCH shifts)</div>' +
@@ -510,13 +514,18 @@
       const type = el.dataset.type;
       const v = type === 'num' ? (el.value === '' ? null : parseFloat(el.value)) : type === 'bool' ? el.checked : el.value;
       setPath(el.dataset.path, v);
+      if (e.type === 'change' && /^medical\.\d+\.(provider|who|billed|insurance|owed|paidBefore|status|planAmount|planDay|accountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^bills\.\d+\./.test(el.dataset.path)) { render(); queueSave(); return; }
       if (e.type === 'change' && /^accounts\.\d+\.(name|inst|last4)$/.test(el.dataset.path)) { render(); queueSave(); return; }
-      if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId|accountId|toAccountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
+      if (e.type === 'change' && /^transactions\.\d+\.(type|date|amount|cat|debtId|medId|accountId|toAccountId)$/.test(el.dataset.path)) { render(); queueSave(); return; }
       updateDerived();
       queueSave();
     };
     ws.onclick = (e) => {
+      const mp = e.target.closest('[data-medpay]');
+      if (mp) { medPay(+mp.dataset.medpay, true); return; }
+      const mm = e.target.closest('[data-medmark]');
+      if (mm) { medPay(+mm.dataset.medmark, false); return; }
       const bp = e.target.closest('[data-billpay]');
       if (bp) { billPay(+bp.dataset.billpay, true); return; }
       const bm = e.target.closest('[data-billmark]');
@@ -533,12 +542,13 @@
           'budget.income': { name: '', amount: null },
           'budget.expenses': { name: '', cat: 'Other', amount: null },
           'debts': { name: '', lender: '', balance: null, rate: null, payment: null, inBudget: true },
+          'medical': { provider: '', who: '', serviceDate: '', billed: null, insurance: null, owed: null, paidBefore: null, status: 'Waiting on insurance', planAmount: null, planDay: null, accountId: '', ref: '', notes: '', paid: {} },
           'bills': { name: '', kind: 'Bill', cat: 'Utilities', amount: null, dueDay: null, freq: 'Monthly', startMonth: 1, autopay: false, accountId: '', paid: {} },
           'accounts': { inst: 'SECU', name: '', type: 'Savings', last4: '', balance: null, asOf: today, notes: '' },
           'extraShifts': { date: today, amount: null, dest: 'Savings', note: '' },
           'savings.entries': { date: today, amount: null, note: '' }
         }[add.dataset.add];
-        if (['debts', 'accounts', 'bills'].includes(add.dataset.add)) blank.id = uid();
+        if (['debts', 'accounts', 'bills', 'medical'].includes(add.dataset.add)) blank.id = uid();
         list.push(blank); render(); queueSave();
         const rows = ws.querySelectorAll('[data-path^="' + add.dataset.add + '.' + (list.length - 1) + '."]');
         if (rows[0]) rows[0].focus();
@@ -557,6 +567,7 @@
     $('qaDate').onchange = (e) => { qaDate = e.target.value; };
     $('qaCat').onchange = (e) => { qaCat = e.target.value; };
     $('qaDebt').onchange = (e) => { qaDebt = e.target.value; };
+    $('qaMed').onchange = (e) => { qaMed = e.target.value; };
     $('qaAcct').onchange = (e) => { qaAcct = e.target.value; };
     $('qaTo').onchange = (e) => { qaTo = e.target.value; };
     $('finBlurBtn').onclick = () => {
@@ -680,26 +691,101 @@
   }
 
   function dueSoonHTML() {
-    const items = data.bills.map((b, i) => ({ b, i, st: billStatus(b) })).filter(x => x.st && !x.st.paid && x.st.days <= 14)
+    const items = data.bills.map((b, i) => ({ b, i, st: billStatus(b), amt: billAmount(b), pay: 'data-billpay', mark: 'data-billmark' }))
+      .concat(data.medical.map((m, i) => ({ b: medAsBill(m), i, st: medRemaining(m) > 0.005 ? billStatus(medAsBill(m)) : null, amt: medPlanAmount(m), pay: 'data-medpay', mark: 'data-medmark' })))
+      .filter(x => x.st && !x.st.paid && x.st.days <= 14)
       .sort((a, c) => a.st.days - c.st.days);
     const unset = data.bills.filter(b => !billStatus(b)).length;
-    const rows = items.map(({ b, i, st }) => {
+    const rows = items.map(({ b, i, st, amt, pay, mark }) => {
       const acct = data.accounts.find(a => a.id === b.accountId);
       return '<div class="fin-due-row' + (st.days < 0 ? ' late' : '') + '">' +
         '<div class="fin-due-date"><b>' + st.due.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + '</b>' + dueLabel(st) + '</div>' +
         '<div class="fin-due-name">' + esc(b.name || '(unnamed)') + (b.autopay ? ' <span class="fin-badge auto">autopay</span>' : '') +
           (acct ? '<div class="fin-dim" style="font-size:11.5px">from ' + esc(acctLabel(acct)) + '</div>' : '') + '</div>' +
-        '<div class="fin-due-amt fin-money">' + $$(billAmount(b)) + '</div>' +
-        '<div class="fin-due-act"><button class="btn btn-primary fin-pay" data-billpay="' + i + '" title="Mark paid and log it in Quick Add"><i class="ti ti-check"></i> Paid</button>' +
-        '<button class="fin-linkbtn" data-billmark="' + i + '" title="Mark paid without adding a Quick Add entry (already logged)">mark only</button></div></div>';
+        '<div class="fin-due-amt fin-money">' + $$(amt) + '</div>' +
+        '<div class="fin-due-act"><button class="btn btn-primary fin-pay" ' + pay + '="' + i + '" title="Mark paid and log it in Quick Add"><i class="ti ti-check"></i> Paid</button>' +
+        '<button class="fin-linkbtn" ' + mark + '="' + i + '" title="Mark paid without adding a Quick Add entry (already logged)">mark only</button></div></div>';
     }).join('');
-    const total = items.reduce((s, x) => s + billAmount(x.b), 0);
+    const total = items.reduce((s, x) => s + x.amt, 0);
     return '<div class="ws-section"><div class="ws-section-title">Due soon · overdue and next 14 days</div>' +
       '<div class="ws-card fin-card">' +
       (rows || '<div class="fin-dim" style="font-size:13px">' + (data.bills.length ? 'Nothing due in the next 14 days.' : 'Add bills in "Bills & due dates" below.') + '</div>') +
       (rows ? '<div class="fin-due-total">Total due: <b class="fin-money">' + $$(total) + '</b></div>' : '') +
       (unset ? '<div class="fin-note">' + unset + ' bill' + (unset === 1 ? '' : 's') + ' in the tracker still need a due day.</div>' : '') +
       '</div></div>';
+  }
+
+  // ── medical bills ──
+  function medPairs() { return data.medical.map(m => [m.id, (m.provider || 'Medical bill') + (m.who ? ' · ' + m.who : '') + (m.serviceDate ? ' · ' + m.serviceDate : '')]); }
+  function medOwed(m) {
+    if (m.owed != null && m.owed !== '') return num(m.owed);
+    if (m.billed != null && m.billed !== '') return Math.max(0, num(m.billed) - num(m.insurance));
+    return 0;
+  }
+  function medPaidSoFar(m) { return num(m.paidBefore) + data.transactions.filter(t => t.medId === m.id).reduce((s, t) => s + num(t.amount), 0); }
+  function medRemaining(m) { return medOwed(m) - medPaidSoFar(m); }
+  function medPlanAmount(m) { const r = Math.max(0, medRemaining(m)); return m.planAmount ? Math.min(num(m.planAmount), r) : r; }
+  function medAsBill(m) { return { name: (m.provider || 'Medical bill') + (m.who ? ' (' + m.who + ')' : ''), dueDay: m.planDay, freq: 'Monthly', startMonth: 1, paid: m.paid, accountId: m.accountId }; }
+
+  function medPay(i, log) {
+    const m = data.medical[i], st = billStatus(medAsBill(m)); if (!st) return;
+    const entry = { date: localDate() };
+    if (log) {
+      const amt = Math.round(medPlanAmount(m) * 100) / 100;
+      if (!amt) { alert('Nothing left to pay on this bill.'); return; }
+      const tx = { id: uid(), date: localDate(), type: 'Medical payment', cat: 'Medical', medId: m.id, amount: amt, note: (m.provider || 'Medical') + ' (' + MONTHS[st.due.getMonth()] + ' plan payment)' };
+      if (m.accountId) tx.accountId = m.accountId;
+      data.transactions.push(tx); entry.txId = tx.id;
+    }
+    m.paid[st.key] = entry;
+    render(); queueSave();
+  }
+
+  function medicalHTML() {
+    let tOwed = 0, tPaid = 0, tRem = 0, tWaiting = 0;
+    const fld = (label, html, wide) => '<label class="fin-fld' + (wide ? ' wide' : '') + '"><span>' + label + '</span>' + html + '</label>';
+    const cards = data.medical.map((m, i) => {
+      const owed = medOwed(m), paid = medPaidSoFar(m), rem = owed - paid;
+      const done = owed > 0 && rem <= 0.005;
+      tOwed += owed; tPaid += paid; tRem += Math.max(0, rem);
+      if (!done && (m.status || 'Waiting on insurance') === 'Waiting on insurance') tWaiting++;
+      const st = !done && m.planDay ? billStatus(medAsBill(m)) : null;
+      const owedPh = (m.owed == null || m.owed === '') && m.billed ? ' placeholder="' + esc(owed.toFixed(2)) + '"' : '';
+      const p = 'medical.' + i + '.';
+      return '<div class="ws-card fin-card fin-med-card' + (done ? ' done' : '') + '">' +
+        '<div class="fin-med-top">' +
+          '<div class="fin-med-title"><b>' + esc(m.provider || 'New medical bill') + '</b>' + (m.who ? ' <span class="fin-dim">· ' + esc(m.who) + '</span>' : '') +
+            ' <span class="fin-badge' + (done ? '' : (m.status === 'Disputing' ? ' warn' : '')) + '">' + esc(done ? 'Paid off' : (m.status || 'Waiting on insurance')) + '</span></div>' +
+          '<div class="fin-med-sum">Owe <b class="fin-money">' + $$(owed) + '</b> · paid <b class="fin-money">' + $$(paid) + '</b> · left <b class="fin-money' + (done ? ' fin-ok' : '') + '">' + $$(Math.max(0, rem)) + '</b>' +
+            (st ? ' · next ' + (st.paid ? '<span class="fin-ok">paid this month</span>' : '<b>' + st.due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</b> ' + dueLabel(st)) : '') + '</div>' +
+          delBtn('medical', i) +
+        '</div>' +
+        '<div class="fin-med-grid">' +
+          fld('Provider', cellText(p + 'provider', m.provider, 'Hospital, practice, lab')) +
+          fld('Who', cellText(p + 'who', m.who, 'Patient')) +
+          fld('Service date', cellDate(p + 'serviceDate', m.serviceDate)) +
+          fld('Status', cellSelect(p + 'status', done ? 'Paid' : (m.status || 'Waiting on insurance'), MED_STATUS)) +
+          fld('Billed', cellNum(p + 'billed', m.billed)) +
+          fld('Insurance paid / adjusted', cellNum(p + 'insurance', m.insurance)) +
+          fld('You owe', cellNum(p + 'owed', m.owed, owedPh)) +
+          fld('Paid before tracking', cellNum(p + 'paidBefore', m.paidBefore)) +
+          fld('Plan $ / month', cellNum(p + 'planAmount', m.planAmount)) +
+          fld('Plan due day', '<input class="fin-cell fin-day" type="number" min="1" max="31" inputmode="numeric" data-path="' + p + 'planDay" data-type="num" value="' + (m.planDay == null ? '' : esc(m.planDay)) + '" placeholder="day">') +
+          fld('Pay from', selectVL(p + 'accountId', m.accountId || '', [['', '—']].concat(acctPairs()))) +
+          fld('Invoice / claim #', cellText(p + 'ref', m.ref, '')) +
+          fld('Notes', cellText(p + 'notes', m.notes, 'EOB received, called billing, financial assistance…'), true) +
+        '</div></div>';
+    }).join('');
+    return '<div class="ws-section"><div class="ws-section-title">Medical bills</div>' +
+      '<div class="fin-kpis fin-kpis-sm">' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Medical still owed</div><div class="fin-kpi-v fin-money">' + $$(tRem) + '</div></div>' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Paid so far</div><div class="fin-kpi-v fin-money">' + $$(tPaid) + '</div></div>' +
+        '<div class="fin-kpi"><div class="fin-kpi-l">Waiting on insurance</div><div class="fin-kpi-v">' + tWaiting + '</div></div>' +
+      '</div>' +
+      (cards || '<div class="ws-card fin-card fin-dim" style="font-size:13px">No medical bills yet.</div>') +
+      '<div style="margin-top:12px">' + addBtn('medical', 'Add medical bill') + '</div>' +
+      '<div class="fin-note">"You owe" fills in as Billed minus Insurance; type over it with the patient-responsibility amount from the EOB or statement. Before paying, check the bill against the insurer\'s EOB, since billing errors are common. Payments logged in Quick Add as <b>Medical payment</b> (pick the bill) count toward "paid"; enter anything paid before you started tracking under "Paid before tracking". Bills with a plan amount and due day show up in Due soon.</div>' +
+    '</div>';
   }
 
   function billsHTML() {
@@ -766,6 +852,7 @@
           '<input id="qaDate" class="text-input fin-qa-date" type="date" value="' + esc(qaDate || localDate()) + '" aria-label="Date">' +
           selectVL('', qaCat, CATS.map(c => [c, c]), 'text-input fin-qa-sel" id="qaCat') +
           selectVL('', qaDebt, debtPairs(), 'text-input fin-qa-sel" id="qaDebt') +
+          selectVL('', qaMed, [['', 'which medical bill?']].concat(medPairs()), 'text-input fin-qa-sel" id="qaMed') +
           '<label class="fin-qa-lab" id="qaAcctWrap"><span id="qaAcctLab">From</span>' + selectVL('', qaAcct, [['', 'no account']].concat(acctPairs()), 'text-input fin-qa-sel" id="qaAcct') + '</label>' +
           '<label class="fin-qa-lab" id="qaToWrap"><span>To</span>' + selectVL('', qaTo, [['', 'no account']].concat(acctPairs()), 'text-input fin-qa-sel" id="qaTo') + '</label>' +
           '<input id="qaNote" class="text-input fin-qa-note" type="text" placeholder="Note (store, what, who)" aria-label="Note">' +
@@ -780,6 +867,7 @@
     const c = $('qaCat'), d = $('qaDebt'); if (!c || !d) return;
     c.style.display = T.cat ? '' : 'none';
     d.style.display = T.debt ? '' : 'none';
+    $('qaMed').style.display = T.med ? '' : 'none';
     const hasA = data.accounts.length > 0;
     $('qaAcctWrap').style.display = hasA ? '' : 'none';
     $('qaToWrap').style.display = hasA && T.dir === 'save' ? '' : 'none';
@@ -796,6 +884,7 @@
     const tx = { id: uid(), date: $('qaDate').value || localDate(), type: qaType, amount: Math.round(amt * 100) / 100, note: $('qaNote').value.trim() };
     if (T.cat) tx.cat = $('qaCat').value;
     if (T.debt) tx.debtId = $('qaDebt').value;
+    if (T.med) { tx.cat = 'Medical'; if ($('qaMed').value) tx.medId = $('qaMed').value; }
     if ($('qaAcct').value) tx.accountId = $('qaAcct').value;
     if (T.dir === 'save' && $('qaTo').value) tx.toAccountId = $('qaTo').value;
     data.transactions.push(tx);
@@ -806,11 +895,15 @@
       const st = billStatus(b);
       if (st && !st.paid && st.days <= 20) { b.paid[st.key] = { txId: tx.id, date: tx.date }; marked = ' Marked ' + (b.name || 'the bill') + ' paid for ' + monthLabel(st.due) + '.'; }
     });
+    if (T.med && tx.medId) {
+      const m = data.medical.find(x => x.id === tx.medId), st = m && billStatus(medAsBill(m));
+      if (st && !st.paid && st.days <= 20) { m.paid[st.key] = { txId: tx.id, date: tx.date }; marked = ' Marked ' + (m.provider || 'the plan') + ' paid for ' + monthLabel(st.due) + '.'; }
+    }
     qaDate = tx.date;
     viewMonth = tx.date.slice(0, 7);
     render(); queueSave();
-    const label = T.debt ? (data.debts.find(x => x.id === tx.debtId) || {}).name : (tx.cat || qaType);
-    const m = $('qaMsg'); m.textContent = 'Added ' + $$(tx.amount) + ' · ' + qaType + (T.cat || T.debt ? ' · ' + label : '') + '.' + marked + ' Undo by deleting it below.'; m.dataset.kind = 'ok';
+    const label = T.debt ? (data.debts.find(x => x.id === tx.debtId) || {}).name : T.med ? ((data.medical.find(x => x.id === tx.medId) || {}).provider || 'Medical') : (tx.cat || qaType);
+    const m = $('qaMsg'); m.textContent = 'Added ' + $$(tx.amount) + ' · ' + qaType + (T.cat || T.debt || T.med ? ' · ' + label : '') + '.' + marked + ' Undo by deleting it below.'; m.dataset.kind = 'ok';
     $('qaAmount').focus();
   }
 
@@ -836,6 +929,7 @@
       const x = data.transactions[i], T = TX_TYPES[x.type] || {};
       const detail = T.cat ? selectVL('transactions.' + i + '.cat', x.cat || 'Other', CATS.map(c => [c, c]))
         : T.debt ? selectVL('transactions.' + i + '.debtId', x.debtId, debtPairs())
+        : T.med ? selectVL('transactions.' + i + '.medId', x.medId || '', [['', 'which bill?']].concat(medPairs()))
         : (T.dir === 'save' && data.accounts.length) ? selectVL('transactions.' + i + '.toAccountId', x.toAccountId || '', [['', 'to: no account']].concat(acctPairs()))
         : '<span class="fin-dim" style="padding-left:8px">—</span>';
       const acctCell = data.accounts.length ? selectVL('transactions.' + i + '.accountId', x.accountId || '', [['', '—']].concat(acctPairs())) : '<span class="fin-dim">—</span>';
